@@ -13,5 +13,9 @@ CHIP Bit {
     OUT out;
 
     PARTS:
-    //// Replace this comment with your code.
+        Nand(a=load,b=load,out=Notload);
+        Nand(a=load,b=in,out=in0);
+        Nand(a=Notload,b=re,out=in1);
+        Nand(a=in0,b=in1,out=in2);
+        DFF(in=in2,out=out,out=re);
 }

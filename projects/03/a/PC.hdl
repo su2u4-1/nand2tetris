@@ -4,19 +4,135 @@
 // File name: projects/03/a/PC.hdl
 
 /**
- * A 16-bit counter with increment, load, and reset modes.
+ * A 16-bit counter(計數器) with increment(增量), load, and reset modes.
  * if      (inc(t))   out(t+1) = out(t) + 1
  * else if (load(t))  out(t+1) = in(t)
  * else if (reset(t)) out(t+1) = 0
  * else               out(t+1) = out(t)
  *
  * To select a mode, assert the relevant control bit,
- * and de-assert the other two bits. 
+ * and de-assert the other two bits.
  */
 CHIP PC {
     IN in[16],inc, load, reset;
     OUT out[16];
     
     PARTS:
-    //// Replace this comment with your code.
+        Not(in=reset,out=rs);
+        And(a=load,b=rs,out=set);
+        Not(in=set,out=Nset);
+        Not(in=load,out=Nload);
+        And(a=Nload,b=rs,out=b);
+        And(a=b,b=inc,out=add);
+        And(a=set,b=in[0],out=z10);
+        And(a=Nset,b=re0,out=z20);
+        Or(a=z10,b=z20,out=z30);
+        DFF(in=z30,out=z40,out=out[0]);
+        Xor(a=add,b=z40,out=z50);
+        And(a=add,b=z40,out=d0);
+        And(a=z50,b=rs,out=re0);
+        And(a=set,b=in[1],out=z11);
+        And(a=Nset,b=re1,out=z21);
+        Or(a=z11,b=z21,out=z31);
+        DFF(in=z31,out=z41,out=out[1]);
+        Xor(a=d0,b=z41,out=z51);
+        And(a=d0,b=z41,out=d1);
+        And(a=z51,b=rs,out=re1);
+        And(a=set,b=in[2],out=z12);
+        And(a=Nset,b=re2,out=z22);
+        Or(a=z12,b=z22,out=z32);
+        DFF(in=z32,out=z42,out=out[2]);
+        Xor(a=d1,b=z42,out=z52);
+        And(a=d1,b=z42,out=d2);
+        And(a=z52,b=rs,out=re2);
+        And(a=set,b=in[3],out=z13);
+        And(a=Nset,b=re3,out=z23);
+        Or(a=z13,b=z23,out=z33);
+        DFF(in=z33,out=z43,out=out[3]);
+        Xor(a=d2,b=z43,out=z53);
+        And(a=d2,b=z43,out=d3);
+        And(a=z53,b=rs,out=re3);
+        And(a=set,b=in[4],out=z14);
+        And(a=Nset,b=re4,out=z24);
+        Or(a=z14,b=z24,out=z34);
+        DFF(in=z34,out=z44,out=out[4]);
+        Xor(a=d3,b=z44,out=z54);
+        And(a=d3,b=z44,out=d4);
+        And(a=z54,b=rs,out=re4);
+        And(a=set,b=in[5],out=z15);
+        And(a=Nset,b=re5,out=z25);
+        Or(a=z15,b=z25,out=z35);
+        DFF(in=z35,out=z45,out=out[5]);
+        Xor(a=d4,b=z45,out=z55);
+        And(a=d4,b=z45,out=d5);
+        And(a=z55,b=rs,out=re5);
+        And(a=set,b=in[6],out=z16);
+        And(a=Nset,b=re6,out=z26);
+        Or(a=z16,b=z26,out=z36);
+        DFF(in=z36,out=z46,out=out[6]);
+        Xor(a=d5,b=z46,out=z56);
+        And(a=d5,b=z46,out=d6);
+        And(a=z56,b=rs,out=re6);
+        And(a=set,b=in[7],out=z17);
+        And(a=Nset,b=re7,out=z27);
+        Or(a=z17,b=z27,out=z37);
+        DFF(in=z37,out=z47,out=out[7]);
+        Xor(a=d6,b=z47,out=z57);
+        And(a=d6,b=z47,out=d7);
+        And(a=z57,b=rs,out=re7);
+        And(a=set,b=in[8],out=z18);
+        And(a=Nset,b=re8,out=z28);
+        Or(a=z18,b=z28,out=z38);
+        DFF(in=z38,out=z48,out=out[8]);
+        Xor(a=d7,b=z48,out=z58);
+        And(a=d7,b=z48,out=d8);
+        And(a=z58,b=rs,out=re8);
+        And(a=set,b=in[9],out=z19);
+        And(a=Nset,b=re9,out=z29);
+        Or(a=z19,b=z29,out=z39);
+        DFF(in=z39,out=z49,out=out[9]);
+        Xor(a=d8,b=z49,out=z59);
+        And(a=d8,b=z49,out=d9);
+        And(a=z59,b=rs,out=re9);
+        And(a=set,b=in[10],out=z110);
+        And(a=Nset,b=re10,out=z210);
+        Or(a=z110,b=z210,out=z310);
+        DFF(in=z310,out=z410,out=out[10]);
+        Xor(a=d9,b=z410,out=z510);
+        And(a=d9,b=z410,out=d10);
+        And(a=z510,b=rs,out=re10);
+        And(a=set,b=in[11],out=z111);
+        And(a=Nset,b=re11,out=z211);
+        Or(a=z111,b=z211,out=z311);
+        DFF(in=z311,out=z411,out=out[11]);
+        Xor(a=d10,b=z411,out=z511);
+        And(a=d10,b=z411,out=d11);
+        And(a=z511,b=rs,out=re11);
+        And(a=set,b=in[12],out=z112);
+        And(a=Nset,b=re12,out=z212);
+        Or(a=z112,b=z212,out=z312);
+        DFF(in=z312,out=z412,out=out[12]);
+        Xor(a=d11,b=z412,out=z512);
+        And(a=d11,b=z412,out=d12);
+        And(a=z512,b=rs,out=re12);
+        And(a=set,b=in[13],out=z113);
+        And(a=Nset,b=re13,out=z213);
+        Or(a=z113,b=z213,out=z313);
+        DFF(in=z313,out=z413,out=out[13]);
+        Xor(a=d12,b=z413,out=z513);
+        And(a=d12,b=z413,out=d13);
+        And(a=z513,b=rs,out=re13);
+        And(a=set,b=in[14],out=z114);
+        And(a=Nset,b=re14,out=z214);
+        Or(a=z114,b=z214,out=z314);
+        DFF(in=z314,out=z414,out=out[14]);
+        Xor(a=d13,b=z414,out=z514);
+        And(a=d13,b=z414,out=d14);
+        And(a=z514,b=rs,out=re14);
+        And(a=set,b=in[15],out=z115);
+        And(a=Nset,b=re15,out=z215);
+        Or(a=z115,b=z215,out=z315);
+        DFF(in=z315,out=z415,out=out[15]);
+        Xor(a=d14,b=z415,out=z515);
+        And(a=z515,b=rs,out=re15);
 }
