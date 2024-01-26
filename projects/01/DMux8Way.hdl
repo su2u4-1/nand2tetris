@@ -14,27 +14,63 @@ CHIP DMux8Way {
     OUT a, b, c, d, e, f, g, h;
 
     PARTS:
-        Not (in=sel[0], out=Notsel0);
-        Not (in=sel[1], out=Notsel1);
-        Not (in=sel[2], out=Notsel2);
-        And (a=Notsel1, b=Notsel0, out=z00);
-        And (a=sel[1], b=Notsel0, out=z10);
-        And (a=Notsel1, b=sel[0], out=z01);
-        And (a=sel[1], b=sel[0], out=z11);
-        And (a=Notsel2, b=z00, out=if0);
-        And (a=Notsel2, b=z01, out=if1);
-        And (a=Notsel2, b=z10, out=if2);
-        And (a=Notsel2, b=z11, out=if3);
-        And (a=sel[2], b=z00, out=if4);
-        And (a=sel[2], b=z01, out=if5);
-        And (a=sel[2], b=z10, out=if6);
-        And (a=sel[2], b=z11, out=if7);
-        And (a=in, b=if0, out=a);
-        And (a=in, b=if1, out=b);
-        And (a=in, b=if2, out=c);
-        And (a=in, b=if3, out=d);
-        And (a=in, b=if4, out=e);
-        And (a=in, b=if5, out=f);
-        And (a=in, b=if6, out=g);
-        And (a=in, b=if7, out=h);
+        Nand(a=sel[0],b=sel[0],out=ns0);
+        Nand(a=sel[1],b=sel[1],out=ns1);
+        Nand(a=sel[2],b=sel[2],out=ns2);
+
+        Nand(a=in,b=ns0,out=z00);
+        Nand(a=z00,b=z00,out=z10);
+        Nand(a=z10,b=ns1,out=z20);
+        Nand(a=z20,b=z20,out=z30);
+        Nand(a=z30,b=ns2,out=z40);
+        Nand(a=z40,b=z40,out=a);
+
+        Nand(a=in,b=sel[0],out=z01);
+        Nand(a=z01,b=z01,out=z11);
+        Nand(a=z11,b=ns1,out=z21);
+        Nand(a=z21,b=z21,out=z31);
+        Nand(a=z31,b=ns2,out=z41);
+        Nand(a=z41,b=z41,out=b);
+
+        Nand(a=in,b=ns0,out=z02);
+        Nand(a=z02,b=z02,out=z12);
+        Nand(a=z12,b=sel[1],out=z22);
+        Nand(a=z22,b=z22,out=z32);
+        Nand(a=z32,b=ns2,out=z42);
+        Nand(a=z42,b=z42,out=c);
+
+        Nand(a=in,b=sel[0],out=z03);
+        Nand(a=z03,b=z03,out=z13);
+        Nand(a=z13,b=sel[1],out=z23);
+        Nand(a=z23,b=z23,out=z33);
+        Nand(a=z33,b=ns2,out=z43);
+        Nand(a=z43,b=z43,out=d);
+
+        Nand(a=in,b=ns0,out=z04);
+        Nand(a=z04,b=z04,out=z14);
+        Nand(a=z14,b=ns1,out=z24);
+        Nand(a=z24,b=z24,out=z34);
+        Nand(a=z34,b=sel[2],out=z44);
+        Nand(a=z44,b=z44,out=e);
+
+        Nand(a=in,b=sel[0],out=z05);
+        Nand(a=z05,b=z05,out=z15);
+        Nand(a=z15,b=ns1,out=z25);
+        Nand(a=z25,b=z25,out=z35);
+        Nand(a=z35,b=sel[2],out=z45);
+        Nand(a=z45,b=z45,out=f);
+
+        Nand(a=in,b=ns0,out=z06);
+        Nand(a=z06,b=z06,out=z16);
+        Nand(a=z16,b=sel[1],out=z26);
+        Nand(a=z26,b=z26,out=z36);
+        Nand(a=z36,b=sel[2],out=z46);
+        Nand(a=z46,b=z46,out=g);
+
+        Nand(a=in,b=sel[0],out=z07);
+        Nand(a=z07,b=z07,out=z17);
+        Nand(a=z17,b=sel[1],out=z27);
+        Nand(a=z27,b=z27,out=z37);
+        Nand(a=z37,b=sel[2],out=z47);
+        Nand(a=z47,b=z47,out=h);
 }

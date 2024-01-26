@@ -14,14 +14,22 @@ CHIP DMux4Way {
     OUT a, b, c, d;
 
     PARTS:
-        Not (in=sel[0], out=Notsel0);
-        Not (in=sel[1], out=Notsel1);
-        And (a=Notsel1, b=Notsel0, out=z00);
-        And (a=sel[1], b=Notsel0, out=z10);
-        And (a=Notsel1, b=sel[0], out=z01);
-        And (a=sel[1], b=sel[0], out=z11);
-        And (a=in, b=z00, out=a);
-        And (a=in, b=z01, out=b);
-        And (a=in, b=z10, out=c);
-        And (a=in, b=z11, out=d);
+        Nand(a=sel[0],b=sel[0],out=Nsel0);
+        Nand(a=sel[1],b=sel[1],out=Nsel1);
+        Nand(a=Nsel1,b=Nsel0,out=z0);
+        Nand(a=z0,b=z0,out=z00);
+        Nand(a=sel[1],b=Nsel0,out=z1);
+        Nand(a=z1,b=z1,out=z10);
+        Nand(a=Nsel1,b=sel[0],out=z2);
+        Nand(a=z2,b=z2,out=z01);
+        Nand(a=sel[1],b=sel[0],out=z3);
+        Nand(a=z3,b=z3,out=z11);
+        Nand(a=in,b=z00,out=za);
+        Nand(a=za,b=za,out=a);
+        Nand(a=in,b=z01,out=zb);
+        Nand(a=zb,b=zb,out=b);
+        Nand(a=in,b=z10,out=zc);
+        Nand(a=zc,b=zc,out=c);
+        Nand(a=in,b=z11,out=zd);
+        Nand(a=zd,b=zd,out=d);
 }
