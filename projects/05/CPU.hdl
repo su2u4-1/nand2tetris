@@ -32,5 +32,38 @@ CHIP CPU {
         pc[15];          // Address of next instruction
 
     PARTS:
-    //// Replace this comment with your code.
+        DMux16(in=instruction,sel=instruction[15],a=Acommand);
+        And(a=instruction[0],b=instruction[15],out=ins0);
+        And(a=instruction[1],b=instruction[15],out=ins1);
+        And(a=instruction[2],b=instruction[15],out=ins2);
+        And(a=instruction[3],b=instruction[15],out=ins3,out=writeM);
+        And(a=instruction[4],b=instruction[15],out=ins4);
+        And(a=instruction[5],b=instruction[15],out=ins5);
+        And(a=instruction[6],b=instruction[15],out=ins6);
+        And(a=instruction[7],b=instruction[15],out=ins7);
+        And(a=instruction[8],b=instruction[15],out=ins8);
+        And(a=instruction[9],b=instruction[15],out=ins9);
+        And(a=instruction[10],b=instruction[15],out=ins10);
+        And(a=instruction[11],b=instruction[15],out=ins11);
+        And(a=instruction[12],b=instruction[15],out=ins12);
+        Mux16(a=RegisterA,b=inM,sel=ins12,out=NumberB);
+        Mux16(a=Acommand,b=inB,sel=instruction[15],out=inA);
+        ALU(x=RegisterD,y=NumberB,zx=ins11,nx=ins10,zy=ins9,ny=ins8,f=ins7,no=ins6,out=ALUout,zr=z1,ng=z0);
+        DRegister(in=inD,load=ins4,out=RegisterD);
+        Not(in=instruction[15],out=Nins15);
+        Or(a=Nins15,b=ins5,out=loadA);
+        ARegister(in=inA,load=loadA,out=RegisterA,out[0..14]=addressM);
+        DMux16(in=ALUout,sel=ins4,b=inD);
+        DMux16(in=ALUout,sel=ins5,b=inB);
+        DMux16(in=ALUout,sel=ins3,b=outM);
+        Or(a=z1,b=z0,out=z2);
+        Not(in=z2,out=z3);
+        And(a=ins0,b=z3,out=y2);
+        And(a=ins1,b=z1,out=y1);
+        And(a=ins2,b=z0,out=y0);
+        Or(a=y2,b=y1,out=y3);
+        Or(a=y0,b=y3,out=jump);
+        DMux16(in=RegisterA,sel=jump,b=addr);
+        Not(in=jump,out=Njump);
+        PC(in=addr,inc=Njump,load=jump,reset=reset,out[0..14]=pc);
 }
