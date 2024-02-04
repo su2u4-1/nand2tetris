@@ -1,0 +1,78 @@
+label
+({name}${text[i][1]})
+
+goto
+@{name}${text[i][1]}
+0;JMP
+
+if-goto
+@SP
+M=M-1
+A=M
+D=M
+@{name}${text[i][1]}
+D;JNE
+
+coll
+@return{i}
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+@LCL
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+@ARG
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+@THIS
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+@THAT
+D=M
+@SP
+M=M+1
+A=M-1
+M=D
+@SP
+D=M
+@{n}
+D=D-A
+@5
+D=D-A
+@ARG
+M=D
+@SP
+D=M
+@LCL
+M=D
+@{f}
+0;JMP
+(return{i})
+
+function
+(f)
+(loop{i})
+n=n+1
+push 0
+
+return
+FRAME = LCL
+RET = (FRAME-5)
+*ARG = pop()
+SP = ARG+1
+THAT = *(FRAME-1)
+THIS = *(FRAME-2)
+ARG = *(FRAME-3)
+LCL = *(FRAME-4)
+goto RET
