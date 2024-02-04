@@ -62,14 +62,18 @@ M=D
 
 function
 (f)
+(loop{i})
 @SP
 D=M
-(loop{i})
 A=D
 M=0
 D=D+1
-@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@TRUE{n}\nD;JGT\n@SP\nM=M-1\nA=M-1\nM=0\n@END{n}\n0;JMP\n(TRUE{n})\n@SP\nM=M-1\nA=M-1\nM=-1\n(END{n})
-if n<k goto loop 
+@SP
+M=D
+@{k}
+D=A-D
+@loop{i}
+D;JGT
 
 return
 FRAME = LCL
