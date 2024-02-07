@@ -1,0 +1,13 @@
+class Main {
+    function void main() {
+        var Int h;
+        var Int w;
+        var Int a;
+        let h = Keyboard.readInt("hight:");
+        let w = Keyboard.readInt("weight:");
+        let a = w/(h*h/10000);
+        do Output.printInt(a);
+        do Output.println();
+        return;
+    }
+}
