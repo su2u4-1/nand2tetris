@@ -1,13 +1,47 @@
 class Main {
     function void main() {
-        var Int h;
-        var Int w;
-        var Int a;
-        let h = Keyboard.readInt("hight:");
-        let w = Keyboard.readInt("weight:");
-        let a = w/(h*h/10000);
-        do Output.printInt(a);
-        do Output.println();
+        var Array maze;
+        let maze = Main.BuildMaze(31, 15);
+        do Main.draw(maze, 31, 15);
         return;
+    }
+    function void draw(Array maze, int w, int h) {
+        var Int i;
+        var Int j;
+        var Boolean a;
+        do Screen.clearScreen();
+        let i = 0;
+        let j = 0;
+        while (i < h) {
+            while (j < w) {
+                let a = (maze[i][j] = -1);
+                do Screen.setColor(a);
+                do Screen.drawRectangle(j*16,i*16,j*16+16,i*16+16);
+            }
+        }
+        return;
+    }
+    function Array BuildMaze(int w, int h) {
+        var Array maze;
+        var Int i;
+        var Int j;
+        let maze = Array.new(h);
+        let i = 0;
+        while (i < h) {
+            let maze[i] = Array.new(w);
+            let i = i+1;
+        }
+        let i = 0;
+        let j = 0;
+        while (i < h) {
+            while (j < w) {
+                if (((i/2*2) = i) | ((j/2*2) = j)) {
+                    let maze[i][j] = -1;
+                }
+                let j = j+1;
+            }
+            let i = i+1;
+        }
+        return maze;
     }
 }
