@@ -330,7 +330,7 @@ def main(path):
         name = path.split("\\")[-1].split(".")[0]
         text = [f"name {name}"]
         f = open(path, "r")
-        text = f.readlines()
+        text += f.readlines()
         f.close()
         command = translator(text)
         path = path.split(".")
