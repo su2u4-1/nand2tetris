@@ -1,28 +1,117 @@
 class Main {
+    static Int w;
+    static Int h;
     
     function void main() {
         var Maze maze;
+        var Boolean loop;
+        var Array player;
 
-        let maze = Maze.new(63, 31);
-        do Main.draw(maze, 63, 31);
+        let w = 31;
+        let h = 15;
+
+        let maze = Maze.new(w, h);
+        let loop = true;
+        let player = Array.new(2);
+        let player[0] = 1;
+        let player[1] = 1;
+        do Main.draw(maze, w, h, player);
+        while (loop){
+            let player = Main.move(maze, player, w, h);
+            do Main.draw(maze, w, h, player);
+            if ((player[0] = (h-2)) & (player[1] = (w-2))) {
+                let loop = false;
+            }
+            do Sys.wait(10);
+        }
         return;
     }
 
-    function void draw(Maze maze, int w, int h) {
+    function void draw(Maze maze, int w, int h, Array player) {
         var int i;
         var int j;
 
+        do Screen.clearScreen();
         let i = 0;
         while (i < h) {
             let j = 0;
             while(j < w) {
                 if (maze.get(j, i) = -1) {
-                    do Screen.drawRectangle(j*8, i*8, j*8+8, i*8+8);
+                    do Screen.drawRectangle(j*16, i*16, j*16+16, i*16+16);
+                }
+                if ((i = player[0]) & (j = player[1])) {
+                    do Main.drawPlayer((i*512)+j);
                 }
                 let j = j + 1;
             }
             let i = i + 1;
         }
         return;
+    }
+
+    function Array move(Maze maze, Array player, int w, int h) {
+        var Int x;
+        var Int y;
+        var Int key;
+        var Array t0;
+        var Array t1;
+
+        let key = Main.readChar();
+        if (key = 87) {
+            let t0 = -1;
+            let t1 = 0;
+        }
+        if (key = 65) {
+            let t0 = 0;
+            let t1 = -1;
+        }
+        if (key = 83) {
+            let t0 = 1;
+            let t1 = 0;
+        }
+        if (key = 68) {
+            let t0 = 0;
+            let t1 = 1;
+        }
+
+        let x = player[0]+t0;
+        let y = player[1]+t1;
+        if ((0 < x) & (x < h) & (0 < y) & (y < w) & (maze.get(y, x) = 0)) {
+            let player[0] = x;
+            let player[1] = y;
+        }
+        return player;
+    }
+
+    function void drawPlayer(int location) {
+        var Int memAddress;
+
+        let memAddress = 16384+location;
+        do Memory.poke(memAddress+0, 960);
+        do Memory.poke(memAddress+32, 3120);
+        do Memory.poke(memAddress+64, 4104);
+        do Memory.poke(memAddress+96, 12300);
+        do Memory.poke(memAddress+128, 18450);
+        do Memory.poke(memAddress+160, 17442);
+        do Memory.poke(memAddress+192, -32191);
+        do Memory.poke(memAddress+224, -32383);
+        do Memory.poke(memAddress+256, -32383);
+        do Memory.poke(memAddress+288, -32191);
+        do Memory.poke(memAddress+320, 17442);
+        do Memory.poke(memAddress+352, 18450);
+        do Memory.poke(memAddress+384, 12300);
+        do Memory.poke(memAddress+416, 4104);
+        do Memory.poke(memAddress+448, 3120);
+        do Memory.poke(memAddress+480, 960);
+        return;
+    }
+
+    function Int readChar() {
+        var Int key;
+
+        while (key = 0) {
+            let key = Keyboard.keyPressed();
+        }
+        return key;
     }
 }

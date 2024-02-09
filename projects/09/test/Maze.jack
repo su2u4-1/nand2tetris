@@ -7,6 +7,8 @@ class Maze {
         var int i;
         var int j;
         var Array row;
+        var Random rand;
+        var Int r;
 
         let w = weight;
         let h = hight;
@@ -18,11 +20,16 @@ class Maze {
             let j = 0;
             let row = Array.new(w);
             while(j < w) {
-                if ((i/2*2 = i) | (j/2*2 = j)) {
+                if ((i/2*2 = i) & (j/2*2 = j)) {
                     let row[j] = -1;
                 }
                 else {
-                    let row[j] = 0;
+                    if ((i = 0) | (j = 0) | (i = (h-1)) | (j = (w-1))){
+                        let row[j] = -1;
+                    }
+                    else {
+                        let row[j] = 0;
+                    }
                 }
                 let j = j + 1;
             }
@@ -30,7 +37,32 @@ class Maze {
             let i = i + 1;
         }
 
-        let maze = ren(maze, 1, 2, 0);
+        let rand = Random.new(42);
+        let i = 0;
+        while (i < (h/2)) {
+            let j = 0;
+            while (j < (w/2)) {
+                let r = rand.randRange(99);
+                if (i = (h/2-1)) {
+                    let maze = ren(maze, i*2+2, j*2+1, -1);
+                }
+                else {
+                    if (j = (w/2-1)) {
+                        let maze = ren(maze, i*2+1, j*2+2, -1);
+                    }
+                    else {
+                        if ((r/2*2) = r) {
+                            let maze = ren(maze, i*2+1, j*2+2, -1);
+                        }
+                        else {
+                            let maze = ren(maze, i*2+2, j*2+1, -1);
+                        }
+                    }
+                }
+                let j = j + 1;
+            }
+            let i = i + 1;
+        }
         return this;
     }
 

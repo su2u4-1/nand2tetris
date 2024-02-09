@@ -1,16 +1,91 @@
-function Main.main 1
-push constant 63
+function Main.main 3
 push constant 31
+pop static 0
+push constant 15
+pop static 1
+push static 0
+push static 1
 call Maze.new 2
 pop local 0
-push local 0
-push constant 63
-push constant 31
-call Main.draw 3
+push constant 0
+not
+pop local 1
+push constant 2
+call Array.new 1
+pop local 2
+push constant 0
+push local 2
+add
+push constant 1
 pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 2
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 0
+push static 0
+push static 1
+push local 2
+call Main.draw 4
+pop temp 0
+label WHILE_EXP0
+push local 1
+not
+if-goto WHILE_END0
+push local 0
+push local 2
+push static 0
+push static 1
+call Main.move 4
+pop local 2
+push local 0
+push static 0
+push static 1
+push local 2
+call Main.draw 4
+pop temp 0
+push constant 0
+push local 2
+add
+pop pointer 1
+push that 0
+push static 1
+push constant 2
+sub
+eq
+push constant 1
+push local 2
+add
+pop pointer 1
+push that 0
+push static 0
+push constant 2
+sub
+eq
+and
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+pop local 1
+label IF_FALSE0
+push constant 10
+call Sys.wait 1
+pop temp 0
+goto WHILE_EXP0
+label WHILE_END0
 push constant 0
 return
 function Main.draw 2
+call Screen.clearScreen 0
+pop temp 0
 push constant 0
 pop local 0
 label WHILE_EXP0
@@ -38,24 +113,50 @@ if-goto IF_TRUE0
 goto IF_FALSE0
 label IF_TRUE0
 push local 1
-push constant 8
+push constant 16
 call Math.multiply 2
 push local 0
-push constant 8
+push constant 16
 call Math.multiply 2
 push local 1
-push constant 8
+push constant 16
 call Math.multiply 2
-push constant 8
+push constant 16
 add
 push local 0
-push constant 8
+push constant 16
 call Math.multiply 2
-push constant 8
+push constant 16
 add
 call Screen.drawRectangle 4
 pop temp 0
 label IF_FALSE0
+push local 0
+push constant 0
+push argument 3
+add
+pop pointer 1
+push that 0
+eq
+push local 1
+push constant 1
+push argument 3
+add
+pop pointer 1
+push that 0
+eq
+and
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push local 0
+push constant 512
+call Math.multiply 2
+push local 1
+add
+call Main.drawPlayer 1
+pop temp 0
+label IF_FALSE1
 push local 1
 push constant 1
 add
@@ -69,4 +170,233 @@ pop local 0
 goto WHILE_EXP0
 label WHILE_END0
 push constant 0
+return
+function Main.move 5
+call Main.readChar 0
+pop local 2
+push local 2
+push constant 87
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 1
+neg
+pop local 3
+push constant 0
+pop local 4
+label IF_FALSE0
+push local 2
+push constant 65
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 0
+pop local 3
+push constant 1
+neg
+pop local 4
+label IF_FALSE1
+push local 2
+push constant 83
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push constant 1
+pop local 3
+push constant 0
+pop local 4
+label IF_FALSE2
+push local 2
+push constant 68
+eq
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push constant 0
+pop local 3
+push constant 1
+pop local 4
+label IF_FALSE3
+push constant 0
+push argument 1
+add
+pop pointer 1
+push that 0
+push local 3
+add
+pop local 0
+push constant 1
+push argument 1
+add
+pop pointer 1
+push that 0
+push local 4
+add
+pop local 1
+push constant 0
+push local 0
+lt
+push local 0
+push argument 3
+lt
+and
+push constant 0
+push local 1
+lt
+and
+push local 1
+push argument 2
+lt
+and
+push argument 0
+push local 1
+push local 0
+call Maze.get 3
+push constant 0
+eq
+and
+if-goto IF_TRUE4
+goto IF_FALSE4
+label IF_TRUE4
+push constant 0
+push argument 1
+add
+push local 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push argument 1
+add
+push local 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+label IF_FALSE4
+push argument 1
+return
+function Main.drawPlayer 1
+push constant 16384
+push argument 0
+add
+pop local 0
+push local 0
+push constant 0
+add
+push constant 960
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 32
+add
+push constant 3120
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 64
+add
+push constant 4104
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 96
+add
+push constant 12300
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 128
+add
+push constant 18450
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 160
+add
+push constant 17442
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 192
+add
+push constant 32191
+neg
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 224
+add
+push constant 32383
+neg
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 256
+add
+push constant 32383
+neg
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 288
+add
+push constant 32191
+neg
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 320
+add
+push constant 17442
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 352
+add
+push constant 18450
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 384
+add
+push constant 12300
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 416
+add
+push constant 4104
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 448
+add
+push constant 3120
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 480
+add
+push constant 960
+call Memory.poke 2
+pop temp 0
+push constant 0
+return
+function Main.readChar 1
+label WHILE_EXP0
+push local 0
+push constant 0
+eq
+not
+if-goto WHILE_END0
+call Keyboard.keyPressed 0
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+push local 0
 return
