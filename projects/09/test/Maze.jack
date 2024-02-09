@@ -1,0 +1,52 @@
+class Maze {
+    field Array maze;
+    field int w;
+    field int h;
+
+    constructor Maze new(int weight, int hight) {
+        var int i;
+        var int j;
+        var Array row;
+
+        let w = weight;
+        let h = hight;
+        let maze = Array.new(h);
+        let w = weight;
+        let h = hight;
+        let i = 0;
+        while (i < h) {
+            let j = 0;
+            let row = Array.new(w);
+            while(j < w) {
+                if ((i/2*2 = i) | (j/2*2 = j)) {
+                    let row[j] = -1;
+                }
+                else {
+                    let row[j] = 0;
+                }
+                let j = j + 1;
+            }
+            let maze[i] = row;
+            let i = i + 1;
+        }
+
+        let maze = ren(maze, 1, 2, 0);
+        return this;
+    }
+
+    method Array ren(Array arr, int x, int y, int n) {
+        var Array row;
+
+        let row = arr[x];
+        let row[y] = n;
+        let arr[x] = row;
+        return arr;
+    }
+
+    method int get(int w, int h) {
+        var Array row;
+
+        let row = maze[h];
+        return row[w];
+    }
+}

@@ -1,0 +1,28 @@
+class Main {
+    
+    function void main() {
+        var Maze maze;
+
+        let maze = Maze.new(63, 31);
+        do Main.draw(maze, 63, 31);
+        return;
+    }
+
+    function void draw(Maze maze, int w, int h) {
+        var int i;
+        var int j;
+
+        let i = 0;
+        while (i < h) {
+            let j = 0;
+            while(j < w) {
+                if (maze.get(j, i) = -1) {
+                    do Screen.drawRectangle(j*8, i*8, j*8+8, i*8+8);
+                }
+                let j = j + 1;
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+}
