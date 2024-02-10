@@ -1,11 +1,11 @@
 path = input("path:")
 
 if path[-6] == "_":
-    path1 = path[:-6] + path[-5:]
+    path1 = path[:-6] + ".xml"
     path2 = path
 else:
     path1 = path
-    path2 = path[:-5] + "_" + path[-5:]
+    path2 = path[:-4] + "_M" + ".xml"
 
 f = open(path1, "r")
 text1 = f.readlines()
