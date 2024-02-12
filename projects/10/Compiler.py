@@ -391,7 +391,7 @@ def compileDo(text: list):
 
 def compileLet(text: list):
     xml = [text[0],text[1]]
-    if "<symbol> [ </symbol>" in text and "<symbol> ] </symbol>" in text:
+    if text[2] == "<symbol> [ </symbol>" and "<symbol> ] </symbol>" in text:
         a = text[text.index("<symbol> [ </symbol>") + 1:text.index("<symbol> ] </symbol>")]
         xml.append("<symbol> [ </symbol>")
         xml.append("<expression>")
