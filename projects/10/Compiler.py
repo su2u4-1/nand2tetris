@@ -153,7 +153,8 @@ def compiler(text: list):
     Class = compileClass(text)
     for i in Class:
         xml.append("  " + i)
-    xml.append("</class>")
+    xml.append("  <symbol> } </symbol>")
+    xml.append("</class>\n")
     return xml
 
 
@@ -167,6 +168,7 @@ def compileClass(text: list):
             break
     f0 = False
     ClassVarDec = []
+    xml.append("<symbol> { </symbol>")
     for i in text:
         if i == "<keyword> static </keyword>" or i == "<keyword> field </keyword>":
             f0 = True
@@ -174,13 +176,13 @@ def compileClass(text: list):
             ClassVarDec.append(i)
         if i == "<symbol> ; </symbol>":
             f0 = False
+            xml.append("<classVarDec>")
+            for i in ClassVarDec:
+                xml.append("  " + i)
+            xml.append("</classVarDec>")
+            ClassVarDec = []
         if i == "<keyword> constructor </keyword>" or i == "<keyword> method </keyword>" or i == "<keyword> function </keyword>":
             break
-    xml.append("<symbol> { </symbol>")
-    xml.append("<classVarDec>")
-    for i in ClassVarDec:
-        xml.append("  " + i)
-    xml.append("</classVarDec>")
     text1 = []
     SubroutineStart = -1
     f1 = False
@@ -281,32 +283,33 @@ def compileStatements(text: list):
             b += 1
         if text[i] == "<symbol> } </symbol>":
             b -= 1
-        if text[i] == "<keyword> do </keyword>":
-            f[0] = True
-        elif text[i] == "<keyword> let </keyword>":
-            f[1] = True
-        elif text[i] == "<keyword> while </keyword>":
-            f[2] = True
-            whileStart = b
-        elif text[i] == "<keyword> return </keyword>":
-            f[3] = True
-        elif text[i] == "<keyword> if </keyword>":
-            f[4] = True
-            ifStart = b
-        elif text[i] == "<keyword> else </keyword>":
-            f[5] = True
-            elseStart = b
+        if not(f[0] or f[1] or f[2] or f[3] or f[4] or f[5]):
+            if text[i] == "<keyword> do </keyword>":
+                f[0] = True
+            elif text[i] == "<keyword> let </keyword>":
+                f[1] = True
+            elif text[i] == "<keyword> while </keyword>":
+                f[2] = True
+                whileStart = b
+            elif text[i] == "<keyword> return </keyword>":
+                f[3] = True
+            elif text[i] == "<keyword> if </keyword>":
+                f[4] = True
+                ifStart = b
+            elif text[i] == "<keyword> else </keyword>":
+                f[5] = True
+                elseStart = b
         if f[0]:
             te[0].append(text[i])
-        if f[1]:
+        elif f[1]:
             te[1].append(text[i])
-        if f[2]:
+        elif f[2]:
             te[2].append(text[i])
-        if f[3]:
+        elif f[3]:
             te[3].append(text[i])
-        if f[4]:
+        elif f[4]:
             te[4].append(text[i])
-        if f[5]:
+        elif f[5]:
             te[4].append(text[i])
         if text[i] == "<symbol> ; </symbol>":
             if f[0]:
@@ -344,7 +347,7 @@ def compileStatements(text: list):
             elif f[4] and b == ifStart:
                 f[4] = False
                 if text[i + 1] != "<keyword> else </keyword>":
-                    If = compileIf(te[4])
+                    If = compileIf(te[4],False)
                     xml.append("<ifStatement>")
                     for j in If:
                         xml.append("  " + j)
@@ -352,11 +355,11 @@ def compileStatements(text: list):
                     te[4] = []
             elif f[5] and b == elseStart:
                 f[5] = False
-                If = compileIf(te[4])
-                xml.append("<ifStatements>")
+                If = compileIf(te[4],True)
+                xml.append("<ifStatement>")
                 for j in If:
                     xml.append("  " + j)
-                xml.append("</ifStatements>")
+                xml.append("</ifStatement>")
                 te[4] = []
     return xml
 
@@ -408,39 +411,55 @@ def compileLet(text: list):
 
 
 def compileWhile(text: list):
-    xml = []
+    xml = ["<keyword> while </keyword>"]
     f = False
     t = []
+    b = 0
+    start = -1
     for i in text:
         if i == "<symbol> ( </symbol>":
-            f = True
-        if f:
-            t.append(i)
+            b += 1
         if i == "<symbol> ) </symbol>":
+            b -= 1
+        if i == "<symbol> ) </symbol>" and start == b:
             f = False
             xml.append("<symbol> ( </symbol>")
             xml.append("<expression>")
-            for i in compileExpression(t):
-                xml.append("  " + i)
+            for j in compileExpression(t):
+                xml.append("  " + j)
             xml.append("</expression>")
             xml.append("<symbol> ) </symbol>")
             if t[-1] == "<symbol> ; </symbol>":
                 xml.append("<symbol> ; </symbol>")
             break
-    for i in text:
-        if i == "<symbol> { </symbol>":
-            f = True
         if f:
             t.append(i)
+        if i == "<symbol> ( </symbol>" and not f:
+            f = True
+            start = b-1
+    t = []
+    b = 0
+    start = -1
+    for i in text:
+        if i == "<symbol> { </symbol>":
+            b += 1
+            if not f:
+                f = True
+                start = b-1
         if i == "<symbol> } </symbol>":
+            b -= 1
+        if f:
+            t.append(i)
+        if i == "<symbol> } </symbol>" and start == b:
             f = False
             xml.append("<symbol> { </symbol>")
             xml.append("<statements>")
-            for i in compileStatements(t):
-                xml.append("  " + i)
+            for j in compileStatements(t):
+                xml.append("  " + j)
             xml.append("</statements>")
             xml.append("<symbol> } </symbol>")
             break
+    return xml
 
 
 def compileReturn(text: list):
@@ -457,16 +476,23 @@ def compileReturn(text: list):
         return xml
 
 
-def compileIf(text: list):
+def compileIf(text:list,f1:bool):
     xml = ["<keyword> if </keyword>"]
     b = 0
     f = False
     start = -1
     te = []
     for i in text:
+        if i == "<symbol> ( </symbol>":
+            b += 1
+        if i == "<symbol> ( </symbol>" and not f:
+            f = True
+            start = b
+        if f:
+            te.append(i)
         if i == "<symbol> ) </symbol>" and b == start:
             f = False
-            a = compileExpression(te)
+            a = compileExpression(te[1:-1])
             xml.append("<symbol> ( </symbol>")
             xml.append("<expression>")
             for j in a:
@@ -478,21 +504,12 @@ def compileIf(text: list):
             break
         if i == "<symbol> ) </symbol>":
             b -= 1
-        if f:
-            te.append(i)
-        if i == "<symbol> ( </symbol>":
-            b += 1
-        if i == "<symbol> ( </symbol>":
-            f = True
-            start = b
     b = 0
     f = False
     start = -1
     te = []
     for i in text:
         if i == "<symbol> } </symbol>" and b == start:
-            for j in te:
-                print(j)
             f = False
             a = compileStatements(te)
             xml.append("<symbol> { </symbol>")
@@ -501,14 +518,16 @@ def compileIf(text: list):
                 xml.append("  " + j)
             xml.append("</statements>")
             xml.append("<symbol> } </symbol>")
-            te = ["<keyword> else </keyword>"]
+            if f1:
+                xml.append("<keyword> else </keyword>")
+                f1 = False
+            te = []
         if i == "<symbol> } </symbol>":
             b -= 1
         if f:
             te.append(i)
         if i == "<symbol> { </symbol>":
             b += 1
-        if i == "<symbol> { </symbol>":
             f = True
             start = b
     return xml
@@ -516,123 +535,142 @@ def compileIf(text: list):
 
 def compileExpression(text: list):
     xml = []
-    te0 = []
-    te1 = []
-    f = [False, False]
-    b = [0, 0]
-    start = [-1, -1]
-    ti = []
-    ta = 0
-    for i in range(len(text)):
-        if text[i] == "<symbol> [ </symbol>":
-            b[0] += 1
-        if text[i] == "<symbol> ( </symbol>":
-            b[1] += 1
-        te = Term(text, i)
-        if not f[0] and not f[1]:
-            if te[0] == -1:
-                if text[i] in l:
-                    xml.append(text[i])
-            elif te[0] == 0:
-                xml.append("<term>")
-                xml.append("  " + te[1])
-                xml.append("</term>")
-            elif te[0] == 1:
-                xml.append("<term>")
-                xml.append("  "+te[1])
-                for j in compileExpression(text[i+1:]):
-                    xml.append("  "+j)
-                xml.append("</term>")
-            elif te[0] in [2,3,4,5]:
-                start[te[1]] = b[te[1]]
-                f[te[1]] = True
-                ta = te[0]
-                if te[0] != 2:
-                    start[te[1]] += 1
-        if f[0]:
-            te0.append(text[i])
-        if f[1]:
-            te1.append(text[i])
-        if text[i] == "<symbol> ] </symbol>":
-            b[0] -= 1
-            if b[0] == start[0]:
-                f[0] = False
-            ti = compileTerm(te0,ta)
-        if text[i] == "<symbol> ) </symbol>":
-            b[1] -= 1
-            if b[1] == start[1]:
-                f[1] = False
-            ti = compileTerm(te1,ta)
-        if ti != []:
+    b = 0
+    t = []
+    for i in text:
+        if i in ["<symbol> ( </symbol>","<symbol> [ </symbol>","<symbol> { </symbol>"]:
+            b += 1
+        if i in ["<symbol> ) </symbol>","<symbol> ] </symbol>","<symbol> } </symbol>"]:
+            b -= 1
+        if b == 0 and i != text[0] and i in l:
+            te = compileTerm(t)
             xml.append("<term>")
-            for i in ti:
-                xml.append("  "+i)
+            for j in te:
+                xml.append("  "+j)
             xml.append("</term>")
-            ti = []
+            xml.append(i)
+            t = []
+        else:
+            t.append(i)
+    if t != []:
+        te = compileTerm(t)
+        xml.append("<term>")
+        for j in te:
+            xml.append("  "+j)
+        xml.append("</term>")
     return xml
 
 
-def Term(text: list, i: int):
-    if text[i].startswith("<identifier>") and text[i].endswith("</identifier>"):
-        if i == len(text)-1:
-            return [0, text[i]]  # variable
-        elif text[i + 1] == "<symbol> [ </symbol>":
-            return [5, 0]  # list[index]
-        elif text[i + 1] == "<symbol> ( </symbol>":
-            return [4, 1]  # function(arg*)
-        elif text[i + 1] == "<symbol> . </symbol>":
-            if text[i + 2].startswith("<identifier>") and text[i + 2].endswith("</identifier>"):
-                if text[i + 3] == "<symbol> ( </symbol>":
-                    return [3, 1]  # class.method(arg*)
-        else:
-            return [0, text[i]]  # variable
-    elif text[i] == "<symbol> ( </symbol>":
-        return [2, 1]  # (expression)
-    elif text[i] in ["<symbol> - </symbol>", "<symbol> ~ </symbol>"]:
-        te = Term(text, i + 1)
-        if te[0] == -1:
-            return [-1, None]  # not term
-        else:
-            return [1, text[i]]  # -term or ~term
-    elif text[i].startswith("<integerConstant>") and text[i].endswith("</integerConstant>"):
-        return [0, text[i]]  # int
-    elif text[i].startswith("<stringConstant>") and text[i].endswith("</stringConstant>"):
-        return [0, text[i]]  # string
-    elif text[i] in ["<keyword> true </keyword>","<keyword> false </keyword>","<keyword> null </keyword>","<keyword> this </keyword>"]:
-        return [0, text[i]]  # keyword
-    else:
-        return [-1, None]  # not term
-
-
-def compileTerm(text: list, d: int):
+def compileTerm(text: list):
     xml = []
-    if d == 2:
-        xml.append("<symbol> ( </symbol>")
-        xml.append("<expression>")
-        for i in compileExpression(text[1:-1]):
-            xml.append("  "+i)
-        xml.append("</expression>")
-        xml.append("<symbol> ) </symbol>")
-        xml.append("<symbol> ; </symbol>")
-    elif d == 3 or d == 4:
-        a = text[:text.index("<symbol> ( </symbol>") + 1]
-        b = text[text.index("<symbol> ( </symbol>") + 1:-1]
-        xml += a
-        xml.append("<expressionList>")
-        for i in compileExpressionList(b):
-            xml.append("  "+i)
-        xml.append("</expressionList>")
-        xml.append("<symbol> ) </symbol>")
-    elif d == 5:
+    b = 0
+    f = False
+    te = []
+    if text[0].startswith("<integerConstant>") and text[0].endswith("</integerConstant>"):
+        return [text[0]]
+    elif text[0] in ["<keyword> true </keyword>","<keyword> false </keyword>","<keyword> null </keyword>","<keyword> this </keyword>"]:
+        return [text[0]]
+    elif text[0].startswith("<stringConstant>") and text[0].endswith("</stringConstant>"):
+        return [text[0]]
+    elif text[0].startswith("<identifier>") and text[0].endswith("</identifier>"):
+        if len(text) > 1:
+            if text[1] == "<symbol> [ </symbol>":
+                for i in text:
+                    if i == "<symbol> ] </symbol>":
+                        b -= 1
+                        if b == 0:
+                            f = False
+                            xml.append(text[0])
+                            xml.append(text[1])
+                            xml.append("<expression>")
+                            for j in compileExpression(te):
+                                xml.append("  "+j)
+                            xml.append("</expression>")
+                            xml.append("<symbol> ] </symbol>")
+                            return xml
+                    if f:
+                        te.append(i)
+                    if i == "<symbol> [ </symbol>":
+                        b += 1
+                        if b == 1:
+                            f = True
+            elif text[1] == "<symbol> ( </symbol>":
+                for i in text:
+                    if i == "<symbol> ) </symbol>":
+                        b -= 1
+                        if b == 0:
+                            f = False
+                            xml.append(text[0])
+                            xml.append(text[1])
+                            xml.append("<expressionList>")
+                            for j in compileExpressionList(te):
+                                xml.append("  "+j)
+                            xml.append("</expressionList>")
+                            xml.append("<symbol> ) </symbol>")
+                            return xml
+                    if f:
+                        te.append(i)
+                    if i == "<symbol> ( </symbol>":
+                        b += 1
+                        if b == 1:
+                            f = True
+            elif text[1] == "<symbol> . </symbol>":
+                if text[2].startswith("<identifier>") and text[2].endswith("</identifier>"):
+                    if text[3] == "<symbol> ( </symbol>":
+                        for i in text:
+                            if i == "<symbol> ) </symbol>":
+                                b -= 1
+                                if b == 0:
+                                    f = False
+                                    xml.append(text[0])
+                                    xml.append(text[1])
+                                    xml.append(text[2])
+                                    xml.append(text[3])
+                                    xml.append("<expressionList>")
+                                    for j in compileExpressionList(te):
+                                        xml.append("  "+j)
+                                    xml.append("</expressionList>")
+                                    xml.append("<symbol> ) </symbol>")
+                                    return xml
+                            if f:
+                                te.append(i)
+                            if i == "<symbol> ( </symbol>":
+                                b += 1
+                                if b == 1:
+                                    f = True
+            else:
+                return [text[0]]
+        else:
+            return [text[0]]
+    elif text[0] == "<symbol> ( </symbol>":
+        for i in text:
+            if i == "<symbol> ) </symbol>":
+                b -= 1
+                if b == 0:
+                    f = False
+                    xml.append("<symbol> ( </symbol>")
+                    xml.append("<expression>")
+                    for j in compileExpression(te):
+                        xml.append("  "+j)
+                    xml.append("</expression>")
+                    xml.append("<symbol> ) </symbol>")
+                    return xml
+            if f:
+                te.append(i)
+            if i == "<symbol> ( </symbol>":
+                b += 1
+                if b == 1:
+                    f = True
+    elif text[0] in ["<symbol> ~ </symbol>","<symbol> - </symbol>"]:
         xml.append(text[0])
-        xml.append("<symbol> [ </symbol>")
-        xml.append("<expression>")
-        for i in compileExpression(text[2:-1]):
-            xml.append("  "+i)
-        xml.append("</expression>")
-        xml.append("<symbol> ] </symbol>")
-        xml.append("<symbol> ; </symbol>")
-    return xml
+        xml.append("<term>")
+        for j in compileTerm(text[1:]):
+            xml.append("  "+j)
+        xml.append("</term>")
+        return xml
+    print(text)
+    print(xml)
+    exit()
 
 
 def compileExpressionList(text: list):

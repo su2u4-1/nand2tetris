@@ -103,126 +103,7 @@
         <symbol> ; </symbol>
       </varDec>
       <statements>
-        <letStatement>
-          <keyword> let </keyword>
-          <identifier> s </identifier>
-          <symbol> = </symbol>
-          <expression>
-            <term>
-              <stringConstant> string constant </stringConstant>
-            </term>
-          </expression>
-          <symbol> ; </symbol>
-        </letStatement>
-        <letStatement>
-          <keyword> let </keyword>
-          <identifier> s </identifier>
-          <symbol> = </symbol>
-          <expression>
-            <term>
-              <keyword> null </keyword>
-            </term>
-          </expression>
-          <symbol> ; </symbol>
-        </letStatement>
-        <letStatement>
-          <keyword> let </keyword>
-          <identifier> a </identifier>
-          <symbol> [ </symbol>
-          <expression>
-            <term>
-              <integerConstant> 1 </integerConstant>
-            </term>
-          </expression>
-          <symbol> ] </symbol>
-          <symbol> = </symbol>
-          <expression>
-            <term>
-              <identifier> a </identifier>
-              <symbol> [ </symbol>
-              <expression>
-                <term>
-                  <integerConstant> 2 </integerConstant>
-                </term>
-              </expression>
-              <symbol> ] </symbol>
-              <symbol> ; </symbol>
-            </term>
-          </expression>
-          <symbol> ; </symbol>
-        </letStatement>
-        <letStatement>
-          <keyword> let </keyword>
-          <identifier> i </identifier>
-          <symbol> = </symbol>
-          <expression>
-            <term>
-              <identifier> i </identifier>
-            </term>
-            <symbol> * </symbol>
-            <term>
-              <symbol> ( </symbol>
-              <expression>
-                <term>
-                  <symbol> - </symbol>
-                  <term>
-                    <identifier> j </identifier>
-                  </term>
-                </term>
-                <term>
-                  <identifier> j </identifier>
-                </term>
-              </expression>
-              <symbol> ) </symbol>
-              <symbol> ; </symbol>
-            </term>
-          </expression>
-          <symbol> ; </symbol>
-        </letStatement>
-        <letStatement>
-          <keyword> let </keyword>
-          <identifier> j </identifier>
-          <symbol> = </symbol>
-          <expression>
-            <term>
-              <identifier> j </identifier>
-            </term>
-            <symbol> / </symbol>
-            <term>
-              <symbol> ( </symbol>
-              <expression>
-                <term>
-                  <symbol> - </symbol>
-                  <term>
-                    <integerConstant> 2 </integerConstant>
-                  </term>
-                </term>
-                <term>
-                  <integerConstant> 2 </integerConstant>
-                </term>
-              </expression>
-              <symbol> ) </symbol>
-              <symbol> ; </symbol>
-            </term>
-          </expression>
-          <symbol> ; </symbol>
-        </letStatement>
-        <letStatement>
-          <keyword> let </keyword>
-          <identifier> i </identifier>
-          <symbol> = </symbol>
-          <expression>
-            <term>
-              <identifier> i </identifier>
-            </term>
-            <symbol> | </symbol>
-            <term>
-              <identifier> j </identifier>
-            </term>
-          </expression>
-          <symbol> ; </symbol>
-        </letStatement>
-        <ifStatements>
+        <ifStatement>
           <keyword> if </keyword>
           <symbol> ( </symbol>
           <expression>
@@ -276,13 +157,13 @@
                     </term>
                   </expression>
                   <symbol> ] </symbol>
-                  <symbol> ; </symbol>
                 </term>
               </expression>
               <symbol> ; </symbol>
             </letStatement>
           </statements>
           <symbol> } </symbol>
+          <keyword> else </keyword>
           <symbol> { </symbol>
           <statements>
             <letStatement>
@@ -303,12 +184,8 @@
                         <identifier> j </identifier>
                       </term>
                     </term>
-                    <term>
-                      <identifier> j </identifier>
-                    </term>
                   </expression>
                   <symbol> ) </symbol>
-                  <symbol> ; </symbol>
                 </term>
               </expression>
               <symbol> ; </symbol>
@@ -331,12 +208,8 @@
                         <integerConstant> 2 </integerConstant>
                       </term>
                     </term>
-                    <term>
-                      <integerConstant> 2 </integerConstant>
-                    </term>
                   </expression>
                   <symbol> ) </symbol>
-                  <symbol> ; </symbol>
                 </term>
               </expression>
               <symbol> ; </symbol>
@@ -358,7 +231,7 @@
             </letStatement>
           </statements>
           <symbol> } </symbol>
-        </ifStatements>
+        </ifStatement>
         <returnStatement>
           <keyword> return </keyword>
           <symbol> ; </symbol>
@@ -367,4 +240,5 @@
       <symbol> } </symbol>
     </subroutineBody>
   </subroutineDec>
+  <symbol> } </symbol>
 </class>
