@@ -1,6 +1,6 @@
 import os, re
 
-symbolList = ["{", "}", "[", "]", "(", ")", ",", ";", "+", "-", "*", "/", "&", "|", "~", ">", "<", "=", "."]
+symbolL = ["{", "}", "[", "]", "(", ")", ",", ";", "+", "-", "*", "/", "&", "|", "~", ">", "<", "=", "."]
 keyList = [
     "class",
     "constructor",
@@ -36,6 +36,7 @@ l = [
     "<symbol> = </symbol>",
 ]
 temp = []
+symbol = []
 
 
 def dim(text, temp):
@@ -74,10 +75,10 @@ def elementText(text):
         if text[i].startswith(' " ') and text[i].endswith('"'):
             text[i] = '"' + text[i][3:-2] + '"'
         elif (text[i][0:2] != ' "' and text[i][0] != '"') or text[i][-1] != '"':
-            if text[i] in symbolList:
+            if text[i] in symbolL:
                 continue
             else:
-                for k in symbolList:
+                for k in symbolL:
                     if k in text[i]:
                         t = text[i].split(k, 1)
                         t = [t[0], k, t[1]]
@@ -124,7 +125,7 @@ def compilerText(text: list):
     for i in t:
         if i in keyList:
             xml.append(f"<keyword> {i} </keyword>")
-        elif i in symbolList:
+        elif i in symbolL:
             if i == "&":
                 xml.append(f"<symbol> &amp; </symbol>")
             elif i == ">":
@@ -146,7 +147,7 @@ def compilerText(text: list):
     return xml
 
 
-def compiler(text: list):
+def tokenizer(text: list):
     text.remove("<tokens>")
     text.remove("</tokens>\n")
     xml = ["<class>"]
@@ -712,6 +713,12 @@ def compileExpressionList(text: list):
     return xml
 
 
+def compiler(text: list):
+    for i in range(len(text)):
+        text[i] = text[i].strip()
+    return text
+
+
 def file(path):
     result = []
     for f in os.listdir(path):
@@ -734,12 +741,9 @@ if __name__ == "__main__":
     for i in result:
         if ".jack" in i:
             f = open(i, "r")
-            text = compilerText(f.readlines())
-            f.close()
-            f = open(i.split(".")[0] + "_T.xml", "w")
-            f.write("\n".join(text))
-            f.close()
+            text = tokenizer(compilerText(f.readlines()))
             text = compiler(text)
-            f = open(i.split(".")[0] + "_M.xml", "w")
+            f.close()
+            f = open(i.split(".")[0] + ".vm", "w")
             f.write("\n".join(text))
             f.close()
