@@ -722,9 +722,6 @@ def compileTerm(text: list):
             xml.append("  " + j)
         xml.append("</term>")
         return xml
-    print(text)
-    print(xml)
-    exit()
 
 
 def compileExpressionList(text: list):
