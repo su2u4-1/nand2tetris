@@ -1,7 +1,7 @@
-import os, Preprocessor, Parser
+import os, Preprocessor, Parser, Compiler
 
 
-def listAllFiles(path):
+def listAllFiles(path: str):
     result = []
     for f in os.listdir(path):
         if os.path.isfile(os.path.join(path, f)):
@@ -25,8 +25,17 @@ if __name__ == "__main__":
             f = open(i, "r")
             sourceCode = f.readlines()
             processedSourceCode = Preprocessor.preprocessor(sourceCode)
-            xml = Parser.grammarAnalyzer(Preprocessor.Txml(processedSourceCode))
+            f.close()
+            f = open(i.split(".")[0] + "_T.xml", "w")
+            # f.write("\n".join(processedSourceCode))
+            f.close()
+            xml = Parser.grammarAnalyzer(processedSourceCode)
             f.close()
             f = open(i.split(".")[0] + "_M.xml", "w")
-            f.write("\n".join(xml))
+            # f.write("\n".join(xml))
+            f.close()
+            vmCode = Compiler.compiler(processedSourceCode)
+            f.close()
+            f = open(i.split(".")[0] + ".vm", "w")
+            # f.write("\n".join(xml))
             f.close()

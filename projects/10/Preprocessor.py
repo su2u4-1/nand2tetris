@@ -26,12 +26,8 @@ keyList = [
 ]
 
 
-def xmlTag(text, tag):
-    return f"<{tag}> {text} </{tag}>"
-
-
 # 將嵌套的列表展開為一個平面列表
-def flattenNestedList(nested_list):
+def flattenNestedList(nested_list: list):
     def _flatten(nested, result):
         for item in nested:
             if isinstance(item, list):
@@ -44,7 +40,7 @@ def flattenNestedList(nested_list):
 
 
 # 移除列表裡的特定元素
-def removeE(l, e):
+def removeE(l: list, e):
     t = []
     if type(e) == list:
         e = set(e)
@@ -59,7 +55,7 @@ def removeE(l, e):
 
 
 # 處理文本元素,分割和重組字符串
-def processTextElements(text):
+def processTextElements(text: list):
     text = flattenNestedList(text)
     f = False
     for i in range(len(text)):
@@ -124,10 +120,10 @@ def preprocessor(text: list):
     for i in text:
         temp += processTextElements(i.split())
     text = removeE(flattenNestedList(temp), "")
-    return text
+    return Nxml(text)
 
 
-def Nxml(text):
+def Nxml(text: list):
     temp = []
     err = False
     for i in text:
@@ -147,32 +143,3 @@ def Nxml(text):
     if err:
         exit()
     return temp
-
-
-def Txml(text):
-    xml = []
-    err = False
-    for i in text:
-        if i in keyList:
-            xml.append(xmlTag(i, "keyword"))
-        elif i in symbolL:
-            if i == "&":
-                xml.append(xmlTag("&amp;", "symbol"))
-            elif i == ">":
-                xml.append(xmlTag("&gt;", "symbol"))
-            elif i == "<":
-                xml.append(xmlTag("&lt;", "symbol"))
-            else:
-                xml.append(xmlTag(i, "symbol"))
-        elif i.isdigit() and int(i) < 32768:
-            xml.append(xmlTag(i, "integerConstant"))
-        elif i[0] == i[-1] == '"':
-            xml.append(xmlTag(i[1:-1], "stringConstant"))
-        elif not i[0].isdigit():
-            xml.append(xmlTag(i, "identifier"))
-        else:
-            print("error:", i)
-            err = True
-    if err:
-        exit()
-    return xml
