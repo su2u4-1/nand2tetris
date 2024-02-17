@@ -58,78 +58,51 @@ class Compiler:
         self.source = text
         self.CodeList = []
         self.ia = 0
-        self.f = ["class"]
+        self.sp = 0
 
     def addCode(self, text: str):
         self.CodeList.append("  " * self.ia + text)
 
     def Compile(self):
-        for i in range(len(self.source)):
-            if self.source[i].text == "<end> exit </end>":
-                break
-            match self.f[-1]:
-                case "class":
-                    self.CompileClass(self.source[i], self.source[i + 1])
-                case "classVarDec":
-                    self.CompileClassVarDec(self.source[i], self.source[i + 1])
-                case "subroutineDec":
-                    self.CompileSubroutineDec(self.source[i], self.source[i + 1])
-                case "parameterList":
-                    self.CompileParameterList(self.source[i], self.source[i + 1])
-                case "subroutineBody":
-                    self.CompileSubroutineBody(self.source[i], self.source[i + 1])
-                case "statements":
-                    self.CompileStatements(self.source[i], self.source[i + 1])
-                case "letStatement":
-                    self.CompileLetStatement(self.source[i], self.source[i + 1])
-                case "ifStatement":
-                    self.CompileIfStatement(self.source[i], self.source[i + 1])
-                case "whileStatement":
-                    self.CompileWhileStatement(self.source[i], self.source[i + 1])
-                case "doStatement":
-                    self.CompileDoStatement(self.source[i], self.source[i + 1])
-                case "returnStatement":
-                    self.CompileReturnStatement(self.source[i], self.source[i + 1])
-                case "expression":
-                    self.CompileExpression(self.source[i], self.source[i + 1])
-                case "expression1":
-                    self.CompileExpression(self.source[i - 1], self.source[i])
-                case "subroutineCall":
-                    self.CompileSubroutineCall(self.source[i], self.source[i + 1])
-                case _:
-                    print("exit")
-                    for j in self.CodeList:
-                        print(j)
-                    exit()
+        self.addCode("<class>")
+        self.ia += 1
+        self.CompileClass()
+        self.ia -= 1
+        self.addCode("</class>")
         return self.CodeList
 
-    def CompileClass(self, now: xml, next: xml):
-        if now.tag == "keyword":
-            if now.content == "class":
-                self.CodeList.append("<class>")
-                self.ia += 1
-                self.addCode(now.text)
-            elif now.content == "field":
-                self.addCode("<classVarDec>")
-                self.ia += 1
-                self.f.append("classVarDec")
-                self.addCode(now.text)
-            elif now.content in ["function", "method", "constructor"]:
-                self.addCode("<subroutineDec>")
-                self.ia += 1
-                self.f.append("subroutineDec")
-                self.addCode(now.text)
-            else:
-                print(f"CompileClass keyword error: {now.text}")
+    def CompileClass(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        next = self.source[self.sp]
+        if now.tag == "keyword" and now.content == "class":
+            self.addCode(now.text)
         elif now.tag == "identifier":
             self.addCode(now.text)
-        elif next.tag == "end" and next.content == "exit":
-            self.CodeList.append("</class>")
-        else:
-            print(f"CompileClass error: {now.text}")
+        elif now.tag == "symbol":
+            if now.content == "{" and next.tag == "keyword":
+                self.addCode(now.text)
+                if next.content in ["field", "static"]:
+                    self.addCode("<classVarDec>")
+                    self.ia += 1
+                    self.CompileClassVarDec()
+                    self.ia -= 1
+                    self.addCode("</classVarDec>")
+                elif next.content in ["constructor", "function", "method"]:
+                    self.addCode("<subroutineDec>")
+                    self.ia += 1
+                    self.CompileSubroutineDec()
+                    self.ia -= 1
+                    self.addCode("</subroutineDec>")
+            elif now.content == "}":
+                self.addCode(now.text)
+                return
+        self.CompileClass()
 
-    def CompileClassVarDec(self, now: xml, next: xml):
-        if now.tag == "keyword" and now.content in ["field", "int", "char", "boolean"]:
+    def CompileClassVarDec(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        if now.tag == "keyword" and now.content in ["constructor", "function", "method", "int", "char", "boolean"]:
             self.addCode(now.text)
         elif now.tag == "identifier":
             self.addCode(now.text)
@@ -138,185 +111,92 @@ class Compiler:
                 self.addCode(now.text)
             elif now.content == ";":
                 self.addCode(now.text)
-                self.ia -= 1
-                self.f.pop()
-            else:
-                print(f"CompileClassVarDec symbol error: {now.text}")
-        else:
-            print(f"CompileClassVarDec error: {now.text}")
+                return
+        self.CompileClassVarDec()
 
-    def CompileSubroutineDec(self, now: xml, next: xml):
-        if now.tag == "symbol":
+    def CompileSubroutineDec(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        if now.tag == "identifier":
+            self.addCode(now.text)
+        elif now.tag == "keyword" and now.content in ["constructor", "function", "method"]:
+            self.addCode(now.text)
+        elif now.tag == "symbol":
             if now.content == "(":
                 self.addCode(now.text)
                 self.addCode("<parameterList>")
                 self.ia += 1
-                self.f.append("parameterList")
+                self.CompileParameterList()
+                self.ia -= 1
+                self.addCode("</paprameterList>")
+            elif now.content == ")":
+                self.addCode(now.text)
             elif now.content == "{":
                 self.addCode("<subroutineBody>")
                 self.ia += 1
-                self.f.append("subroutineBody")
-                self.addCode(now.text)
-            elif now.content == "}":
+                self.sp -= 1
+                self.CompileSubroutineBody()
                 self.ia -= 1
-                self.f.pop()
-                self.addCode("</subroutineDec>")
-                self.addCode(now.text)
-            else:
-                print(f"CompileSubroutineDec symbol error: {now.text}")
-        elif now.tag == "keyword" and now.content in ["function", "method", "constructor", "int", "char", "boolean", "void"]:
-            self.addCode(now.text)
-        elif now.tag == "identifier":
-            self.addCode(now.text)
-        else:
-            print(f"CompileSubroutineDec error: {now.text}")
-
-    def CompileParameterList(self, now: xml, next: xml):
-        if now.tag == "symbol":
-            if now.content == ")":
-                self.ia -= 1
-                self.f.pop()
-                self.addCode("</parameterList>")
-                self.addCode(now.text)
-            elif now.content == ",":
-                self.addCode(now.text)
-            else:
-                print(f"CompileParameterList symbol error: {now.text}")
-        elif now.tag == "keyword" and now.content in ["int", "char", "boolean"]:
-            self.addCode(now.text)
-        elif now.tag == "identifier":
-            self.addCode(now.text)
-        else:
-            print(f"CompileParameterList error: {now.text}")
-
-    def CompileSubroutineBody(self, now: xml, next: xml):
-        if now.tag == "symbol":
-            if now.content == "}":
-                self.addCode(now.text)
-                self.ia -= 1
-                self.f.pop()
                 self.addCode("</subroutineBody>")
-            elif now.content == "{":
-                self.addCode(now.text)
-                self.addCode("<statements>")
-                self.ia += 1
-                self.f.append("statements")
-            else:
-                print(f"CompilerSubroutineBody symbol error: {now.text}")
-        elif now.tag == "keyword" and now.content == "var":
-            self.addCode("<varDec>")
-            self.ia += 1
-            self.f.append("varDec")
-            self.addCode(now.text)
-        else:
-            print(f"CompileSubroutineBody error: {now.text}")
+                return
+        self.CompileSubroutineDec()
 
-    def CompileVarDec(self, now: xml, next: xml):
-        if now.tag == "keyword" and now.content in ["var", "int", "char", "boolean"]:
-            self.addCode(now.text)
-        elif now.tag == "symbol":
-            if now.content == ",":
-                self.addCode(now.text)
-            elif now.content == ";":
-                self.addCode(now.text)
-                self.ia -= 1
-                self.f.pop()
-                self.addCode("</varDec>")
-            else:
-                print(f"CompileVarDec symbol error: {now.text}")
-        elif now.tag == "identifier":
-            self.addCode(now.text)
-        else:
-            print(f"CompileVarDec error: {now.text}")
+    def CompileParameterList(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        self.CompileParameterList()
 
-    def CompileStatements(self, now: xml, next: xml):
-        if now.tag == "keyword" and now.content in ["let", "if", "while", "do", "return"]:
-            self.addCode(f"<{now.content}Statement>")
-            self.ia += 1
-            self.f.append(f"{now.content}Statement")
-            self.addCode(now.text)
-        elif now.tag == "symbol" and now.content == "}":
-            self.ia -= 1
-            self.f.pop()
-            self.addCode("</statements>")
-            self.addCode(now.text)
-        else:
-            print(f"CompileStatements error: {now.text}")
+    def CompileSubroutineBody(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        self.CompileSubroutineBody()
 
-    def CompileLetStatement(self, now: xml, next: xml):
-        if now.tag == "identifier":
-            self.addCode(now.text)
-        elif now.tag == "synbol":
-            if now.content in ["[", "="]:
-                self.addCode(now.text)
-                self.addCode("<expression>")
-                self.ia += 1
-                self.f.append("expression")
-            elif now.content == ";":
-                self.addCode(now.text)
-                self.ia -= 1
-                self.f.pop()
-                self.addCode("</letStatement>")
+    def CompileVarDec(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        self.CompileVarDec()
 
-    def CompileIfStatement(self, now: xml, next: xml):
-        if now.tag == "symbol":
-            if now.content == "(":
-                self.addCode(now.text)
-                self.addCode("<expression>")
-                self.ia += 1
-                self.f.append("expression")
-            elif now.content == "{":
-                self.addCode(now.text)
-                self.addCode("<statements>")
-                self.ia += 1
-                self.f.append("statements")
-            elif now.content == "}":
-                if next.tag == "keyword" and next.content == "else":
-                    self.addCode(now.text)
-        elif now.tag == "keyword" and now.content == "else":
-            self.addCode(now.text)
+    def CompileStatements(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        self.CompileStatements()
 
-    def CompileWhileStatement(self, now: xml, next: xml):
-        pass
+    def CompileLetStatement(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        self.CompileLetStatement()
 
-    def CompileDoStatement(self, now: xml, next: xml):
-        if now.tag == "symbol" and now.content == ";":
-            self.addCode(now.text)
-            self.ia -= 1
-            self.f.pop()
-            self.addCode("</doStatement>")
-        elif now.tag == "identifier":
-            self.addCode(now.text)
-            self.f.append("subroutineCall")
+    def CompileIfStatement(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        self.CompileIfStatement()
 
-    def CompileReturnStatement(self, now: xml, next: xml):
-        if now.tag == "symbol" and now.content == ";":
-            self.addCode(now.text)
-            self.ia -= 1
-            self.f.pop()
-            self.addCode("</returnStatement>")
-        else:
-            self.addCode("<expression>")
-            self.ia += 1
-            self.f.append("expression1")
+    def CompileWhileStatement(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        self.CompileWhileStatement()
 
-    def CompileSubroutineCall(self, now: xml, next: xml):
-        if now.tag == "symbol":
-            if now.content == ".":
-                self.addCode(now.text)
-            elif now.content == "(":
-                self.addCode(now.text)
-                self.addCode("<expressionList>")
-                self.ia += 1
-                self.f.append("expressionList")
-            elif now.content == ")":
-                self.addCode(now.text)
-                self.f.pop()
-        elif now.tag == "identifier":
-            self.addCode(now.text)
+    def CompileDoStatement(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        self.CompileDoStatement()
 
-    def CompileExpression(self, now: xml, next: xml):
-        pass
+    def CompileReturnStatement(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        self.CompileReturnStatement()
 
-    def CompileExpressionList(self, now: xml, next: xml):
-        pass
+    def CompileSubroutineCall(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        self.CompileSubroutineCall()
+
+    def CompileExpression(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        self.CompileExpression()
+
+    def CompileExpressionList(self):
+        now = self.source[self.sp]
+        self.sp += 1
+        self.CompileExpressionList()
