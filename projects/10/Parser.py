@@ -50,6 +50,8 @@ def grammarAnalyzer(text: list):
     text.append(xml("exit", "end"))
     compile = Compiler(text)
     code = compile.Compile()
+    for i in code:
+        print(i)
     return code
 
 
@@ -73,7 +75,6 @@ class Compiler:
 
     def CompileClass(self):
         now = self.source[self.sp]
-        self.sp += 1
         next = self.source[self.sp]
         if now.tag == "keyword" and now.content == "class":
             self.addCode(now.text)
@@ -82,27 +83,27 @@ class Compiler:
         elif now.tag == "symbol":
             if now.content == "{" and next.tag == "keyword":
                 self.addCode(now.text)
-                if next.content in ["field", "static"]:
-                    self.addCode("<classVarDec>")
-                    self.ia += 1
-                    self.CompileClassVarDec()
-                    self.ia -= 1
-                    self.addCode("</classVarDec>")
-                elif next.content in ["constructor", "function", "method"]:
-                    self.addCode("<subroutineDec>")
-                    self.ia += 1
-                    self.CompileSubroutineDec()
-                    self.ia -= 1
-                    self.addCode("</subroutineDec>")
             elif now.content == "}":
                 self.addCode(now.text)
                 return
+        if now.content in ["field", "static"]:
+            self.addCode("<classVarDec>")
+            self.ia += 1
+            self.CompileClassVarDec()
+            self.ia -= 1
+            self.addCode("</classVarDec>")
+        elif now.content in ["constructor", "function", "method"]:
+            self.addCode("<subroutineDec>")
+            self.ia += 1
+            self.CompileSubroutineDec()
+            self.ia -= 1
+            self.addCode("</subroutineDec>")
+        self.sp += 1
         self.CompileClass()
 
     def CompileClassVarDec(self):
         now = self.source[self.sp]
-        self.sp += 1
-        if now.tag == "keyword" and now.content in ["constructor", "function", "method", "int", "char", "boolean"]:
+        if now.tag == "keyword" and now.content in ["field", "static", "int", "char", "boolean"]:
             self.addCode(now.text)
         elif now.tag == "identifier":
             self.addCode(now.text)
@@ -112,11 +113,11 @@ class Compiler:
             elif now.content == ";":
                 self.addCode(now.text)
                 return
+        self.sp += 1
         self.CompileClassVarDec()
 
     def CompileSubroutineDec(self):
         now = self.source[self.sp]
-        self.sp += 1
         if now.tag == "identifier":
             self.addCode(now.text)
         elif now.tag == "keyword" and now.content in ["constructor", "function", "method"]:
@@ -126,6 +127,7 @@ class Compiler:
                 self.addCode(now.text)
                 self.addCode("<parameterList>")
                 self.ia += 1
+                self.sp += 1
                 self.CompileParameterList()
                 self.ia -= 1
                 self.addCode("</paprameterList>")
@@ -134,20 +136,48 @@ class Compiler:
             elif now.content == "{":
                 self.addCode("<subroutineBody>")
                 self.ia += 1
-                self.sp -= 1
                 self.CompileSubroutineBody()
                 self.ia -= 1
                 self.addCode("</subroutineBody>")
                 return
+        self.sp += 1
         self.CompileSubroutineDec()
 
     def CompileParameterList(self):
         now = self.source[self.sp]
+        if now.tag == "keyword" and now.content in ["int", "char", "boolean"]:
+            self.addCode(now.text)
+        elif now.tag == "identifier":
+            self.addCode(now.text)
+        elif now.tag == "symbol":
+            if now.content == ")":
+                return
+            elif now.content == ",":
+                self.addCode(now.text)
         self.sp += 1
         self.CompileParameterList()
 
     def CompileSubroutineBody(self):
         now = self.source[self.sp]
+        if now.tag == "symbol":
+            if now.content == "{":
+                self.addCode(now.text)
+            elif now.content == "}":
+                self.addCode(now.text)
+                return
+        elif now.tag == "keyword":
+            if now.content == "var":
+                self.addCode("<varDec>")
+                self.ia += 1
+                self.CompileVarDec()
+                self.ia -= 1
+                self.addCode("</varDec>")
+            elif now.content in ["let","do","if","while","return"]:
+                self.addCode("<statements>")
+                self.ia += 1
+                self.CompileStatements()
+                self.ia -= 1
+                self.addCode("</statements>")
         self.sp += 1
         self.CompileSubroutineBody()
 
