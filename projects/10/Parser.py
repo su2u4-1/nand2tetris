@@ -183,50 +183,175 @@ class Compiler:
 
     def CompileVarDec(self):
         now = self.source[self.sp]
+        if now.tag == "keyword" and now.content in ["var","int","char","boolean"]:
+            self.addCode(now.text)
+        elif now.tag == "symbol":
+            if now.content == ",":
+                self.addCode(now.text)
+            elif now.content == ";":
+                self.addCode(now.text)
+                return
+        elif now.tag == "identifier":
+            self.addCode(now.text)
         self.sp += 1
         self.CompileVarDec()
 
     def CompileStatements(self):
         now = self.source[self.sp]
+        if now.tag == "keyword":
+            if now.content == "if":
+                self.addCode("<ifStatement>")
+                self.ia += 1
+                self.CompileIfStatement()
+                self.ia -= 1
+                self.addCode("</ifStatement>")
+            elif now.content == "let":
+                self.addCode("<letStatement>")
+                self.ia += 1
+                self.CompileLetStatement()
+                self.ia -= 1
+                self.addCode("</letStatement>")
+            elif now.content == "do":
+                self.addCode("<doStatement>")
+                self.ia += 1
+                self.CompileDoStatement()
+                self.ia -= 1
+                self.addCode("</doStatement>")
+            elif now.content == "while":
+                self.addCode("<whileStatement>")
+                self.ia += 1
+                self.CompileWhileStatement()
+                self.ia -= 1
+                self.addCode("</whileStatement>")
+            elif now.content == "return":
+                self.addCode("<returnStatement>")
+                self.ia += 1
+                self.CompileReturnStatement()
+                self.ia -= 1
+                self.addCode("</returnStatement>")
+        elif now.tag == "symbol" and now.content == "}":
+            return
         self.sp += 1
         self.CompileStatements()
 
     def CompileLetStatement(self):
         now = self.source[self.sp]
+        if now.tag == "identifier":
+            self.addCode(now.text)
+        elif now.tag == "keyword" and now.content == "let":
+            self.addCode(now.text)
+        elif now.tag == "symbol":
+            if now.content == ",":
+                self.addCode(now.text)
+            elif now.content == ";":
+                self.addCode(now.text)
+                return
+            elif now.content == "[":
+                self.addCode(now.text)
+                self.addCode("<expression>")
+                self.ia += 1
+                self.CompileExpression()
+                self.ia -= 1
+                self.addCode("</expression")
+            elif now.content == "]":
+                self.addCode(now.text)
+            elif now.content == "=":
+                self.addCode(now.text)
+                self.addCode("<expression>")
+                self.ia += 1
+                self.CompileExpression()
+                self.ia -= 1
+                self.addCode("</expression")
         self.sp += 1
         self.CompileLetStatement()
 
     def CompileIfStatement(self):
         now = self.source[self.sp]
         self.sp += 1
+        return
         self.CompileIfStatement()
 
     def CompileWhileStatement(self):
         now = self.source[self.sp]
+        if now.tag == "keyword" and now.content == "while":
+            self.addCode(now.text)
+        elif now.tag == "symbol":
+            if now.content == "(":
+                self.addCode("<expression>")
+                self.ia += 1
+                self.sp += 1
+                self.CompileExpression()
+                self.ia -= 1
+                self.addCode("</expression>")
+            elif now.content == ")":
+                self.addCode(now.text)
+            elif now.content == "{":
+                self.addCode("<statements>")
+                self.ia += 1
+                self.sp += 1
+                self.CompileStatements()
+                self.ia -= 1
+                self.addCode("</statements")
+            elif now.content == "}":
+                self.addCode(now.text)
+                return
         self.sp += 1
         self.CompileWhileStatement()
 
     def CompileDoStatement(self):
         now = self.source[self.sp]
+        if now.tag == "identifier":
+            self.addCode(now.text)
+        elif now.tag == "keyword" and now.content == "do":
+            self.addCode(now.text)
+        elif now.tag == "symbol":
+            if now.content in [".",")"]:
+                self.addCode(now.text)
+            elif now.content == "(":
+                self.addCode("<expressionList>")
+                self.ia += 1
+                self.sp += 1
+                self.CompileExpressionList()
+                self.ia -= 1
+                self.addCode("</expressionList>")
+            elif now.content == ";":
+                self.addCode(now.text)
+                return
         self.sp += 1
         self.CompileDoStatement()
 
     def CompileReturnStatement(self):
         now = self.source[self.sp]
+        next = self.source[self.sp + 1]
+        if now.tag == "keyword" and now.content == "return":
+            self.addCode(now.text)
+            if next.tag == "symbol" or next.content == ";":
+                self.addCode(now.text)
+                return
+            else:
+                self.addCode("<expression>")
+                self.ia += 1
+                self.sp += 1
+                self.CompileExpression()
+                self.ia -= 1
+                self.addCode("</expression>")
         self.sp += 1
         self.CompileReturnStatement()
 
     def CompileSubroutineCall(self):
         now = self.source[self.sp]
         self.sp += 1
+        return
         self.CompileSubroutineCall()
 
     def CompileExpression(self):
         now = self.source[self.sp]
         self.sp += 1
+        return
         self.CompileExpression()
 
     def CompileExpressionList(self):
         now = self.source[self.sp]
         self.sp += 1
+        return
         self.CompileExpressionList()
