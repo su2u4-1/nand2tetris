@@ -62,8 +62,8 @@ class Compiler:
         self.ia = 0
         self.sp = 0
 
-    def callCompile(self,tag:str):
-        print(self.sp,self.source[self.sp].content,tag)
+    def callCompile(self, tag: str):
+        print(self.sp, self.source[self.sp].content, tag)
         if self.sp >= 305:
             for i in self.CodeList:
                 print(i)
@@ -310,7 +310,7 @@ class Compiler:
                 self.callCompile("expression")
         self.CompileReturnStatement()
 
-    def CompileExpression(self,f=False):
+    def CompileExpression(self, f=False):
         now = self.source[self.sp]
         if now.tag == "symbol" and now.content in ["+", "-", "*", "/", "&", "|", "<", ">", "="] and f:
             self.addCode(now.text)
@@ -322,7 +322,7 @@ class Compiler:
         self.sp += 1
         self.CompileExpression(True)
 
-    def CompileExpressionList(self,f=False):
+    def CompileExpressionList(self, f=False):
         now = self.source[self.sp]
         if now.tag == "symbol" and now.content == "," and f:
             self.addCode(now.text)
@@ -333,12 +333,14 @@ class Compiler:
         self.sp += 1
         self.CompileExpressionList(True)
 
-    def CompileTerm(self,f=False):
+    def CompileTerm(self, f=False):
         now = self.source[self.sp]
         previous = self.source[self.sp - 1]
         self.sp += 1
         next = self.source[self.sp]
-        if now.tag in ["integerConstant", "stringConstant"] or (now.tag == "keyword" and now.content in ["true", "false", "null", "this"]):
+        if now.tag in ["integerConstant", "stringConstant"] or (
+            now.tag == "keyword" and now.content in ["true", "false", "null", "this"]
+        ):
             self.addCode(now.text)
             self.sp -= 1
             return
@@ -347,7 +349,7 @@ class Compiler:
             if next.tag != "symbol" or next.content not in ["(", ".", "["]:
                 self.sp -= 1
                 return
-        elif now.tag == "symbol" and now.content in ["(",")","[","]","-","~","."]:
+        elif now.tag == "symbol" and now.content in ["(", ")", "[", "]", "-", "~", "."]:
             self.addCode(now.text)
             if now.content == "(":
                 if previous.tag == "identifier":
@@ -359,7 +361,7 @@ class Compiler:
             elif now.content in ["]", ")"]:
                 self.sp -= 1
                 return
-            elif now.content in ["-","~"]:
+            elif now.content in ["-", "~"]:
                 self.callCompile("term")
                 self.sp -= 1
                 return
