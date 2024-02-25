@@ -62,15 +62,53 @@ class Compiler:
         self.ia = 0
         self.sp = 0
 
+    def callCompile(self,tag:str):
+        print(self.sp,self.source[self.sp].content,tag)
+        if self.sp >= 305:
+            for i in self.CodeList:
+                print(i)
+            exit()
+        self.addCode(f"<{tag}>")
+        self.ia += 1
+        match tag:
+            case "class":
+                self.CompileClass()
+            case "classVarDec":
+                self.CompileClassVarDec()
+            case "subroutineDec":
+                self.CompileSubroutineDec()
+            case "parameterList":
+                self.CompileParameterList()
+            case "subroutineBody":
+                self.CompileSubroutineBody()
+            case "varDec":
+                self.CompileVarDec()
+            case "statements":
+                self.CompileStatements()
+            case "letStatement":
+                self.CompileLetStatement()
+            case "ifStatement":
+                self.CompileIfStatement()
+            case "whileStatement":
+                self.CompileWhileStatement()
+            case "doStatement":
+                self.CompileDoStatement()
+            case "returnStatement":
+                self.CompileReturnStatement()
+            case "expression":
+                self.CompileExpression()
+            case "expressionList":
+                self.CompileExpressionList()
+            case "term":
+                self.CompileTerm()
+        self.ia -= 1
+        self.addCode(f"</{tag}>")
+
     def addCode(self, text: str):
         self.CodeList.append("  " * self.ia + text)
 
     def Compile(self):
-        self.addCode("<class>")
-        self.ia += 1
-        self.CompileClass()
-        self.ia -= 1
-        self.addCode("</class>")
+        self.callCompile("class")
         return self.CodeList
 
     def CompileClass(self):
@@ -81,23 +119,15 @@ class Compiler:
         elif now.tag == "identifier":
             self.addCode(now.text)
         elif now.tag == "symbol":
-            if now.content == "{" and next.tag == "keyword":
+            if now.content == "{":
                 self.addCode(now.text)
             elif now.content == "}":
                 self.addCode(now.text)
                 return
         if now.content in ["field", "static"]:
-            self.addCode("<classVarDec>")
-            self.ia += 1
-            self.CompileClassVarDec()
-            self.ia -= 1
-            self.addCode("</classVarDec>")
+            self.callCompile("classVarDec")
         elif now.content in ["constructor", "function", "method"]:
-            self.addCode("<subroutineDec>")
-            self.ia += 1
-            self.CompileSubroutineDec()
-            self.ia -= 1
-            self.addCode("</subroutineDec>")
+            self.callCompile("subroutineDec")
         self.sp += 1
         self.CompileClass()
 
@@ -125,25 +155,17 @@ class Compiler:
         elif now.tag == "symbol":
             if now.content == "(":
                 self.addCode(now.text)
-                self.addCode("<parameterList>")
-                self.ia += 1
-                self.sp += 1
-                self.CompileParameterList()
-                self.ia -= 1
-                self.addCode("</paprameterList>")
+                self.callCompile("parameterList")
             elif now.content == ")":
                 self.addCode(now.text)
             elif now.content == "{":
-                self.addCode("<subroutineBody>")
-                self.ia += 1
-                self.CompileSubroutineBody()
-                self.ia -= 1
-                self.addCode("</subroutineBody>")
+                self.callCompile("subroutineBody")
                 return
         self.sp += 1
         self.CompileSubroutineDec()
 
     def CompileParameterList(self):
+        self.sp += 1
         now = self.source[self.sp]
         if now.tag == "keyword" and now.content in ["int", "char", "boolean"]:
             self.addCode(now.text)
@@ -151,10 +173,10 @@ class Compiler:
             self.addCode(now.text)
         elif now.tag == "symbol":
             if now.content == ")":
+                self.sp -= 1
                 return
             elif now.content == ",":
                 self.addCode(now.text)
-        self.sp += 1
         self.CompileParameterList()
 
     def CompileSubroutineBody(self):
@@ -167,23 +189,15 @@ class Compiler:
                 return
         elif now.tag == "keyword":
             if now.content == "var":
-                self.addCode("<varDec>")
-                self.ia += 1
-                self.CompileVarDec()
-                self.ia -= 1
-                self.addCode("</varDec>")
-            elif now.content in ["let","do","if","while","return"]:
-                self.addCode("<statements>")
-                self.ia += 1
-                self.CompileStatements()
-                self.ia -= 1
-                self.addCode("</statements>")
+                self.callCompile("varDec")
+            elif now.content in ["let", "do", "if", "while", "return"]:
+                self.callCompile("statements")
         self.sp += 1
         self.CompileSubroutineBody()
 
     def CompileVarDec(self):
         now = self.source[self.sp]
-        if now.tag == "keyword" and now.content in ["var","int","char","boolean"]:
+        if now.tag == "keyword" and now.content in ["var", "int", "char", "boolean"]:
             self.addCode(now.text)
         elif now.tag == "symbol":
             if now.content == ",":
@@ -198,37 +212,8 @@ class Compiler:
 
     def CompileStatements(self):
         now = self.source[self.sp]
-        if now.tag == "keyword":
-            if now.content == "if":
-                self.addCode("<ifStatement>")
-                self.ia += 1
-                self.CompileIfStatement()
-                self.ia -= 1
-                self.addCode("</ifStatement>")
-            elif now.content == "let":
-                self.addCode("<letStatement>")
-                self.ia += 1
-                self.CompileLetStatement()
-                self.ia -= 1
-                self.addCode("</letStatement>")
-            elif now.content == "do":
-                self.addCode("<doStatement>")
-                self.ia += 1
-                self.CompileDoStatement()
-                self.ia -= 1
-                self.addCode("</doStatement>")
-            elif now.content == "while":
-                self.addCode("<whileStatement>")
-                self.ia += 1
-                self.CompileWhileStatement()
-                self.ia -= 1
-                self.addCode("</whileStatement>")
-            elif now.content == "return":
-                self.addCode("<returnStatement>")
-                self.ia += 1
-                self.CompileReturnStatement()
-                self.ia -= 1
-                self.addCode("</returnStatement>")
+        if now.tag == "keyword" and now.content in ["if", "let", "do", "while", "return"]:
+            self.callCompile(f"{now.content}Statement")
         elif now.tag == "symbol" and now.content == "}":
             return
         self.sp += 1
@@ -236,6 +221,7 @@ class Compiler:
 
     def CompileLetStatement(self):
         now = self.source[self.sp]
+        self.sp += 1
         if now.tag == "identifier":
             self.addCode(now.text)
         elif now.tag == "keyword" and now.content == "let":
@@ -245,83 +231,75 @@ class Compiler:
                 self.addCode(now.text)
             elif now.content == ";":
                 self.addCode(now.text)
+                self.sp -= 1
                 return
             elif now.content == "[":
                 self.addCode(now.text)
-                self.addCode("<expression>")
-                self.ia += 1
-                self.CompileExpression()
-                self.ia -= 1
-                self.addCode("</expression")
+                self.callCompile("expression")
             elif now.content == "]":
                 self.addCode(now.text)
             elif now.content == "=":
                 self.addCode(now.text)
-                self.addCode("<expression>")
-                self.ia += 1
-                self.CompileExpression()
-                self.ia -= 1
-                self.addCode("</expression")
-        self.sp += 1
+                self.callCompile("expression")
         self.CompileLetStatement()
 
     def CompileIfStatement(self):
         now = self.source[self.sp]
         self.sp += 1
-        return
+        next = self.source[self.sp + 1]
+        if now.tag == "keyword" and now.content in ["if", "else"]:
+            self.addCode(now.text)
+        elif now.tag == "symbol":
+            if now.content == "(":
+                self.callCompile("expression")
+            elif now.content == ")":
+                self.addCode(now.text)
+            elif now.content == "{":
+                self.callCompile("statements")
+            elif now.content == "}":
+                self.addCode(now.text)
+                if next.tag != "keyword" or next.content != "else":
+                    return
         self.CompileIfStatement()
 
     def CompileWhileStatement(self):
         now = self.source[self.sp]
+        self.sp += 1
         if now.tag == "keyword" and now.content == "while":
             self.addCode(now.text)
         elif now.tag == "symbol":
             if now.content == "(":
-                self.addCode("<expression>")
-                self.ia += 1
-                self.sp += 1
-                self.CompileExpression()
-                self.ia -= 1
-                self.addCode("</expression>")
+                self.callCompile("expression")
             elif now.content == ")":
                 self.addCode(now.text)
             elif now.content == "{":
-                self.addCode("<statements>")
-                self.ia += 1
-                self.sp += 1
-                self.CompileStatements()
-                self.ia -= 1
-                self.addCode("</statements")
+                self.callCompile("statements")
             elif now.content == "}":
                 self.addCode(now.text)
                 return
-        self.sp += 1
         self.CompileWhileStatement()
 
     def CompileDoStatement(self):
         now = self.source[self.sp]
+        self.sp += 1
         if now.tag == "identifier":
             self.addCode(now.text)
         elif now.tag == "keyword" and now.content == "do":
             self.addCode(now.text)
         elif now.tag == "symbol":
-            if now.content in [".",")"]:
-                self.addCode(now.text)
-            elif now.content == "(":
-                self.addCode("<expressionList>")
-                self.ia += 1
-                self.sp += 1
-                self.CompileExpressionList()
-                self.ia -= 1
-                self.addCode("</expressionList>")
-            elif now.content == ";":
+            if now.content == ";":
                 self.addCode(now.text)
                 return
-        self.sp += 1
+            elif now.content in [".", ")"]:
+                self.addCode(now.text)
+            elif now.content == "(":
+                self.addCode(now.text)
+                self.callCompile("expressionList")
         self.CompileDoStatement()
 
     def CompileReturnStatement(self):
         now = self.source[self.sp]
+        self.sp += 1
         next = self.source[self.sp + 1]
         if now.tag == "keyword" and now.content == "return":
             self.addCode(now.text)
@@ -329,29 +307,60 @@ class Compiler:
                 self.addCode(now.text)
                 return
             else:
-                self.addCode("<expression>")
-                self.ia += 1
-                self.sp += 1
-                self.CompileExpression()
-                self.ia -= 1
-                self.addCode("</expression>")
-        self.sp += 1
+                self.callCompile("expression")
         self.CompileReturnStatement()
 
-    def CompileSubroutineCall(self):
+    def CompileExpression(self,f=False):
         now = self.source[self.sp]
+        if now.tag == "symbol" and now.content in ["+", "-", "*", "/", "&", "|", "<", ">", "="] and f:
+            self.addCode(now.text)
+        elif now.tag == "symbol" and now.content in [";", ")", "]", "}", ","]:
+            self.sp -= 1
+            return
+        else:
+            self.callCompile("term")
         self.sp += 1
-        return
-        self.CompileSubroutineCall()
+        self.CompileExpression(True)
 
-    def CompileExpression(self):
+    def CompileExpressionList(self,f=False):
         now = self.source[self.sp]
+        if now.tag == "symbol" and now.content == "," and f:
+            self.addCode(now.text)
+        elif now.tag == "symbol" and now.content == ")":
+            return
+        else:
+            self.callCompile("expression")
         self.sp += 1
-        return
-        self.CompileExpression()
+        self.CompileExpressionList(True)
 
-    def CompileExpressionList(self):
+    def CompileTerm(self,f=False):
         now = self.source[self.sp]
+        previous = self.source[self.sp - 1]
         self.sp += 1
-        return
-        self.CompileExpressionList()
+        next = self.source[self.sp]
+        if now.tag in ["integerConstant", "stringConstant"] or (now.tag == "keyword" and now.content in ["true", "false", "null", "this"]):
+            self.addCode(now.text)
+            self.sp -= 1
+            return
+        elif now.tag in "identifier":
+            self.addCode(now.text)
+            if next.tag != "symbol" or next.content not in ["(", ".", "["]:
+                self.sp -= 1
+                return
+        elif now.tag == "symbol" and now.content in ["(",")","[","]","-","~","."]:
+            self.addCode(now.text)
+            if now.content == "(":
+                if previous.tag == "identifier":
+                    self.callCompile("expressionList")
+                else:
+                    self.callCompile("expression")
+            elif now.content == "[":
+                self.callCompile("expression")
+            elif now.content in ["]", ")"]:
+                self.sp -= 1
+                return
+            elif now.content in ["-","~"]:
+                self.callCompile("term")
+                self.sp -= 1
+                return
+        self.CompileTerm()
