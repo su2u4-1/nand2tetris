@@ -304,7 +304,7 @@ class Compiler:
         if now.tag == "keyword" and now.content == "return":
             self.addCode(now.text)
             if next.tag == "symbol" or next.content == ";":
-                self.addCode(now.text)
+                self.addCode(next.text)
                 return
             else:
                 self.callCompile("expression")
