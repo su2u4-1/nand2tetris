@@ -69,12 +69,12 @@ def addCode(text: str):
     CodeList.append("  " * ia + text)
 
 
-def Compile(self):
+def Compile():
     callCompile("class")
     return CodeList
 
 
-def CompileClass(self):
+def CompileClass():
     now = source[sp]
     next = source[sp]
     if now.tag == "keyword" and now.content == "class":
@@ -95,7 +95,7 @@ def CompileClass(self):
     CompileClass()
 
 
-def CompileClassVarDec(self):
+def CompileClassVarDec():
     now = source[sp]
     if now.tag == "keyword" and now.content in ["field", "static", "int", "char", "boolean"]:
         addCode(now.text)
@@ -111,7 +111,7 @@ def CompileClassVarDec(self):
     CompileClassVarDec()
 
 
-def CompileSubroutineDec(self):
+def CompileSubroutineDec():
     now = source[sp]
     if now.tag == "identifier":
         addCode(now.text)
@@ -130,7 +130,7 @@ def CompileSubroutineDec(self):
     CompileSubroutineDec()
 
 
-def CompileParameterList(self):
+def CompileParameterList():
     sp += 1
     now = source[sp]
     if now.tag == "keyword" and now.content in ["int", "char", "boolean"]:
@@ -146,7 +146,7 @@ def CompileParameterList(self):
     CompileParameterList()
 
 
-def CompileSubroutineBody(self):
+def CompileSubroutineBody():
     now = source[sp]
     if now.tag == "symbol":
         if now.content == "{":
@@ -163,7 +163,7 @@ def CompileSubroutineBody(self):
     CompileSubroutineBody()
 
 
-def CompileVarDec(self):
+def CompileVarDec():
     now = source[sp]
     if now.tag == "keyword" and now.content in ["var", "int", "char", "boolean"]:
         addCode(now.text)
@@ -179,7 +179,7 @@ def CompileVarDec(self):
     CompileVarDec()
 
 
-def CompileStatements(self):
+def CompileStatements():
     now = source[sp]
     if now.tag == "keyword" and now.content in ["if", "let", "do", "while", "return"]:
         callCompile(f"{now.content}Statement")
@@ -189,7 +189,7 @@ def CompileStatements(self):
     CompileStatements()
 
 
-def CompileLetStatement(self):
+def CompileLetStatement():
     now = source[sp]
     sp += 1
     if now.tag == "identifier":
@@ -214,7 +214,7 @@ def CompileLetStatement(self):
     CompileLetStatement()
 
 
-def CompileIfStatement(self):
+def CompileIfStatement():
     now = source[sp]
     sp += 1
     next = source[sp + 1]
@@ -234,7 +234,7 @@ def CompileIfStatement(self):
     CompileIfStatement()
 
 
-def CompileWhileStatement(self):
+def CompileWhileStatement():
     now = source[sp]
     sp += 1
     if now.tag == "keyword" and now.content == "while":
@@ -252,7 +252,7 @@ def CompileWhileStatement(self):
     CompileWhileStatement()
 
 
-def CompileDoStatement(self):
+def CompileDoStatement():
     now = source[sp]
     sp += 1
     if now.tag == "identifier":
@@ -271,7 +271,7 @@ def CompileDoStatement(self):
     CompileDoStatement()
 
 
-def CompileReturnStatement(self):
+def CompileReturnStatement():
     now = source[sp]
     sp += 1
     next = source[sp + 1]
