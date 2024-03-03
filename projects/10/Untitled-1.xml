@@ -72,7 +72,12 @@
         </letStatement>
         <returnStatement>
           <keyword> return </keyword>
-          <keyword> return </keyword>
+          <expression>
+            <term>
+              <keyword> this </keyword>
+            </term>
+          </expression>
+          <symbol> ; </symbol>
         </returnStatement>
       </statements>
       <symbol> { </symbol>
@@ -90,7 +95,7 @@
         </doStatement>
         <returnStatement>
           <keyword> return </keyword>
-          <keyword> return </keyword>
+          <symbol> ; </symbol>
         </returnStatement>
       </statements>
       <symbol> { </symbol>

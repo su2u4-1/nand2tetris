@@ -1,17 +1,16 @@
+class xml:
+    def __init__(self,text: str, tag: str):
+        self.content = text
+        self.text = f"<{tag}> {text} </{tag}>"
+        self.tag = tag
+
 CodeList = []
 ia = 0
 sp = 0
-
-
-class xml:
-    def __init__(text: str, tag: str):
-        content = text
-        text = f"<{tag}> {text} </{tag}>"
-        tag = tag
-
+source:list[xml]
 
 def grammarAnalyzer(text: list):
-    global source
+    global source,ia
     for i in range(len(text)):
         text[i] = xml(text[i][0], text[i][1])
     text.append(xml("exit", "end"))
@@ -23,6 +22,7 @@ def grammarAnalyzer(text: list):
 
 
 def callCompile(tag: str):
+    global ia,sp
     print(sp, source[sp].content, tag)
     if sp >= 305:
         for i in CodeList:
@@ -66,15 +66,18 @@ def callCompile(tag: str):
 
 
 def addCode(text: str):
+    global ia,sp
     CodeList.append("  " * ia + text)
 
 
 def Compile():
+    global sp
     callCompile("class")
     return CodeList
 
 
 def CompileClass():
+    global sp
     now = source[sp]
     next = source[sp]
     if now.tag == "keyword" and now.content == "class":
@@ -96,6 +99,7 @@ def CompileClass():
 
 
 def CompileClassVarDec():
+    global sp
     now = source[sp]
     if now.tag == "keyword" and now.content in ["field", "static", "int", "char", "boolean"]:
         addCode(now.text)
@@ -112,6 +116,7 @@ def CompileClassVarDec():
 
 
 def CompileSubroutineDec():
+    global sp
     now = source[sp]
     if now.tag == "identifier":
         addCode(now.text)
@@ -131,6 +136,7 @@ def CompileSubroutineDec():
 
 
 def CompileParameterList():
+    global sp
     sp += 1
     now = source[sp]
     if now.tag == "keyword" and now.content in ["int", "char", "boolean"]:
@@ -147,6 +153,7 @@ def CompileParameterList():
 
 
 def CompileSubroutineBody():
+    global sp
     now = source[sp]
     if now.tag == "symbol":
         if now.content == "{":
@@ -164,6 +171,7 @@ def CompileSubroutineBody():
 
 
 def CompileVarDec():
+    global sp
     now = source[sp]
     if now.tag == "keyword" and now.content in ["var", "int", "char", "boolean"]:
         addCode(now.text)
@@ -180,6 +188,7 @@ def CompileVarDec():
 
 
 def CompileStatements():
+    global sp
     now = source[sp]
     if now.tag == "keyword" and now.content in ["if", "let", "do", "while", "return"]:
         callCompile(f"{now.content}Statement")
@@ -190,6 +199,7 @@ def CompileStatements():
 
 
 def CompileLetStatement():
+    global sp
     now = source[sp]
     sp += 1
     if now.tag == "identifier":
@@ -215,6 +225,7 @@ def CompileLetStatement():
 
 
 def CompileIfStatement():
+    global sp
     now = source[sp]
     sp += 1
     next = source[sp + 1]
@@ -235,6 +246,7 @@ def CompileIfStatement():
 
 
 def CompileWhileStatement():
+    global sp
     now = source[sp]
     sp += 1
     if now.tag == "keyword" and now.content == "while":
@@ -253,6 +265,7 @@ def CompileWhileStatement():
 
 
 def CompileDoStatement():
+    global sp
     now = source[sp]
     sp += 1
     if now.tag == "identifier":
@@ -272,20 +285,22 @@ def CompileDoStatement():
 
 
 def CompileReturnStatement():
+    global sp
     now = source[sp]
-    sp += 1
-    next = source[sp + 1]
+    print(sp,now.content)
     if now.tag == "keyword" and now.content == "return":
         addCode(now.text)
-        if next.tag == "symbol" or next.content == ";":
-            addCode(next.text)
-            return
-        else:
-            callCompile("expression")
+    elif now.tag == "symbol" or now.content == ";":
+        addCode(now.text)
+        return
+    else:
+        callCompile("expression")
+    sp += 1
     CompileReturnStatement()
 
 
 def CompileExpression(f=False):
+    global sp
     now = source[sp]
     if now.tag == "symbol" and now.content in ["+", "-", "*", "/", "&", "|", "<", ">", "="] and f:
         addCode(now.text)
@@ -299,6 +314,7 @@ def CompileExpression(f=False):
 
 
 def CompileExpressionList(f=False):
+    global sp
     now = source[sp]
     if now.tag == "symbol" and now.content == "," and f:
         addCode(now.text)
@@ -311,6 +327,7 @@ def CompileExpressionList(f=False):
 
 
 def CompileTerm(f=False):
+    global sp
     now = source[sp]
     previous = source[sp - 1]
     sp += 1
