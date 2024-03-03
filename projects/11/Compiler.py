@@ -6,7 +6,7 @@ def compiler(text: list):
     for i in symbol:
         print(i)
     print(symbolClass)
-    exit()
+    return text
 
 
 def variable(text: list):
