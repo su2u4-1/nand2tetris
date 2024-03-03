@@ -3,6 +3,10 @@ def compiler(text: list):
     symbol = []
     symbolClass = {}
     variable(text)
+    for i in symbol:
+        print(i)
+    print(symbolClass)
+    exit()
 
 
 def variable(text: list):

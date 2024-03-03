@@ -130,7 +130,14 @@ def Nxml(text: list):
         if i in keyList:
             temp.append([i, "keyword"])
         elif i in symbolL:
-            temp.append([i, "symbol"])
+            if i == "&":
+                temp.append(["&amp;", "symbol"])
+            elif i == ">":
+                temp.append(["&gt;", "symbol"])
+            elif i == "<":
+                temp.append(["&lt;", "symbol"])
+            else:
+                temp.append([i, "symbol"])
         elif i.isdigit() and int(i) < 32768:
             temp.append([int(i), "integerConstant"])
         elif i[0] == i[-1] == '"':
