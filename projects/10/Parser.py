@@ -120,7 +120,7 @@ def CompileSubroutineDec():
     now = source[sp]
     if now.tag == "identifier":
         addCode(now.text)
-    elif now.tag == "keyword" and now.content in ["constructor", "function", "method"]:
+    elif now.tag == "keyword" and now.content in ["constructor", "function", "method", "int", "char", "boolean", "void"]:
         addCode(now.text)
     elif now.tag == "symbol":
         if now.content == "(":
@@ -166,6 +166,7 @@ def CompileSubroutineBody():
             callCompile("varDec")
         elif now.content in ["let", "do", "if", "while", "return"]:
             callCompile("statements")
+            sp -= 1
     sp += 1
     CompileSubroutineBody()
 
@@ -190,8 +191,10 @@ def CompileVarDec():
 def CompileStatements():
     global sp
     now = source[sp]
+    print(sp,now.content)
     if now.tag == "keyword" and now.content in ["if", "let", "do", "while", "return"]:
         callCompile(f"{now.content}Statement")
+        sp -= 1
     elif now.tag == "symbol" and now.content == "}":
         return
     sp += 1
@@ -233,10 +236,12 @@ def CompileIfStatement():
         addCode(now.text)
     elif now.tag == "symbol":
         if now.content == "(":
+            addCode(now.text)
             callCompile("expression")
         elif now.content == ")":
             addCode(now.text)
         elif now.content == "{":
+            addCode(now.text)
             callCompile("statements")
         elif now.content == "}":
             addCode(now.text)
@@ -253,10 +258,12 @@ def CompileWhileStatement():
         addCode(now.text)
     elif now.tag == "symbol":
         if now.content == "(":
+            addCode(now.text)
             callCompile("expression")
         elif now.content == ")":
             addCode(now.text)
         elif now.content == "{":
+            addCode(now.text)
             callCompile("statements")
         elif now.content == "}":
             addCode(now.text)
@@ -287,7 +294,6 @@ def CompileDoStatement():
 def CompileReturnStatement():
     global sp
     now = source[sp]
-    print(sp,now.content)
     if now.tag == "keyword" and now.content == "return":
         addCode(now.text)
     elif now.tag == "symbol" or now.content == ";":
@@ -295,6 +301,7 @@ def CompileReturnStatement():
         return
     else:
         callCompile("expression")
+        sp -= 1
     sp += 1
     CompileReturnStatement()
 
@@ -305,10 +312,10 @@ def CompileExpression(f=False):
     if now.tag == "symbol" and now.content in ["+", "-", "*", "/", "&", "|", "<", ">", "="] and f:
         addCode(now.text)
     elif now.tag == "symbol" and now.content in [";", ")", "]", "}", ","]:
-        sp -= 1
         return
     else:
         callCompile("term")
+        sp -= 1
     sp += 1
     CompileExpression(True)
 
@@ -322,6 +329,7 @@ def CompileExpressionList(f=False):
         return
     else:
         callCompile("expression")
+        sp -= 1
     sp += 1
     CompileExpressionList(True)
 
@@ -334,12 +342,10 @@ def CompileTerm(f=False):
     next = source[sp]
     if now.tag in ["integerConstant", "stringConstant"] or (now.tag == "keyword" and now.content in ["true", "false", "null", "this"]):
         addCode(now.text)
-        sp -= 1
         return
     elif now.tag in "identifier":
         addCode(now.text)
         if next.tag != "symbol" or next.content not in ["(", ".", "["]:
-            sp -= 1
             return
     elif now.tag == "symbol" and now.content in ["(", ")", "[", "]", "-", "~", "."]:
         addCode(now.text)
@@ -351,10 +357,9 @@ def CompileTerm(f=False):
         elif now.content == "[":
             callCompile("expression")
         elif now.content in ["]", ")"]:
-            sp -= 1
+            addCode(now.text)
             return
         elif now.content in ["-", "~"]:
             callCompile("term")
-            sp -= 1
             return
     CompileTerm()
