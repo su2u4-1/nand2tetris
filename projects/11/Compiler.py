@@ -1,4 +1,8 @@
-def compiler(text: list):
+def compiler(text: list[str]):
+    s = len(text[i]) - len(text[i].strip())
+    text[i] = text[i].strip()
+
+def compile(text):
     global symbol, symbolClass
     symbol = []
     symbolClass = {}
