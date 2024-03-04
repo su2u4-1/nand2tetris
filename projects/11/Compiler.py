@@ -1,6 +1,16 @@
 def compiler(text: list[str]):
     s = len(text[i]) - len(text[i].strip())
     text[i] = text[i].strip()
+    if " " in text[i]:
+        t0 = text[i].split()[1]
+        t1 = text[i].split()[0]
+    elif text[i][0:2] == "</":
+        t0 = text[i][2:-1]
+        t1 = "endLabel"
+    else:
+        t0 = text[i][1:-1]
+        t1 = "startLabel"
+    text[i] = [t0,t1,s]
 
 def compile(text):
     global symbol, symbolClass
