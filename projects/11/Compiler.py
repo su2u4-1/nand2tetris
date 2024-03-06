@@ -8,27 +8,22 @@ class xml:
 source: list[xml]
 
 
-def grammarAnalyzer(text: list):
-    global source, ia, sp, CodeList, gsymbol, gsp, lsymbol, lsp, lia
-    CodeList = []
-    ia = 0
+def compiler(text: list):
+    global source, sp, gsymbol, gsp, lsymbol, lsp, lia
     sp = 0
     gsymbol = {}
     gsp = 0
     lsymbol = {}
     lsp = {}
     lia = 0
-    for i in range(len(text)):
-        text[i] = xml(text[i][0], text[i][1])
     source = text
     CompileClass()
-    return CodeList
+    print(gsymbol)
+    print(lsymbol)
+    return text
 
 
 def callCompile(tag: str):
-    global ia, sp
-    addCode(f"<{tag}>")
-    ia += 1
     match tag:
         case "class":
             CompileClass()
@@ -60,60 +55,42 @@ def callCompile(tag: str):
             CompileExpressionList()
         case "term":
             CompileTerm()
-    ia -= 1
-    addCode(f"</{tag}>")
-
-
-def addCode(text: str):
-    global ia, sp
-    CodeList.append("  " * ia + text)
 
 
 def CompileClass():
     global sp, gsp
     now = source[sp]
     if now.tag == "keyword":
-        if now.content == "class":
-            addCode(now.text)
-        elif now.content in ["field", "static"]:
+        if now.content in ["field", "static"]:
             callCompile("classVarDec")
         elif now.content in ["constructor", "function", "method"]:
             callCompile("subroutineDec")
     elif now.tag == "identifier":
         gsymbol[now.content] = ["className", "className", gsp]
         gsp += 1
-        addCode(now.text)
     elif now.tag == "symbol":
-        if now.content == "{":
-            addCode(now.text)
-        elif now.content == "}":
-            addCode(now.text)
+        if now.content == "}":
             return
     sp += 1
     CompileClass()
 
 
 def CompileClassVarDec():
-    global sp, gsp
+    global sp, gsp, var, vartype0
     now = source[sp]
     if now.tag == "keyword" and now.content in ["field", "static", "int", "char", "boolean"]:
-        addCode(now.text)
-        if now.content in ["int", "char", "boolean"]:
-            vartype = now.content
-        else:
+        if now.content in ["field", "static"]:
             var = now.content
     elif now.tag == "identifier":
-        if source[sp - 1].content in ["field", "static"]:
-            vartype = now.content
         if source[sp - 2].content in ["field", "static"]:
-            gsymbol[now.content] = [vartype, var, gsp]
+            vartype0 = source[sp - 1].content
+            gsymbol[now.content] = [vartype0, var, gsp]
             gsp += 1
-        addCode(now.text)
+        elif source[sp - 1].content == ",":
+            gsymbol[now.content] = [vartype0, var, gsp]
+            gsp += 1
     elif now.tag == "symbol":
-        if now.content == ",":
-            addCode(now.text)
-        elif now.content == ";":
-            addCode(now.text)
+        if now.content == ";":
             return
     sp += 1
     CompileClassVarDec()
@@ -124,22 +101,16 @@ def CompileSubroutineDec():
     now = source[sp]
     if now.tag == "identifier":
         if source[sp - 2].content in ["constructor", "function", "method"]:
-            gsymbol[now.content] = ["functionName", "functionName", gsp]
+            gsymbol[now.content] = [source[sp - 1].content, "functionName", gsp]
             gsp += 1
-        addCode(now.text)
-    elif now.tag == "keyword" and now.content in ["constructor", "function", "method", "int", "char", "boolean", "void"]:
-        addCode(now.text)
     elif now.tag == "symbol":
         if now.content == "(":
-            addCode(now.text)
             lsymbol[lia] = {}
             lsp[lia] = 0
             callCompile("parameterList")
-            lia += 1
-        elif now.content == ")":
-            addCode(now.text)
         elif now.content == "{":
             callCompile("subroutineBody")
+            lia += 1
             return
     sp += 1
     CompileSubroutineDec()
@@ -149,37 +120,25 @@ def CompileParameterList():
     global sp, lsp
     sp += 1
     now = source[sp]
-    if now.tag == "keyword" and now.content in ["int", "char", "boolean"]:
-        addCode(now.text)
-    elif now.tag == "identifier":
+    if now.tag == "identifier":
         if source[sp - 1].tag == "identifier" or source[sp - 1].content in ["int", "char", "boolean"]:
             lsymbol[lia][now.content] = [source[sp - 1].content, "argument", lsp[lia]]
             lsp[lia] += 1
-        addCode(now.text)
     elif now.tag == "symbol":
         if now.content == ")":
             sp -= 1
             return
-        elif now.content == ",":
-            addCode(now.text)
     CompileParameterList()
 
 
 def CompileSubroutineBody():
     global sp, lsp, lia
     now = source[sp]
-    if now.tag == "symbol":
-        if now.content == "{":
-            addCode(now.text)
-        elif now.content == "}":
-            addCode(now.text)
-            return
+    if now.tag == "symbol" and now.content == "}":
+        return
     elif now.tag == "keyword":
         if now.content == "var":
-            lsymbol[lia] = {}
-            lsp[lia] = 0
             callCompile("varDec")
-            lia += 1
         elif now.content in ["let", "do", "if", "while", "return"]:
             callCompile("statements")
             sp -= 1
@@ -188,27 +147,24 @@ def CompileSubroutineBody():
 
 
 def CompileVarDec():
-    global sp, lsp
+    global sp, lsp, vartype1
     now = source[sp]
-    if now.tag == "keyword" and now.content in ["var", "int", "char", "boolean"]:
-        addCode(now.text)
-    elif now.tag == "symbol":
-        if now.content == ",":
-            addCode(now.text)
-        elif now.content == ";":
-            addCode(now.text)
-            return
+    if now.tag == "symbol" and now.content == ";":
+        return
     elif now.tag == "identifier":
         if source[sp - 2].content == "var":
-            lsymbol[lia] = [source[sp - 1], "local", lsp[lia]]
+            vartype1 = source[sp - 1].content
+            lsymbol[lia][now.content] = [vartype1, "local", lsp[lia]]
             lsp[lia] += 1
-        addCode(now.text)
+        elif source[sp - 1].content == ",":
+            lsymbol[lia][now.content] = [vartype1, "local", lsp[lia]]
+            lsp[lia] += 1
     sp += 1
     CompileVarDec()
 
 
 def CompileStatements():
-    global sp, lsp
+    global sp
     now = source[sp]
     if now.tag == "keyword" and now.content in ["if", "let", "do", "while", "return"]:
         callCompile(f"{now.content}Statement")
@@ -220,102 +176,68 @@ def CompileStatements():
 
 
 def CompileLetStatement():
-    global sp, lsp
+    global sp
     now = source[sp]
     sp += 1
-    if now.tag == "identifier":
-        addCode(now.text)
-    elif now.tag == "keyword" and now.content == "let":
-        addCode(now.text)
-    elif now.tag == "symbol":
-        if now.content == ",":
-            addCode(now.text)
-        elif now.content == ";":
-            addCode(now.text)
+    if now.tag == "symbol":
+        if now.content == ";":
             sp -= 1
             return
         elif now.content == "[":
-            addCode(now.text)
             callCompile("expression")
-        elif now.content == "]":
-            addCode(now.text)
         elif now.content == "=":
-            addCode(now.text)
             callCompile("expression")
     CompileLetStatement()
 
 
 def CompileIfStatement():
-    global sp, lsp
+    global sp
     now = source[sp]
     sp += 1
     next = source[sp + 1]
-    if now.tag == "keyword" and now.content in ["if", "else"]:
-        addCode(now.text)
-    elif now.tag == "symbol":
+    if now.tag == "symbol":
         if now.content == "(":
-            addCode(now.text)
             callCompile("expression")
-        elif now.content == ")":
-            addCode(now.text)
         elif now.content == "{":
-            addCode(now.text)
             callCompile("statements")
         elif now.content == "}":
-            addCode(now.text)
             if next.tag != "keyword" or next.content != "else":
                 return
     CompileIfStatement()
 
 
 def CompileWhileStatement():
-    global sp, lsp
+    global sp
     now = source[sp]
     sp += 1
-    if now.tag == "keyword" and now.content == "while":
-        addCode(now.text)
-    elif now.tag == "symbol":
+    if now.tag == "symbol":
         if now.content == "(":
-            addCode(now.text)
             callCompile("expression")
-        elif now.content == ")":
-            addCode(now.text)
         elif now.content == "{":
-            addCode(now.text)
             callCompile("statements")
         elif now.content == "}":
-            addCode(now.text)
             return
     CompileWhileStatement()
 
 
 def CompileDoStatement():
-    global sp, lsp
+    global sp
     now = source[sp]
     sp += 1
-    if now.tag == "identifier":
-        addCode(now.text)
-    elif now.tag == "keyword" and now.content == "do":
-        addCode(now.text)
-    elif now.tag == "symbol":
+    if now.tag == "symbol":
         if now.content == ";":
-            addCode(now.text)
             return
-        elif now.content in [".", ")"]:
-            addCode(now.text)
         elif now.content == "(":
-            addCode(now.text)
             callCompile("expressionList")
     CompileDoStatement()
 
 
 def CompileReturnStatement():
-    global sp, lsp
+    global sp
     now = source[sp]
     if now.tag == "keyword" and now.content == "return":
-        addCode(now.text)
+        pass
     elif now.tag == "symbol" or now.content == ";":
-        addCode(now.text)
         return
     else:
         callCompile("expression")
@@ -325,10 +247,10 @@ def CompileReturnStatement():
 
 
 def CompileExpression(f=False):
-    global sp, lsp
+    global sp
     now = source[sp]
     if now.tag == "symbol" and now.content in ["+", "-", "*", "/", "&", "|", "<", ">", "="] and f:
-        addCode(now.text)
+        pass
     elif now.tag == "symbol" and now.content in [";", ")", "]", "}", ","]:
         return
     else:
@@ -339,10 +261,10 @@ def CompileExpression(f=False):
 
 
 def CompileExpressionList(f=False):
-    global sp, lsp
+    global sp
     now = source[sp]
     if now.tag == "symbol" and now.content == "," and f:
-        addCode(now.text)
+        pass
     elif now.tag == "symbol" and now.content == ")":
         return
     else:
@@ -353,20 +275,17 @@ def CompileExpressionList(f=False):
 
 
 def CompileTerm(f=False):
-    global sp, lsp
+    global sp
     now = source[sp]
     previous = source[sp - 1]
     sp += 1
     next = source[sp]
     if now.tag in ["integerConstant", "stringConstant"] or (now.tag == "keyword" and now.content in ["true", "false", "null", "this"]):
-        addCode(now.text)
         return
     elif now.tag in "identifier":
-        addCode(now.text)
         if next.tag != "symbol" or next.content not in ["(", ".", "["]:
             return
     elif now.tag == "symbol" and now.content in ["(", ")", "[", "]", "-", "~", "."]:
-        addCode(now.text)
         if now.content == "(":
             if previous.tag == "identifier":
                 callCompile("expressionList")
