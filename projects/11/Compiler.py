@@ -1,11 +1,22 @@
-def compiler(text: list):
-    ls, gs = variableAnalysis(text)
+class xml:
+    def __init__(self, text: str, tag: str, sp: int):
+        self.content = text
+        self.text = f"<{tag}> {text} </{tag}>"
+        self.tag = tag
+        self.sp = sp
+
+
+def compiler(text1, text2):
+    global ls, gs
+    ls, gs = variableAnalysis(text1)
     print(gs)
     print(ls)
-    return text
+    code = compile(text2)
+    print(code)
+    return code
 
 
-def variableAnalysis(text: list):
+def variableAnalysis(text: list[xml]):
     sp = 0
     gsymbol = {}
     gsp = 0
@@ -120,3 +131,22 @@ def variableAnalysis(text: list):
 
     Class()
     return lsymbol, gsymbol
+
+
+def compile(text: list[str]):
+    for i in range(len(text)):
+        s = len(text[i])
+        text[i] = text[i].strip()
+        s -= len(text[i])
+        if " " in text[i]:
+            text[i] = text[i].split()
+            text[i] = xml(text[i][1], text[i][0], s / 2)
+        elif text[i][0:2] == "</":
+            text[i] = xml(text[i][2:-1], "endLabel", s / 2)
+        else:
+            text[i] = xml(text[i][1:-1], "startLabel", s / 2)
+    dec(text)
+
+
+def dec(text: list[xml]):
+    pass

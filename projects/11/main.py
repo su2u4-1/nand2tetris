@@ -37,11 +37,10 @@ if __name__ == "__main__":
             f.write("\n".join(["<tokens>"] + xml(tl) + ["</tokens>\n"]))
             f.close()
             xmlcode = Parser.grammarAnalyzer(processedSourceCode)
-            xmlcode[-1] += "\n"
             f = open(i.split(".")[0] + "_M.xml", "w")
-            f.write("\n".join(xmlcode))
+            f.write("\n".join(xmlcode) + "\n")
             f.close()
-            vmCode = Compiler.compiler(processedSourceCode)
+            vmCode = Compiler.compiler(processedSourceCode, xmlcode)
             # f = open(i.split(".")[0] + ".vm", "w")
             # f.write("\n".join(vmcode))
             # f.close()
