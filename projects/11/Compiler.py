@@ -4,6 +4,7 @@ def compiler(text: list):
     print(ls)
     return text
 
+
 def variableAnalysis(text: list):
     sp = 0
     gsymbol = {}
@@ -13,8 +14,9 @@ def variableAnalysis(text: list):
     lia = 0
     np = 0
     source = text
+
     def Class():
-        
+        nonlocal gsp, sp
         now = source[sp]
         if now.tag == "keyword":
             if now.content in ["field", "static"]:
@@ -29,26 +31,30 @@ def variableAnalysis(text: list):
                 return
         sp += 1
         Class()
+
     def ClassVarDec():
-        global var, vartype0
+        global varvalue, vartype0
+        nonlocal gsp, sp
         now = source[sp]
         if now.tag == "keyword" and now.content in ["field", "static", "int", "char", "boolean"]:
             if now.content in ["field", "static"]:
-                var = now.content
+                varvalue = now.content
         elif now.tag == "identifier":
             if source[sp - 2].content in ["field", "static"]:
                 vartype0 = source[sp - 1].content
-                gsymbol[now.content] = [vartype0, var, gsp]
+                gsymbol[now.content] = [vartype0, varvalue, gsp]
                 gsp += 1
             elif source[sp - 1].content == ",":
-                gsymbol[now.content] = [vartype0, var, gsp]
+                gsymbol[now.content] = [vartype0, varvalue, gsp]
                 gsp += 1
         elif now.tag == "symbol":
             if now.content == ";":
                 return
         sp += 1
         ClassVarDec()
+
     def SubroutineDec():
+        nonlocal sp, gsp, lia
         now = source[sp]
         if now.tag == "identifier":
             if source[sp - 2].content in ["constructor", "function", "method"]:
@@ -65,7 +71,9 @@ def variableAnalysis(text: list):
                 return
         sp += 1
         SubroutineDec()
+
     def ParameterList():
+        nonlocal sp
         sp += 1
         now = source[sp]
         if now.tag == "identifier":
@@ -77,7 +85,9 @@ def variableAnalysis(text: list):
                 sp -= 1
                 return
         ParameterList()
+
     def SubroutineBody():
+        nonlocal sp, np
         now = source[sp]
         if now.tag == "symbol":
             if now.content == "}":
@@ -90,8 +100,10 @@ def variableAnalysis(text: list):
             VarDec()
         sp += 1
         SubroutineBody()
+
     def VarDec():
         global vartype1
+        nonlocal sp
         now = source[sp]
         if now.tag == "symbol" and now.content == ";":
             return
@@ -105,5 +117,6 @@ def variableAnalysis(text: list):
                 lsp[lia] += 1
         sp += 1
         VarDec()
+
     Class()
     return lsymbol, gsymbol

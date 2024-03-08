@@ -111,7 +111,18 @@ def CompileSubroutineDec():
     now = source[sp]
     if now.tag == "identifier":
         addCode(now.text)
-    elif now.tag == "keyword" and now.content in ["constructor","function","method","int","Int","char","Char","boolean","Boolean","void"]:
+    elif now.tag == "keyword" and now.content in [
+        "constructor",
+        "function",
+        "method",
+        "int",
+        "Int",
+        "char",
+        "Char",
+        "boolean",
+        "Boolean",
+        "void",
+    ]:
         addCode(now.text)
     elif now.tag == "symbol":
         if now.content == "(":
