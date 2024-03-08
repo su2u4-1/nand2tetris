@@ -92,7 +92,7 @@ def CompileClass():
 def CompileClassVarDec():
     global sp
     now = source[sp]
-    if now.tag == "keyword" and now.content in ["field", "static", "int", "char", "boolean"]:
+    if now.tag == "keyword" and now.content in ["field", "static", "int", "Int", "char", "Char", "boolean", "Boolean"]:
         addCode(now.text)
     elif now.tag == "identifier":
         addCode(now.text)
@@ -111,7 +111,7 @@ def CompileSubroutineDec():
     now = source[sp]
     if now.tag == "identifier":
         addCode(now.text)
-    elif now.tag == "keyword" and now.content in ["constructor", "function", "method", "int", "char", "boolean", "void"]:
+    elif now.tag == "keyword" and now.content in ["constructor","function","method","int","Int","char","Char","boolean","Boolean","void"]:
         addCode(now.text)
     elif now.tag == "symbol":
         if now.content == "(":
@@ -130,7 +130,7 @@ def CompileParameterList():
     global sp
     sp += 1
     now = source[sp]
-    if now.tag == "keyword" and now.content in ["int", "char", "boolean"]:
+    if now.tag == "keyword" and now.content in ["int", "Int", "char", "Char", "boolean", "Boolean"]:
         addCode(now.text)
     elif now.tag == "identifier":
         addCode(now.text)
@@ -165,7 +165,7 @@ def CompileSubroutineBody():
 def CompileVarDec():
     global sp
     now = source[sp]
-    if now.tag == "keyword" and now.content in ["var", "int", "char", "boolean"]:
+    if now.tag == "keyword" and now.content in ["var", "int", "Int", "char", "Char", "boolean", "Boolean"]:
         addCode(now.text)
     elif now.tag == "symbol":
         if now.content == ",":
@@ -221,7 +221,7 @@ def CompileIfStatement():
     global sp
     now = source[sp]
     sp += 1
-    next = source[sp + 1]
+    next = source[sp]
     if now.tag == "keyword" and now.content in ["if", "else"]:
         addCode(now.text)
     elif now.tag == "symbol":
@@ -299,7 +299,7 @@ def CompileReturnStatement():
 def CompileExpression(f=False):
     global sp
     now = source[sp]
-    if now.tag == "symbol" and now.content in ["+", "-", "*", "/", "&", "|", "<", ">", "="] and f:
+    if now.tag == "symbol" and now.content in ["+", "-", "*", "/", "&amp;", "|", "&lt;", "&gt;", "="] and f:
         addCode(now.text)
     elif now.tag == "symbol" and now.content in [";", ")", "]", "}", ","]:
         return
