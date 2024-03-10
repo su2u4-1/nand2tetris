@@ -7,7 +7,8 @@ class xml:
 
 
 def compiler(text1, text2):
-    global ls, gs
+    global ls, gs, lvList
+    lvList = []
     ls, gs = variableAnalysis(text1)
     print(gs)
     print(ls)
@@ -140,13 +141,29 @@ def compile(text: list[str]):
         s -= len(text[i])
         if " " in text[i]:
             text[i] = text[i].split()
-            text[i] = xml(text[i][1], text[i][0], s / 2)
+            text[i] = xml(text[i][1], text[i][0][1:-1], int(s / 2))
         elif text[i][0:2] == "</":
-            text[i] = xml(text[i][2:-1], "endLabel", s / 2)
+            text[i] = xml(text[i][2:-1], "endLabel", int(s / 2))
         else:
-            text[i] = xml(text[i][1:-1], "startLabel", s / 2)
-    dec(text)
+            text[i] = xml(text[i][1:-1], "startLabel", int(s / 2))
+    nested_dict, _ = dec(text)
+    return nested_dict
 
 
-def dec(text: list[xml]):
-    pass
+def dec(elements: list[xml], index=0):
+    nested_structure = {}
+    stratum = 0
+    while index < len(elements):
+        now = elements[index]
+        if now.tag == "startLabel":
+            lvList.append(now.sp)
+            nd, index = dec(elements, index + 1)
+            nested_structure[stratum] = ["dict_" + now.content, nd]
+        elif now.tag == "endLabel" and now.sp == lvList[-1]:
+            lvList.pop()
+            return nested_structure, index
+        else:
+            nested_structure[stratum] = ["str_" + now.tag, now.content]
+        index += 1
+        stratum += 1
+    return nested_structure, index
