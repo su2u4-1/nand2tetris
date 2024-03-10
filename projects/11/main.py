@@ -19,7 +19,7 @@ def xml(code: list):
 
 if __name__ == "__main__":
     path = input("file or path:")
-    if ".jack" in path:
+    if path.endswith(".jack"):
         result = [path]
     else:
         if "C:\\Users\\joey2\\桌面\\nand2tetris\\" in path:
@@ -27,7 +27,7 @@ if __name__ == "__main__":
         else:
             result = listAllFiles("C:\\Users\\joey2\\桌面\\nand2tetris\\" + path)
     for i in result:
-        if ".jack" in i:
+        if i.endswith(".jack"):
             f = open(i, "r")
             sourceCode = f.readlines()
             f.close()

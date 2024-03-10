@@ -7,14 +7,29 @@ class xml:
 
 
 def compiler(text1, text2):
-    global ls, gs, lvList
+    global ls, gs, lvList, di, code
     lvList = []
     ls, gs = variableAnalysis(text1)
-    print(gs)
-    print(ls)
-    code = compile(text2)
+    print(gs, ls)
+    text = structure(text2)
+    print()
+    walk_dict(text)
+    classname = text[0][1][1][1]
+    di = ["base"]
+    code = []
+    compile(text, classname)
     print(code)
     return code
+
+
+def walk_dict(d, depth=0):
+    for key, value in d.items():
+        print("  " * depth + str(key), end=": ")
+        if type(value) == list and value[0].startswith("dict_"):
+            print("dict", value[0][5:])
+            walk_dict(value[1], depth + 1)
+        else:
+            print(value[0][4:], value[1])
 
 
 def variableAnalysis(text: list[xml]):
@@ -23,7 +38,7 @@ def variableAnalysis(text: list[xml]):
     gsp = 0
     lsymbol = {}
     lsp = {}
-    lia = 0
+    lia = ""
     np = 0
     source = text
 
@@ -70,6 +85,7 @@ def variableAnalysis(text: list[xml]):
         now = source[sp]
         if now.tag == "identifier":
             if source[sp - 2].content in ["constructor", "function", "method"]:
+                lia = now.content
                 gsymbol[now.content] = [source[sp - 1].content, "functionName", gsp]
                 gsp += 1
         elif now.tag == "symbol":
@@ -79,7 +95,6 @@ def variableAnalysis(text: list[xml]):
                 ParameterList()
             elif now.content == "{":
                 SubroutineBody()
-                lia += 1
                 return
         sp += 1
         SubroutineDec()
@@ -134,7 +149,25 @@ def variableAnalysis(text: list[xml]):
     return lsymbol, gsymbol
 
 
-def compile(text: list[str]):
+def structure(text: list[str]):
+    def dec(elements: list[xml], index=0):
+        nested_structure = {}
+        stratum = 0
+        while index < len(elements):
+            now = elements[index]
+            if now.tag == "startLabel":
+                lvList.append(now.sp)
+                nd, index = dec(elements, index + 1)
+                nested_structure[stratum] = ["dict_" + now.content, nd]
+            elif now.tag == "endLabel" and now.sp == lvList[-1]:
+                lvList.pop()
+                return nested_structure, index
+            else:
+                nested_structure[stratum] = ["str_" + now.tag, now.content]
+            index += 1
+            stratum += 1
+        return nested_structure, index
+
     for i in range(len(text)):
         s = len(text[i])
         text[i] = text[i].strip()
@@ -146,24 +179,37 @@ def compile(text: list[str]):
             text[i] = xml(text[i][2:-1], "endLabel", int(s / 2))
         else:
             text[i] = xml(text[i][1:-1], "startLabel", int(s / 2))
-    nested_dict, _ = dec(text)
-    return nested_dict
+    return dec(text)[0]
 
 
-def dec(elements: list[xml], index=0):
-    nested_structure = {}
-    stratum = 0
-    while index < len(elements):
-        now = elements[index]
-        if now.tag == "startLabel":
-            lvList.append(now.sp)
-            nd, index = dec(elements, index + 1)
-            nested_structure[stratum] = ["dict_" + now.content, nd]
-        elif now.tag == "endLabel" and now.sp == lvList[-1]:
-            lvList.pop()
-            return nested_structure, index
+def compile(d: dict[int:list], classname):
+    global local_symbol
+    if di[-1] == "subroutineDec":
+        localn = 0
+        for v in d[6][1].values():
+            if v[0] == "dict_varDec":
+                localn += 1
+        code.append(f"function {classname}.{d[2][1]} {localn}")
+        local_symbol = ls[d[2][1]]
+    elif di[-1] == "letStatement":
+        if d[2][1] == "=":
+            compileExpression(d, classname)
+            if d[1][1] in local_symbol:
+                code.append(f"pop ")  # 寫到這裡
+    for key, value in d.items():
+        if value[0].startswith("dict_"):
+            di.append(value[0][5:])
+            compile(value[1], classname)
         else:
-            nested_structure[stratum] = ["str_" + now.tag, now.content]
-        index += 1
-        stratum += 1
-    return nested_structure, index
+            tag = value[0][4:]
+            content = value[1]
+
+
+def compileExpression(d: dict[int:list], classname):
+    for key, value in d.items():
+        if value[0].startswith("dict_"):
+            di.append(value[0][5:])
+            compileExpression(value[1], classname)
+        else:
+            tag = value[0][4:]
+            content = value[1]
