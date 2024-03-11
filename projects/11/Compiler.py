@@ -195,7 +195,11 @@ def compile(d: dict[int:list], classname):
         if d[2][1] == "=":
             compileExpression(d, classname)
             if d[1][1] in local_symbol:
-                code.append(f"pop ")  # 寫到這裡
+                code.append(f"pop local {local_symbol[d[1][1]][2]}")
+            else:
+                code.append(f"pop {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
+        elif d[2][1] == "[":
+            pass  # 寫到這裡
     for key, value in d.items():
         if value[0].startswith("dict_"):
             di.append(value[0][5:])
