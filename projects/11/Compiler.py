@@ -18,6 +18,7 @@ def compiler(text1, text2):
     di = ["base"]
     code = []
     compile(text, classname)
+    print()
     print(code)
     return code
 
@@ -185,21 +186,28 @@ def structure(text: list[str]):
 def compile(d: dict[int:list], classname):
     global local_symbol
     if di[-1] == "subroutineDec":
+        local_symbol = ls[d[2][1]]
         localn = 0
-        for v in d[6][1].values():
-            if v[0] == "dict_varDec":
+        for i in local_symbol.values():
+            if i[1] == "local":
                 localn += 1
         code.append(f"function {classname}.{d[2][1]} {localn}")
-        local_symbol = ls[d[2][1]]
     elif di[-1] == "letStatement":
         if d[2][1] == "=":
-            compileExpression(d, classname)
+            compileExpression(d, classname)  # this
             if d[1][1] in local_symbol:
                 code.append(f"pop local {local_symbol[d[1][1]][2]}")
             else:
                 code.append(f"pop {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
         elif d[2][1] == "[":
-            pass  # 寫到這裡
+            if d[1][1] in local_symbol:
+                code.append(f"push local {local_symbol[d[1][1]][2]}")
+            else:
+                code.append(f"push {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
+            code.append("pop pointer 0")
+            compileExpression(d, classname)  # this
+            code.append("pop this n")  # this
+            # this
     for key, value in d.items():
         if value[0].startswith("dict_"):
             di.append(value[0][5:])
