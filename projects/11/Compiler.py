@@ -194,7 +194,8 @@ def compile(d: dict[int:list], classname):
         code.append(f"function {classname}.{d[2][1]} {localn}")
     elif di[-1] == "letStatement":
         if d[2][1] == "=":
-            compileExpression(d, classname)  # this
+            code.extend(compileExpression(d[3][1], classname))
+            print(d[3][1])
             if d[1][1] in local_symbol:
                 code.append(f"pop local {local_symbol[d[1][1]][2]}")
             else:
@@ -204,9 +205,13 @@ def compile(d: dict[int:list], classname):
                 code.append(f"push local {local_symbol[d[1][1]][2]}")
             else:
                 code.append(f"push {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
-            code.append("pop pointer 0")
-            compileExpression(d, classname)  # this
-            code.append("pop this n")  # this
+            code.extend(compileExpression(d[3][1], classname))
+            print(d[3][1])
+            code.append("add")
+            code.append("pop pointer 1")
+            code.extend(compileExpression(d[3][1], classname))
+            print(d[3][1])
+            code.append("pop that 0")
             # this
     for key, value in d.items():
         if value[0].startswith("dict_"):
@@ -217,11 +222,15 @@ def compile(d: dict[int:list], classname):
             content = value[1]
 
 
-def compileExpression(d: dict[int:list], classname):
-    for key, value in d.items():
+# this
+def compileExpression(d: dict[int:list], classname, content:list=None):
+    content:list
+    if content == None:
+        content = []
+    for value in d.values():
         if value[0].startswith("dict_"):
             di.append(value[0][5:])
-            compileExpression(value[1], classname)
+            compileExpression(value[1], classname, content)
         else:
-            tag = value[0][4:]
-            content = value[1]
+            content.append(value[1])
+    return content
