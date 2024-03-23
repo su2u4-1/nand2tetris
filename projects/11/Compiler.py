@@ -239,14 +239,38 @@ def compileExpression(d: dict[int:list], classname, content: list = None):
 
 
 def rpn(d):
-    content = []
-
     def a(d: dict[int, list[str, str | dict]]):
+        content = []
+        c = []
+        e = []
         for v in d.values():
-            if v[0].startswith("dict_"):
-                a(v[1])
+            if v[0].startswith("dict_term"):
+                e.append(b(v[1]))
             else:
-                content.append(v[1])
+                c.append(v[1])
+        n = 2
+        for i in c:
+            e.insert(n, [i])
+            n += 2
+        for i in e:
+            content.extend(i)
+        return content
 
-    a(d)
-    return content
+    def b(d: dict[int, list[str, str | dict]]):
+        content = []
+        if 1 in d and d[0][1] in ["-", "~"] and d[1][0] == "dict_term":
+            content.extend(b(d[1][1]))
+            content.append(d[0][1])
+        elif 2 in d and d[1][1] == "." and d[0][0].startswith("dict_identifier") and d[2][0].startswith("dict_identifier") and False:
+            pass  # this
+        else:
+            for v in d.values():
+                if v[0] == "dict_expression":
+                    content.extend(a(v[1]))
+                elif v[0] == "dict_term":
+                    content.extend(b(v[1]))
+                else:
+                    content.append(v[1])
+        return content
+
+    return a(d)
