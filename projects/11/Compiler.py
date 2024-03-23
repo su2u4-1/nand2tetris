@@ -223,8 +223,10 @@ def compile(d: dict[int:list], classname):
 
 
 # this
-def compileExpression(d: dict[int:list], classname, content:list=None):
-    content:list
+def compileExpression(d: dict[int:list], classname, content: list = None):
+    print(rpn(d))
+    return []
+    content: list
     if content == None:
         content = []
     for value in d.values():
@@ -233,4 +235,18 @@ def compileExpression(d: dict[int:list], classname, content:list=None):
             compileExpression(value[1], classname, content)
         else:
             content.append(value[1])
+    return content
+
+
+def rpn(d):
+    content = []
+
+    def a(d: dict[int, list[str, str | dict]]):
+        for v in d.values():
+            if v[0].startswith("dict_"):
+                a(v[1])
+            else:
+                content.append(v[1])
+
+    a(d)
     return content
