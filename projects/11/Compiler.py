@@ -222,20 +222,9 @@ def compile(d: dict[int:list], classname):
             content = value[1]
 
 
-# this
 def compileExpression(d: dict[int:list], classname, content: list = None):
     print(rpn(d))
     return []
-    content: list
-    if content == None:
-        content = []
-    for value in d.values():
-        if value[0].startswith("dict_"):
-            di.append(value[0][5:])
-            compileExpression(value[1], classname, content)
-        else:
-            content.append(value[1])
-    return content
 
 
 def rpn(d):
