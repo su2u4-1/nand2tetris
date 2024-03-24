@@ -239,15 +239,32 @@ def compileExpression(d: dict[int:list], classname, content: list = None):
 
 
 def rpn(d):
-    def a(d: dict[int, list[str, str | dict]]):
+    def compileExpression(d: dict[int, list[str, str | dict]]):
         content = []
         c = []
         e = []
         for v in d.values():
             if v[0].startswith("dict_term"):
-                e.append(b(v[1]))
+                e.append(compileTerm(v[1]))
             else:
-                c.append(v[1])
+                if v[1] == "+":
+                    c.append("add")
+                elif v[1] == "-":
+                    c.append("sub")
+                elif v[1] == "*":
+                    c.append("call Math.multiply 2")
+                elif v[1] == "/":
+                    c.append("call Math.divide 2")
+                elif v[1] == "&":
+                    c.append("and")
+                elif v[1] == "|":
+                    c.append("or")
+                elif v[1] == ">":
+                    c.append("gt")
+                elif v[1] == "<":
+                    c.append("lt")
+                elif v[1] == "=":
+                    c.append("eq")
         n = 2
         for i in c:
             e.insert(n, [i])
@@ -256,21 +273,44 @@ def rpn(d):
             content.extend(i)
         return content
 
-    def b(d: dict[int, list[str, str | dict]]):
+    def compileTerm(d: dict[int, list[str, str | dict]]):
         content = []
         if 1 in d and d[0][1] in ["-", "~"] and d[1][0] == "dict_term":
-            content.extend(b(d[1][1]))
-            content.append(d[0][1])
-        elif 2 in d and d[1][1] == "." and d[0][0].startswith("dict_identifier") and d[2][0].startswith("dict_identifier") and False:
-            pass  # this
-        else:
-            for v in d.values():
-                if v[0] == "dict_expression":
-                    content.extend(a(v[1]))
-                elif v[0] == "dict_term":
-                    content.extend(b(v[1]))
-                else:
-                    content.append(v[1])
+            content.extend(compileTerm(d[1][1]))
+            if d[0][1] == "-":
+                content.append("neg")
+            elif d[0][1] == "~":
+                content.append("not")
+        elif 5 in d and d[0][0] == "str_identifier" and d[1][1] == "." and d[2][0] == "str_identifier" and d[3] == ["str_symbol","("]:
+            content.extend(compileSubroutineCall1(d))
+        elif 3 in d and d[0][0] == "str_identifier" and d[1][1] == "(" and d[2][0] == "dict_expressionList" and d[3][1] == ")":
+            content.extend(compileSubroutineCall2(d))
+        elif 2 in d and d[0][1] == "(" and d[1][0] == "dict_expression" and d[2][1] == ")":
+            content.extend(compileExpression(d[1][1]))
+        elif 3 in d and d[0][0] == "str_identifier" and d[1][1] == "[" and d[2][0] == "dict_expression" and d[3][1] == "]":
+            content.append(d)  # this
+        elif 0 in d and 1 not in d:
+            if d[0][0] == "str_integerConstant":
+                content.append(f"push constant {d[0][1]}")
+            if d[0][0] == "str_stringConstant":
+                content.append(d[0][1])  # this
+            if d[0][0] == "str_keywordConstant":
+                if d[0][1] == "true":
+                    content.append("push constant 1\nneg")
+                elif d[0][1] == "false":
+                    content.append("push constant 0")
+                elif d[0][1] == "null":
+                    content.append("push constant 0")
+                elif d[0][1] == "this":
+                    content.append("")  # this
+            if d[0][0] == "str_identifier":
+                content.append(d[0][1])  # this
         return content
+    
+    def compileSubroutineCall1(d: dict[int, list[str, str | dict]]):
+        return ["SubroutineCall"]  # this
+    
+    def compileSubroutineCall2(d: dict[int, list[str, str | dict]]):
+        return ["SubroutineCall"]  # this
 
-    return a(d)
+    return compileExpression(d)
