@@ -270,13 +270,14 @@ def rpn(d):
                 content.append("neg")
             elif d[0][1] == "~":
                 content.append("not")
-        elif 5 in d and d[0][0] == "str_identifier" and d[1][1] == "." and d[2][0] == "str_identifier" and d[3] == ["str_symbol","("]:
+        elif 5 in d and d[0][0] == "str_identifier" and d[1][1] == "." and d[2][0] == "str_identifier" and d[3] == ["str_symbol", "("]:
             content.extend(compileSubroutineCall1(d))
         elif 3 in d and d[0][0] == "str_identifier" and d[1][1] == "(" and d[2][0] == "dict_expressionList" and d[3][1] == ")":
             content.extend(compileSubroutineCall2(d))
         elif 2 in d and d[0][1] == "(" and d[1][0] == "dict_expression" and d[2][1] == ")":
             content.extend(compileExpression(d[1][1]))
         elif 3 in d and d[0][0] == "str_identifier" and d[1][1] == "[" and d[2][0] == "dict_expression" and d[3][1] == "]":
+            content.extend(compileExpression(d[2][1]))
             content.append(d)  # this
         elif 0 in d and 1 not in d:
             if d[0][0] == "str_integerConstant":
@@ -295,10 +296,10 @@ def rpn(d):
             if d[0][0] == "str_identifier":
                 content.append(d[0][1])  # this
         return content
-    
+
     def compileSubroutineCall1(d: dict[int, list[str, str | dict]]):
         return ["SubroutineCall"]  # this
-    
+
     def compileSubroutineCall2(d: dict[int, list[str, str | dict]]):
         return ["SubroutineCall"]  # this
 
