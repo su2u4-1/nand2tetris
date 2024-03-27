@@ -209,10 +209,9 @@ def compile(d: dict[int:list], classname):
             print(d[3][1])
             code.append("add")
             code.append("pop pointer 1")
-            code.extend(compileExpression(d[3][1], classname))
-            print(d[3][1])
+            code.extend(compileExpression(d[6][1], classname))
             code.append("pop that 0")
-            # this
+    # this
     for key, value in d.items():
         if value[0].startswith("dict_"):
             di.append(value[0][5:])
@@ -223,18 +222,19 @@ def compile(d: dict[int:list], classname):
 
 
 def compileExpression(d: dict[int:list], classname, content: list = None):
-    print(rpn(d))
-    return []
+    a = rpn(d, classname)
+    print(a)
+    return a
 
 
-def rpn(d):
-    def compileExpression(d: dict[int, list[str, str | dict]]):
+def rpn(d, classname):
+    def compileExpression(d: dict[int, list[str, str | dict]], classname):
         content = []
         c = []
         e = []
         for v in d.values():
             if v[0].startswith("dict_term"):
-                e.append(compileTerm(v[1]))
+                e.append(compileTerm(v[1], classname))
             else:
                 if v[1] == "+":
                     c.append("add")
@@ -262,23 +262,29 @@ def rpn(d):
             content.extend(i)
         return content
 
-    def compileTerm(d: dict[int, list[str, str | dict]]):
+    def compileTerm(d: dict[int, list[str, str | dict]], classname):
         content = []
         if 1 in d and d[0][1] in ["-", "~"] and d[1][0] == "dict_term":
-            content.extend(compileTerm(d[1][1]))
+            content.extend(compileTerm(d[1][1], classname))
             if d[0][1] == "-":
                 content.append("neg")
             elif d[0][1] == "~":
                 content.append("not")
         elif 5 in d and d[0][0] == "str_identifier" and d[1][1] == "." and d[2][0] == "str_identifier" and d[3] == ["str_symbol", "("]:
-            content.extend(compileSubroutineCall1(d))
+            content.extend(compileSubroutineCall(d, classname))
         elif 3 in d and d[0][0] == "str_identifier" and d[1][1] == "(" and d[2][0] == "dict_expressionList" and d[3][1] == ")":
-            content.extend(compileSubroutineCall2(d))
+            content.extend(compileSubroutineCall(d, classname))
         elif 2 in d and d[0][1] == "(" and d[1][0] == "dict_expression" and d[2][1] == ")":
-            content.extend(compileExpression(d[1][1]))
+            content.extend(compileExpression(d[1][1], classname))
         elif 3 in d and d[0][0] == "str_identifier" and d[1][1] == "[" and d[2][0] == "dict_expression" and d[3][1] == "]":
-            content.extend(compileExpression(d[2][1]))
-            content.append(d)  # this
+            if d[2][1] in local_symbol:
+                content.append(f"push local {local_symbol[d[2][1]][2]}")
+            else:
+                content.append(f"push {gs[d[2][1]][1]} {gs[d[2][1]][2]}")
+            content.extend(compileExpression(d[3][1], classname))
+            content.append("add")
+            content.append("pop pointer 1")
+            content.append("push that 0")
         elif 0 in d and 1 not in d:
             if d[0][0] == "str_integerConstant":
                 content.append(f"push constant {d[0][1]}")
@@ -286,21 +292,44 @@ def rpn(d):
                 content.append(d[0][1])  # this
             if d[0][0] == "str_keywordConstant":
                 if d[0][1] == "true":
-                    content.append("push constant 1\nneg")
+                    content.append("push constant 1")
+                    content.append("neg")
                 elif d[0][1] == "false":
                     content.append("push constant 0")
                 elif d[0][1] == "null":
                     content.append("push constant 0")
                 elif d[0][1] == "this":
-                    content.append("")  # this
+                    content.append("push pointer 0")
             if d[0][0] == "str_identifier":
-                content.append(d[0][1])  # this
+                if d[0][1] in local_symbol:
+                    content.append(f"push local {local_symbol[d[0][1]][2]}")
+                else:
+                    content.append(f"push {gs[d[0][1]][1]} {gs[d[0][1]][2]}")
         return content
 
-    def compileSubroutineCall1(d: dict[int, list[str, str | dict]]):
-        return ["SubroutineCall"]  # this
+    def compileSubroutineCall(d: dict[int, list[str, str | dict]], classname):
+        content = []
+        if d[2][0] == "dict_expressionList":
+            mode = 1
+            t, n = compileExpressionList(d[2][1], classname)
+            content.extend(t)
+        elif d[4][0] == "dict_expressionList":
+            mode = 0
+            t, n = compileExpressionList(d[4][1], classname)
+            content.extend(t)
+        if mode == 1:
+            content.append(f"call {classname}.{d[0][1]} {n}")
+        else:
+            content.append(f"call {d[0][1]}.{d[2][1]} {n}")
+        return content
 
-    def compileSubroutineCall2(d: dict[int, list[str, str | dict]]):
-        return ["SubroutineCall"]  # this
+    def compileExpressionList(d: dict[int, list[str, str | dict]], classname):
+        content = []
+        n = 0
+        for v in d.values():
+            if v[0] == "dict_expression":
+                n += 1
+                content.extend(compileExpression(v[1], classname))
+        return content, n
 
-    return compileExpression(d)
+    return compileExpression(d, classname)
