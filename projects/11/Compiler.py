@@ -6,7 +6,7 @@ class xml:
         self.sp = sp
 
 
-def compiler(text1, text2):
+def main(text1, text2):
     global ls, gs, lvList, di, code
     lvList = []
     ls, gs = variableAnalysis(text1)
@@ -17,7 +17,7 @@ def compiler(text1, text2):
     classname = text[0][1][1][1]
     di = ["base"]
     code = []
-    compile(text, classname)
+    compiler(text, classname)
     print()
     print(code)
     return code
@@ -36,7 +36,7 @@ def walk_dict(d, depth=0):
 def variableAnalysis(text: list[xml]):
     sp = 0
     gsymbol = {}
-    gsp = 0
+    gsp = {"className": 0, "functionName": 0, "field": 0, "static": 0}
     lsymbol = {}
     lsp = {}
     lia = ""
@@ -52,8 +52,8 @@ def variableAnalysis(text: list[xml]):
             elif now.content in ["constructor", "function", "method"]:
                 SubroutineDec()
         elif now.tag == "identifier":
-            gsymbol[now.content] = ["className", "className", gsp]
-            gsp += 1
+            gsymbol[now.content] = ["className", "className", gsp["className"]]
+            gsp["className"] += 1
         elif now.tag == "symbol":
             if now.content == "}":
                 return
@@ -70,11 +70,11 @@ def variableAnalysis(text: list[xml]):
         elif now.tag == "identifier":
             if source[sp - 2].content in ["field", "static"]:
                 vartype0 = source[sp - 1].content
-                gsymbol[now.content] = [vartype0, varvalue, gsp]
-                gsp += 1
+                gsymbol[now.content] = [vartype0, varvalue, gsp[varvalue]]
+                gsp[varvalue] += 1
             elif source[sp - 1].content == ",":
-                gsymbol[now.content] = [vartype0, varvalue, gsp]
-                gsp += 1
+                gsymbol[now.content] = [vartype0, varvalue, gsp[varvalue]]
+                gsp[varvalue] += 1
         elif now.tag == "symbol":
             if now.content == ";":
                 return
@@ -87,12 +87,12 @@ def variableAnalysis(text: list[xml]):
         if now.tag == "identifier":
             if source[sp - 2].content in ["constructor", "function", "method"]:
                 lia = now.content
-                gsymbol[now.content] = [source[sp - 1].content, "functionName", gsp]
-                gsp += 1
+                gsymbol[now.content] = [source[sp - 1].content, "functionName", gsp["functionName"]]
+                gsp["functionName"] += 1
         elif now.tag == "symbol":
             if now.content == "(":
                 lsymbol[lia] = {}
-                lsp[lia] = 0
+                lsp[lia] = {"local": 0, "argument": 0}
                 ParameterList()
             elif now.content == "{":
                 SubroutineBody()
@@ -106,8 +106,8 @@ def variableAnalysis(text: list[xml]):
         now = source[sp]
         if now.tag == "identifier":
             if source[sp - 1].tag == "identifier" or source[sp - 1].content in ["int", "char", "boolean"]:
-                lsymbol[lia][now.content] = [source[sp - 1].content, "argument", lsp[lia]]
-                lsp[lia] += 1
+                lsymbol[lia][now.content] = [source[sp - 1].content, "argument", lsp[lia]["argument"]]
+                lsp[lia]["argument"] += 1
         elif now.tag == "symbol":
             if now.content == ")":
                 sp -= 1
@@ -138,11 +138,11 @@ def variableAnalysis(text: list[xml]):
         elif now.tag == "identifier":
             if source[sp - 2].content == "var":
                 vartype1 = source[sp - 1].content
-                lsymbol[lia][now.content] = [vartype1, "local", lsp[lia]]
-                lsp[lia] += 1
+                lsymbol[lia][now.content] = [vartype1, "local", lsp[lia]["local"]]
+                lsp[lia]["local"] += 1
             elif source[sp - 1].content == ",":
-                lsymbol[lia][now.content] = [vartype1, "local", lsp[lia]]
-                lsp[lia] += 1
+                lsymbol[lia][now.content] = [vartype1, "local", lsp[lia]["local"]]
+                lsp[lia]["local"] += 1
         sp += 1
         VarDec()
 
@@ -183,51 +183,44 @@ def structure(text: list[str]):
     return dec(text)[0]
 
 
-def compile(d: dict[int:list], classname):
-    global local_symbol
-    if di[-1] == "subroutineDec":
-        local_symbol = ls[d[2][1]]
-        localn = 0
-        for i in local_symbol.values():
-            if i[1] == "local":
-                localn += 1
-        code.append(f"function {classname}.{d[2][1]} {localn}")
-    elif di[-1] == "letStatement":
-        if d[2][1] == "=":
-            code.extend(compileExpression(d[3][1], classname))
-            print(d[3][1])
-            if d[1][1] in local_symbol:
-                code.append(f"pop local {local_symbol[d[1][1]][2]}")
+def compiler(d: dict[int:list], classname):
+    def compile(d: dict[int:list], classname):
+        global local_symbol
+        if di[-1] == "subroutineDec":
+            local_symbol = ls[d[2][1]]
+            localn = 0
+            for i in local_symbol.values():
+                if i[1] == "local":
+                    localn += 1
+            code.append(f"function {classname}.{d[2][1]} {localn}")
+        elif di[-1] == "letStatement":
+            if d[2][1] == "=":
+                code.extend(compileExpression(d[3][1], classname))
+                print(d[3][1])
+                if d[1][1] in local_symbol:
+                    code.append(f"pop local {local_symbol[d[1][1]][2]}")
+                else:
+                    code.append(f"pop {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
+            elif d[2][1] == "[":
+                if d[1][1] in local_symbol:
+                    code.append(f"push local {local_symbol[d[1][1]][2]}")
+                else:
+                    code.append(f"push {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
+                code.extend(compileExpression(d[3][1], classname))
+                print(d[3][1])
+                code.append("add")
+                code.append("pop pointer 1")
+                code.extend(compileExpression(d[6][1], classname))
+                code.append("pop that 0")
+        # this
+        for key, value in d.items():
+            if value[0].startswith("dict_"):
+                di.append(value[0][5:])
+                compile(value[1], classname)
             else:
-                code.append(f"pop {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
-        elif d[2][1] == "[":
-            if d[1][1] in local_symbol:
-                code.append(f"push local {local_symbol[d[1][1]][2]}")
-            else:
-                code.append(f"push {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
-            code.extend(compileExpression(d[3][1], classname))
-            print(d[3][1])
-            code.append("add")
-            code.append("pop pointer 1")
-            code.extend(compileExpression(d[6][1], classname))
-            code.append("pop that 0")
-    # this
-    for key, value in d.items():
-        if value[0].startswith("dict_"):
-            di.append(value[0][5:])
-            compile(value[1], classname)
-        else:
-            tag = value[0][4:]
-            content = value[1]
+                tag = value[0][4:]
+                content = value[1]
 
-
-def compileExpression(d: dict[int:list], classname, content: list = None):
-    a = rpn(d, classname)
-    print(a)
-    return a
-
-
-def rpn(d, classname):
     def compileExpression(d: dict[int, list[str, str | dict]], classname):
         content = []
         c = []
@@ -332,4 +325,4 @@ def rpn(d, classname):
                 content.extend(compileExpression(v[1], classname))
         return content, n
 
-    return compileExpression(d, classname)
+    return compile(d, classname)
