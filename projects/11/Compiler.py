@@ -224,13 +224,13 @@ def compiler(d: dict[int:list], classname):
             else:
                 code.extend(compileExpression(d[1][1], classname))
             code.append("return")
-        for key, value in d.items():
+        '''for key, value in d.items():
             if value[0].startswith("dict_"):
                 di.append(value[0][5:])
                 compile(value[1], classname)
             else:
                 tag = value[0][4:]
-                content = value[1]
+                content = value[1]'''
 
     def compileExpression(d: dict[int, list[str, str | dict]], classname):
         content = []
