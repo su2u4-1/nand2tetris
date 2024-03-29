@@ -310,7 +310,7 @@ def CompileReturnStatement():
 def CompileExpression(f=False):
     global sp
     now = source[sp]
-    if now.tag == "symbol" and now.content in ["+", "-", "*", "/", "&amp;", "|", "&lt;", "&gt;", "="] and f:
+    if now.tag == "symbol" and now.content in ["+", "-", "*", "/", "&", "|", "<", ">", "="] and f:
         addCode(now.text)
     elif now.tag == "symbol" and now.content in [";", ")", "]", "}", ","]:
         return

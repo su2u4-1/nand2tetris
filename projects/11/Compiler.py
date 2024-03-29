@@ -7,7 +7,8 @@ class xml:
 
 
 def main(text1, text2):
-    global ls, gs, lvList, di, code
+    global ls, gs, lvList, di, ifn, classname
+    ifn = 0
     lvList = []
     ls, gs = variableAnalysis(text1)
     print(gs, ls)
@@ -16,8 +17,7 @@ def main(text1, text2):
     walk_dict(text)
     classname = text[0][1][1][1]
     di = ["base"]
-    code = []
-    compiler(text, classname)
+    code = compiler(text)
     print()
     print(code)
     return code
@@ -183,62 +183,104 @@ def structure(text: list[str]):
     return dec(text)[0]
 
 
-def compiler(d: dict[int:list], classname):
-    def compile(d: dict[int:list], classname):
+def compiler(d: dict[int:list]):
+    def compile(d: dict[int:list]):
         global local_symbol
+        content = []
         if di[-1] == "subroutineDec":
             local_symbol = ls[d[2][1]]
             localn = 0
             for i in local_symbol.values():
                 if i[1] == "local":
                     localn += 1
-            code.append(f"function {classname}.{d[2][1]} {localn}")
-        elif di[-1] == "letStatement":
-            if d[2][1] == "=":
-                code.extend(compileExpression(d[3][1], classname))
-                print(d[3][1])
-                if d[1][1] in local_symbol:
-                    code.append(f"pop local {local_symbol[d[1][1]][2]}")
-                else:
-                    code.append(f"pop {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
-            elif d[2][1] == "[":
-                if d[1][1] in local_symbol:
-                    code.append(f"push local {local_symbol[d[1][1]][2]}")
-                else:
-                    code.append(f"push {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
-                code.extend(compileExpression(d[3][1], classname))
-                print(d[3][1])
-                code.append("add")
-                code.append("pop pointer 1")
-                code.extend(compileExpression(d[6][1], classname))
-                code.append("pop that 0")
-        elif di[-1] == "doStatement":
-            de = {}
-            for i in range(1, len(d) - 1):
-                de[i - 1] = d[i]
-            code.extend(compileSubroutineCall(de, classname))
-            code.append("pop temp 0")
-        elif di[-1] == "returnStatement":
-            if d[1][0] == "str_symbol" and d[1][1] == ";":
-                code.append("push constant 0")
-            else:
-                code.extend(compileExpression(d[1][1], classname))
-            code.append("return")
+            content.append(f"function {classname}.{d[2][1]} {localn}")
+        elif di[-1] == "statements":
+            content.extend(compileStatement(d))
         for key, value in d.items():
             if value[0].startswith("dict_"):
                 di.append(value[0][5:])
-                compile(value[1], classname)
-            else:
-                tag = value[0][4:]
-                content = value[1]
+                content.extend(compile(value[1]))
+        return content
 
-    def compileExpression(d: dict[int, list[str, str | dict]], classname):
+    def compileStatement(d: dict[int, list[str, str | dict]]):
+        content = []
+        for v in d.values():
+            if v[0] == "dict_letStatement":
+                content.extend(compileLet(v[1]))
+            elif v[0] == "dict_DoStatement":
+                content.extend(compileDo(v[1]))
+            elif v[0] == "dict_ReturnStatement":
+                content.extend(compileReturn(v[1]))
+            elif v[0] == "dict_IfStatement":
+                content.extend(compileIf(v[1]))
+            elif v[0] == "dict_WhileStatement":
+                content.extend(compileWhile(v[1]))
+        return content
+
+    def compileLet(d: dict[int, list[str, str | dict]]):
+        content = []
+        if d[2][1] == "=":
+            content.extend(compileExpression(d[3][1]))
+            if d[1][1] in local_symbol:
+                content.append(f"pop local {local_symbol[d[1][1]][2]}")
+            else:
+                content.append(f"pop {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
+        elif d[2][1] == "[":
+            if d[1][1] in local_symbol:
+                content.append(f"push local {local_symbol[d[1][1]][2]}")
+            else:
+                content.append(f"push {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
+            content.extend(compileExpression(d[3][1]))
+            content.append("add")
+            content.append("pop pointer 1")
+            content.extend(compileExpression(d[6][1]))
+            content.append("pop that 0")
+        return content
+
+    def compileDo(d: dict[int, list[str, str | dict]]):
+        content = []
+        de = {}
+        for i in range(1, len(d) - 1):
+            de[i - 1] = d[i]
+        content.extend(compileSubroutineCall(de))
+        content.append("pop temp 0")
+        return content
+
+    def compileReturn(d: dict[int, list[str, str | dict]]):
+        content = []
+        if d[1][0] == "str_symbol" and d[1][1] == ";":
+            content.append("push constant 0")
+        else:
+            content.extend(compileExpression(d[1][1]))
+        content.append("return")
+        return content
+
+    def compileIf(d: dict[int, list[str, str | dict]]):
+        global ifn
+        ln = ifn
+        ifn += 1
+        content = []
+        content.extend(compileExpression(d[2][1]))
+        content.append(f"if-goto if_label_{ln}_1")
+        if 7 in d and d[7][0] == "str_keyword" and d[7][1] == "else":
+            content.extend(compileStatement(d[9][1]))
+        content.append(f"goto if_label_{ln}_2")
+        content.append(f"label if_label_{ln}_1")
+        content.extend(compileStatement(d[5][1]))
+        content.append(f"label if_label_{ln}_2")
+        return content  # this
+
+    def compileWhile(d: dict[int, list[str, str | dict]]):
+        content = []
+        return content
+
+    def compileExpression(d: dict[int, list[str, str | dict]]):
         content = []
         c = []
         e = []
         for v in d.values():
             if v[0].startswith("dict_term"):
-                e.append(compileTerm(v[1], classname))
+                e.append(compileTerm(v[1]))
             else:
                 if v[1] == "+":
                     c.append("add")
@@ -266,26 +308,26 @@ def compiler(d: dict[int:list], classname):
             content.extend(i)
         return content
 
-    def compileTerm(d: dict[int, list[str, str | dict]], classname):
+    def compileTerm(d: dict[int, list[str, str | dict]]):
         content = []
         if 1 in d and d[0][1] in ["-", "~"] and d[1][0] == "dict_term":
-            content.extend(compileTerm(d[1][1], classname))
+            content.extend(compileTerm(d[1][1]))
             if d[0][1] == "-":
                 content.append("neg")
             elif d[0][1] == "~":
                 content.append("not")
         elif 5 in d and d[0][0] == "str_identifier" and d[1][1] == "." and d[2][0] == "str_identifier" and d[3] == ["str_symbol", "("]:
-            content.extend(compileSubroutineCall(d, classname))
+            content.extend(compileSubroutineCall(d))
         elif 3 in d and d[0][0] == "str_identifier" and d[1][1] == "(" and d[2][0] == "dict_expressionList" and d[3][1] == ")":
-            content.extend(compileSubroutineCall(d, classname))
+            content.extend(compileSubroutineCall(d))
         elif 2 in d and d[0][1] == "(" and d[1][0] == "dict_expression" and d[2][1] == ")":
-            content.extend(compileExpression(d[1][1], classname))
+            content.extend(compileExpression(d[1][1]))
         elif 3 in d and d[0][0] == "str_identifier" and d[1][1] == "[" and d[2][0] == "dict_expression" and d[3][1] == "]":
             if d[2][1] in local_symbol:
                 content.append(f"push local {local_symbol[d[2][1]][2]}")
             else:
                 content.append(f"push {gs[d[2][1]][1]} {gs[d[2][1]][2]}")
-            content.extend(compileExpression(d[3][1], classname))
+            content.extend(compileExpression(d[3][1]))
             content.append("add")
             content.append("pop pointer 1")
             content.append("push that 0")
@@ -315,15 +357,15 @@ def compiler(d: dict[int:list], classname):
                     content.append(f"push {gs[d[0][1]][1]} {gs[d[0][1]][2]}")
         return content
 
-    def compileSubroutineCall(d: dict[int, list[str, str | dict]], classname):
+    def compileSubroutineCall(d: dict[int, list[str, str | dict]]):
         content = []
         if d[2][0] == "dict_expressionList":
             mode = 1
-            t, n = compileExpressionList(d[2][1], classname)
+            t, n = compileExpressionList(d[2][1])
             content.extend(t)
         elif d[4][0] == "dict_expressionList":
             mode = 0
-            t, n = compileExpressionList(d[4][1], classname)
+            t, n = compileExpressionList(d[4][1])
             content.extend(t)
         if mode == 1:
             content.append(f"call {classname}.{d[0][1]} {n}")
@@ -331,13 +373,13 @@ def compiler(d: dict[int:list], classname):
             content.append(f"call {d[0][1]}.{d[2][1]} {n}")
         return content
 
-    def compileExpressionList(d: dict[int, list[str, str | dict]], classname):
+    def compileExpressionList(d: dict[int, list[str, str | dict]]):
         content = []
         n = 0
         for v in d.values():
             if v[0] == "dict_expression":
                 n += 1
-                content.extend(compileExpression(v[1], classname))
+                content.extend(compileExpression(v[1]))
         return content, n
 
-    return compile(d, classname)
+    return compile(d)
