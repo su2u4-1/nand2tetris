@@ -212,7 +212,18 @@ def compiler(d: dict[int:list], classname):
                 code.append("pop pointer 1")
                 code.extend(compileExpression(d[6][1], classname))
                 code.append("pop that 0")
-        # this
+        elif di[-1] == "doStatement":
+            de = {}
+            for i in range(1, len(d) - 1):
+                de[i - 1] = d[i]
+            code.extend(compileSubroutineCall(de, classname))
+            code.append("pop temp 0")
+        elif di[-1] == "returnStatement":
+            if d[1][0] == "str_symbol" and d[1][1] == ";":
+                code.append("push constant 0")
+            else:
+                code.extend(compileExpression(d[1][1], classname))
+            code.append("return")
         for key, value in d.items():
             if value[0].startswith("dict_"):
                 di.append(value[0][5:])
@@ -282,7 +293,11 @@ def compiler(d: dict[int:list], classname):
             if d[0][0] == "str_integerConstant":
                 content.append(f"push constant {d[0][1]}")
             if d[0][0] == "str_stringConstant":
-                content.append(d[0][1])  # this
+                content.append(f"push constant {len(d[0][1])}")
+                content.append("call String.new 1")
+                for i in d[0][1]:
+                    content.append(f"push constant {ord(i)}")
+                    content.append("call String.appendChar 2")
             if d[0][0] == "str_keywordConstant":
                 if d[0][1] == "true":
                     content.append("push constant 1")

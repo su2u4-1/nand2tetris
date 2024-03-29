@@ -1,10 +1,6 @@
 class Main {
     function void main() {
-        var int a;
-        let a = add(5, 8);
+        do Output.printChar("c");
         return;
-    }
-    function int add(int a, int b) {
-        return a + b;
     }
 }
