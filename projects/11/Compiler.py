@@ -11,15 +11,10 @@ def main(text1, text2):
     ifn = 0
     lvList = []
     ls, gs = variableAnalysis(text1)
-    print(gs, ls)
     text = structure(text2)
-    print()
-    walk_dict(text)
     classname = text[0][1][1][1]
     di = ["base"]
     code = compiler(text)
-    print()
-    print(code)
     return code
 
 
@@ -197,7 +192,7 @@ def compiler(d: dict[int:list]):
         elif di[-1] == "statements":
             content.extend(compileStatement(d))
         for key, value in d.items():
-            if value[0].startswith("dict_"):
+            if value[0].startswith("dict_") and value[0] != "dict_statement":
                 di.append(value[0][5:])
                 content.extend(compile(value[1]))
         return content
@@ -207,13 +202,13 @@ def compiler(d: dict[int:list]):
         for v in d.values():
             if v[0] == "dict_letStatement":
                 content.extend(compileLet(v[1]))
-            elif v[0] == "dict_DoStatement":
+            elif v[0] == "dict_doStatement":
                 content.extend(compileDo(v[1]))
-            elif v[0] == "dict_ReturnStatement":
+            elif v[0] == "dict_returnStatement":
                 content.extend(compileReturn(v[1]))
-            elif v[0] == "dict_IfStatement":
+            elif v[0] == "dict_ifStatement":
                 content.extend(compileIf(v[1]))
-            elif v[0] == "dict_WhileStatement":
+            elif v[0] == "dict_whileStatement":
                 content.extend(compileWhile(v[1]))
         return content
 

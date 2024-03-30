@@ -61,7 +61,10 @@ def processTextElements(text: list):
     for i in range(len(text)):
         if '"' in text[i]:
             t = text[i].split('"')
-            text[i] = ['"'.join(t)]
+            if len(t) == 2:
+                text[i] = [t[0], '"', t[1]]
+            elif len(t) == 3:
+                text[i] = [t[0], '"', t[1], '"', t[2]]
     text = flattenNestedList(text)
     for i in range(len(text)):
         if text[i] == '"':
