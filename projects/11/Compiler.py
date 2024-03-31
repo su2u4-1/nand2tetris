@@ -13,6 +13,7 @@ def main(text1, text2):
     lvList = []
     ls, gs = variableAnalysis(text1)
     text = structure(text2)
+    # walk_dict(text)
     classname = text[0][1][1][1]
     di = ["base"]
     code = compiler(text)
@@ -193,12 +194,13 @@ def compiler(d: dict[int:list]):
                 if i[1] == "local":
                     localn += 1
             content.append(f"function {classname}.{d[2][1]} {localn}")
-        elif di[-1] == "statements":
+        if di[-1] == "statements":
             content.extend(compileStatement(d))
-        for key, value in d.items():
-            if value[0].startswith("dict_") and value[0] != "dict_statement":
-                di.append(value[0][5:])
-                content.extend(compile(value[1]))
+        else:
+            for key, value in d.items():
+                if value[0].startswith("dict_"):
+                    di.append(value[0][5:])
+                    content.extend(compile(value[1]))
         return content
 
     def compileStatement(d: dict[int, list[str, str | dict]]):
@@ -267,7 +269,7 @@ def compiler(d: dict[int:list]):
         content.append(f"label IL{ln}.1")
         content.extend(compileStatement(d[5][1]))
         content.append(f"label IL{ln}.2")
-        return content  # this
+        return content
 
     def compileWhile(d: dict[int, list[str, str | dict]]):
         global whilen
@@ -332,11 +334,11 @@ def compiler(d: dict[int:list]):
         elif 2 in d and d[0][1] == "(" and d[1][0] == "dict_expression" and d[2][1] == ")":
             content.extend(compileExpression(d[1][1]))
         elif 3 in d and d[0][0] == "str_identifier" and d[1][1] == "[" and d[2][0] == "dict_expression" and d[3][1] == "]":
-            if d[2][1] in local_symbol:
-                content.append(f"push {local_symbol[d[2][1]][1]} {local_symbol[d[2][1]][2]}")
+            if d[0][1] in local_symbol:
+                content.append(f"push {local_symbol[d[0][1]][1]} {local_symbol[d[0][1]][2]}")
             else:
-                content.append(f"push {gs[d[2][1]][1]} {gs[d[2][1]][2]}")
-            content.extend(compileExpression(d[3][1]))
+                content.append(f"push {gs[d[0][1]][1]} {gs[d[0][1]][2]}")
+            content.extend(compileExpression(d[2][1]))
             content.append("add")
             content.append("pop pointer 1")
             content.append("push that 0")
