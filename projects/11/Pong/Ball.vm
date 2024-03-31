@@ -1,0 +1,401 @@
+function Ball.new 0
+push argument 0
+pop field 0
+push argument 1
+pop field 1
+push argument 2
+pop field 10
+push argument 3
+push constant 6
+sub
+pop field 11
+push argument 4
+pop field 12
+push argument 5
+push constant 6
+sub
+pop field 13
+push constant 0
+pop field 14
+call Ball.show 0
+pop temp 0
+push pointer 0
+return
+ 
+function Ball.dispose 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+ 
+function Ball.show 0
+push constant 0
+not
+call Screen.setColor 1
+pop temp 0
+call Ball.draw 0
+pop temp 0
+push constant 0
+return
+ 
+function Ball.hide 0
+push constant 0
+call Screen.setColor 1
+pop temp 0
+call Ball.draw 0
+pop temp 0
+push constant 0
+return
+ 
+function Ball.draw 0
+push field 0
+push field 1
+push field 0
+push constant 5
+add
+push field 1
+push constant 5
+add
+call Screen.drawRectangle 4
+pop temp 0
+push constant 0
+return
+ 
+function Ball.getLeft 0
+push field 0
+return
+ 
+function Ball.getRight 0
+push field 0
+push constant 5
+add
+return
+ 
+function Ball.setDestination 3
+push argument 0
+push field 0
+sub
+pop field 2
+push argument 1
+push field 1
+sub
+pop field 3
+push field 2
+call Math.abs 1
+pop local 0
+push field 3
+call Math.abs 1
+pop local 1
+push local 0
+push local 1
+lt
+pop field 7
+push field 7
+if-goto IL0.1
+push field 0
+push argument 0
+lt
+pop field 8
+push field 1
+push argument 1
+lt
+pop field 9
+goto IL0.2
+label IL0.1
+push local 0
+pop local 2
+push local 1
+pop local 0
+push local 2
+pop local 1
+push field 1
+push argument 1
+lt
+pop field 8
+push field 0
+push argument 0
+lt
+pop field 9
+label IL0.2
+push constant 2
+push local 1
+call Math.multiply 2
+push local 0
+sub
+pop field 4
+push constant 2
+push local 1
+call Math.multiply 2
+pop field 5
+push constant 2
+push local 1
+push local 0
+sub
+call Math.multiply 2
+pop field 6
+push constant 0
+return
+ 
+function Ball.move 0
+call Ball.hide 0
+pop temp 0
+push field 4
+push constant 0
+lt
+if-goto IL1.1
+push field 4
+push field 6
+add
+pop field 4
+push field 9
+if-goto IL2.1
+push field 7
+if-goto IL3.1
+push field 1
+push constant 4
+sub
+pop field 1
+goto IL3.2
+label IL3.1
+push field 0
+push constant 4
+sub
+pop field 0
+label IL3.2
+goto IL2.2
+label IL2.1
+push field 7
+if-goto IL4.1
+push field 1
+push constant 4
+add
+pop field 1
+goto IL4.2
+label IL4.1
+push field 0
+push constant 4
+add
+pop field 0
+label IL4.2
+label IL2.2
+goto IL1.2
+label IL1.1
+push field 4
+push field 5
+add
+pop field 4
+label IL1.2
+push field 8
+if-goto IL5.1
+push field 7
+if-goto IL6.1
+push field 0
+push constant 4
+sub
+pop field 0
+goto IL6.2
+label IL6.1
+push field 1
+push constant 4
+sub
+pop field 1
+label IL6.2
+goto IL5.2
+label IL5.1
+push field 7
+if-goto IL7.1
+push field 0
+push constant 4
+add
+pop field 0
+goto IL7.2
+label IL7.1
+push field 1
+push constant 4
+add
+pop field 1
+label IL7.2
+label IL5.2
+push field 0
+push field 10
+gt
+not
+if-goto IL8.1
+goto IL8.2
+label IL8.1
+push constant 1
+pop field 14
+push field 10
+pop field 0
+label IL8.2
+push field 0
+push field 11
+lt
+not
+if-goto IL9.1
+goto IL9.2
+label IL9.1
+push constant 2
+pop field 14
+push field 11
+pop field 0
+label IL9.2
+push field 1
+push field 12
+gt
+not
+if-goto IL10.1
+goto IL10.2
+label IL10.1
+push constant 3
+pop field 14
+push field 12
+pop field 1
+label IL10.2
+push field 1
+push field 13
+lt
+not
+if-goto IL11.1
+goto IL11.2
+label IL11.1
+push constant 4
+pop field 14
+push field 13
+pop field 1
+label IL11.2
+call Ball.show 0
+pop temp 0
+push field 14
+return
+ 
+function Ball.bounce 5
+push field 2
+push constant 10
+call Math.divide 2
+pop local 2
+push field 3
+push constant 10
+call Math.divide 2
+pop local 3
+push argument 0
+push constant 0
+eq
+if-goto IL12.1
+push field 2
+push constant 0
+lt
+not
+push argument 0
+push constant 1
+eq
+and
+push field 2
+push constant 0
+lt
+push argument 0
+push constant 1
+neg
+eq
+and
+or
+if-goto IL13.1
+push constant 5
+pop local 4
+goto IL13.2
+label IL13.1
+push constant 20
+pop local 4
+label IL13.2
+goto IL12.2
+label IL12.1
+push constant 10
+pop local 4
+label IL12.2
+push field 14
+push constant 1
+eq
+if-goto IL14.1
+push field 14
+push constant 2
+eq
+if-goto IL15.1
+push field 14
+push constant 3
+eq
+if-goto IL16.1
+push constant 0
+pop local 1
+push local 2
+push constant 25
+call Math.multiply 2
+push local 3
+call Math.divide 2
+pop local 0
+push field 0
+push local 0
+push local 4
+call Math.multiply 2
+add
+pop local 0
+goto IL16.2
+label IL16.1
+push constant 250
+pop local 1
+push local 2
+push constant 25
+neg
+call Math.multiply 2
+push local 3
+call Math.divide 2
+pop local 0
+push field 0
+push local 0
+push local 4
+call Math.multiply 2
+add
+pop local 0
+label IL16.2
+goto IL15.2
+label IL15.1
+push constant 0
+pop local 0
+push local 3
+push constant 50
+call Math.multiply 2
+push local 2
+call Math.divide 2
+pop local 1
+push field 1
+push local 1
+push local 4
+call Math.multiply 2
+add
+pop local 1
+label IL15.2
+goto IL14.2
+label IL14.1
+push constant 506
+pop local 0
+push local 3
+push constant 50
+neg
+call Math.multiply 2
+push local 2
+call Math.divide 2
+pop local 1
+push field 1
+push local 1
+push local 4
+call Math.multiply 2
+add
+pop local 1
+label IL14.2
+push local 0
+push local 1
+call Ball.setDestination 2
+pop temp 0
+push constant 0
+return
+ 

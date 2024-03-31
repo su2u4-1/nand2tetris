@@ -207,15 +207,23 @@ def compiler(d: dict[int:list]):
         content = []
         for v in d.values():
             if v[0] == "dict_letStatement":
+                #content.append(f"//{v[1]}")
                 content.extend(compileLet(v[1]))
             elif v[0] == "dict_doStatement":
+                #content.append(f"//{v[1]}")
                 content.extend(compileDo(v[1]))
             elif v[0] == "dict_returnStatement":
+                #content.append(f"//{v[1]}")
                 content.extend(compileReturn(v[1]))
+                content.append(" ")
             elif v[0] == "dict_ifStatement":
+                #content.append("//if-start")
                 content.extend(compileIf(v[1]))
+                #content.append("//if-end")
             elif v[0] == "dict_whileStatement":
+                #content.append("//while-start")
                 content.extend(compileWhile(v[1]))
+                #content.append("//while-end")
         return content
 
     def compileLet(d: dict[int, list[str, str | dict]]):
@@ -227,14 +235,16 @@ def compiler(d: dict[int:list]):
             else:
                 content.append(f"pop {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
         elif d[2][1] == "[":
+            content.extend(compileExpression(d[3][1]))
             if d[1][1] in local_symbol:
                 content.append(f"push {local_symbol[d[1][1]][1]} {local_symbol[d[1][1]][2]}")
             else:
                 content.append(f"push {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
-            content.extend(compileExpression(d[3][1]))
             content.append("add")
-            content.append("pop pointer 1")
             content.extend(compileExpression(d[6][1]))
+            content.append("pop temp 0")
+            content.append("pop pointer 1")
+            content.append("push temp 0")
             content.append("pop that 0")
         return content
 

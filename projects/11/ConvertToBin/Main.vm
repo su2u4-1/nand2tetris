@@ -13,6 +13,7 @@ call Main.convert 1
 pop temp 0
 push constant 0
 return
+ 
 function Main.convert 3
 push constant 0
 not
@@ -64,6 +65,7 @@ goto WL0.1
 label WL0.2
 push constant 0
 return
+ 
 function Main.nextMask 0
 push argument 0
 push constant 0
@@ -73,10 +75,12 @@ push argument 0
 push constant 2
 call Math.multiply 2
 return
+ 
 goto IL2.2
 label IL2.1
 push constant 1
 return
+ 
 label IL2.2
 function Main.fillMemory 0
 label WL1.1
@@ -101,3 +105,4 @@ goto WL1.1
 label WL1.2
 push constant 0
 return
+ 
