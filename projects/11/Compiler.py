@@ -170,7 +170,10 @@ def structure(text: list[str]):
         s -= len(text[i])
         if " " in text[i]:
             text[i] = text[i].split()
-            text[i] = xml(text[i][1], text[i][0][1:-1], int(s / 2))
+            if text[i][0] == "<stringConstant>" and text[i][-1] == "</stringConstant>":
+                text[i] = xml(" ".join(text[i][1:-1]), text[i][0][1:-1], int(s / 2))
+            else:
+                text[i] = xml(text[i][1], text[i][0][1:-1], int(s / 2))
         elif text[i][0:2] == "</":
             text[i] = xml(text[i][2:-1], "endLabel", int(s / 2))
         else:
@@ -267,6 +270,7 @@ def compiler(d: dict[int:list]):
 
     def compileWhile(d: dict[int, list[str, str | dict]]):
         content = []
+        
         return content
 
     def compileExpression(d: dict[int, list[str, str | dict]]):
@@ -335,10 +339,10 @@ def compiler(d: dict[int:list]):
                 for i in d[0][1]:
                     content.append(f"push constant {ord(i)}")
                     content.append("call String.appendChar 2")
-            if d[0][0] == "str_keywordConstant":
+            if d[0][0] == "str_keyword":
                 if d[0][1] == "true":
-                    content.append("push constant 1")
-                    content.append("neg")
+                    content.append("push constant 0")
+                    content.append("not")
                 elif d[0][1] == "false":
                     content.append("push constant 0")
                 elif d[0][1] == "null":

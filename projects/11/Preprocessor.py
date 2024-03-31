@@ -96,7 +96,7 @@ def processTextElements(text: list):
 
 
 # 預處理源代碼,清理註釋,空白和不必要的換行
-def preprocessor(text: list):
+def main(text: list):
     r = []
     f = False
     for i in range(len(text)):

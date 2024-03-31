@@ -5,7 +5,7 @@ class xml:
         self.tag = tag
 
 
-def grammarAnalyzer(text: list):
+def main(text: list):
     global source, ia, sp, CodeList
     CodeList = []
     ia = 0
