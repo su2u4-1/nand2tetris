@@ -1,0 +1,48 @@
+function Main.main 0
+push constant 16
+call Main.fillMemory 1
+pop temp 0
+push constant 0
+call Main.convert 1
+pop temp 0
+push constant 0
+return
+function Main.convert 3
+push constant 0
+not
+pop local 2
+label WHILE_EXP0
+push local 2
+not
+if-goto WHILE_END0
+push local 2
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+pop local 2
+goto IF_END0
+label IF_FALSE0
+push constant 0
+not
+pop local 2
+label IF_END0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return
+function Main.fillMemory 0
+label WHILE_EXP0
+push argument 0
+push constant 0
+gt
+not
+if-goto WHILE_END0
+push argument 0
+push constant 1
+sub
+pop argument 0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return

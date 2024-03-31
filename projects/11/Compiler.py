@@ -7,8 +7,9 @@ class xml:
 
 
 def main(text1, text2):
-    global ls, gs, lvList, di, ifn, classname
+    global ls, gs, lvList, di, ifn, classname, whilen
     ifn = 0
+    whilen = 0
     lvList = []
     ls, gs = variableAnalysis(text1)
     text = structure(text2)
@@ -220,12 +221,12 @@ def compiler(d: dict[int:list]):
         if d[2][1] == "=":
             content.extend(compileExpression(d[3][1]))
             if d[1][1] in local_symbol:
-                content.append(f"pop local {local_symbol[d[1][1]][2]}")
+                content.append(f"pop {local_symbol[d[1][1]][1]} {local_symbol[d[1][1]][2]}")
             else:
                 content.append(f"pop {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
         elif d[2][1] == "[":
             if d[1][1] in local_symbol:
-                content.append(f"push local {local_symbol[d[1][1]][2]}")
+                content.append(f"push {local_symbol[d[1][1]][1]} {local_symbol[d[1][1]][2]}")
             else:
                 content.append(f"push {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
             content.extend(compileExpression(d[3][1]))
@@ -259,18 +260,27 @@ def compiler(d: dict[int:list]):
         ifn += 1
         content = []
         content.extend(compileExpression(d[2][1]))
-        content.append(f"if-goto if_label_{ln}_1")
+        content.append(f"if-goto IL{ln}.1")
         if 7 in d and d[7][0] == "str_keyword" and d[7][1] == "else":
             content.extend(compileStatement(d[9][1]))
-        content.append(f"goto if_label_{ln}_2")
-        content.append(f"label if_label_{ln}_1")
+        content.append(f"goto IL{ln}.2")
+        content.append(f"label IL{ln}.1")
         content.extend(compileStatement(d[5][1]))
-        content.append(f"label if_label_{ln}_2")
+        content.append(f"label IL{ln}.2")
         return content  # this
 
     def compileWhile(d: dict[int, list[str, str | dict]]):
+        global whilen
+        wn = whilen
+        whilen += 1
         content = []
-        
+        content.append(f"label WL{wn}.1")
+        content.extend(compileExpression(d[2][1]))
+        content.append("not")
+        content.append(f"if-goto WL{wn}.2")
+        content.extend(compileStatement(d[5][1]))
+        content.append(f"goto WL{wn}.1")
+        content.append(f"label WL{wn}.2")
         return content
 
     def compileExpression(d: dict[int, list[str, str | dict]]):
@@ -323,7 +333,7 @@ def compiler(d: dict[int:list]):
             content.extend(compileExpression(d[1][1]))
         elif 3 in d and d[0][0] == "str_identifier" and d[1][1] == "[" and d[2][0] == "dict_expression" and d[3][1] == "]":
             if d[2][1] in local_symbol:
-                content.append(f"push local {local_symbol[d[2][1]][2]}")
+                content.append(f"push {local_symbol[d[2][1]][1]} {local_symbol[d[2][1]][2]}")
             else:
                 content.append(f"push {gs[d[2][1]][1]} {gs[d[2][1]][2]}")
             content.extend(compileExpression(d[3][1]))
@@ -351,7 +361,7 @@ def compiler(d: dict[int:list]):
                     content.append("push pointer 0")
             if d[0][0] == "str_identifier":
                 if d[0][1] in local_symbol:
-                    content.append(f"push local {local_symbol[d[0][1]][2]}")
+                    content.append(f"push {local_symbol[d[0][1]][1]} {local_symbol[d[0][1]][2]}")
                 else:
                     content.append(f"push {gs[d[0][1]][1]} {gs[d[0][1]][2]}")
         return content
