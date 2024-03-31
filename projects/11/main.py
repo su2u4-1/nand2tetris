@@ -42,5 +42,5 @@ if __name__ == "__main__":
             # f.close()
             vmcode = Compiler.main(processedSourceCode, xmlcode)
             f = open(i.split(".")[0] + ".vm", "w")
-            f.write("\n".join(vmcode))
+            f.write("\n".join(vmcode)+"\n")
             f.close()

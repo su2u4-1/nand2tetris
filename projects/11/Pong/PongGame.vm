@@ -2,13 +2,13 @@ function PongGame.new 0
 call Screen.clearScreen 0
 pop temp 0
 push constant 50
-pop field 6
+pop static 7
 push constant 230
 push constant 229
-push field 6
+push static 7
 push constant 7
 call Bat.new 4
-pop field 0
+pop static 1
 push constant 253
 push constant 222
 push constant 0
@@ -16,7 +16,7 @@ push constant 511
 push constant 0
 push constant 229
 call Ball.new 6
-pop field 1
+pop static 2
 push constant 400
 push constant 0
 call ball.setDestination 2
@@ -52,16 +52,15 @@ call String.appendChar 2
 call Output.printString 1
 pop temp 0
 push constant 0
-pop field 3
+pop static 4
 push constant 0
-pop field 4
+pop static 5
 push constant 0
-pop field 2
+pop static 3
 push constant 0
-pop field 5
+pop static 6
 push pointer 0
 return
- 
 function PongGame.dispose 0
 call bat.dispose 0
 pop temp 0
@@ -72,20 +71,17 @@ call Memory.deAlloc 1
 pop temp 0
 push constant 0
 return
- 
 function PongGame.newInstance 0
 call PongGame.new 0
 pop static 0
 push constant 0
 return
- 
 function PongGame.getInstance 0
 push static 0
 return
- 
 function PongGame.run 1
 label WL0.1
-push field 3
+push static 4
 not
 not
 if-goto WL0.2
@@ -93,7 +89,7 @@ label WL1.1
 push local 0
 push constant 0
 eq
-push field 3
+push static 4
 not
 and
 not
@@ -125,7 +121,7 @@ goto IL2.2
 label IL2.1
 push constant 0
 not
-pop field 3
+pop static 4
 label IL2.2
 goto IL1.2
 label IL1.1
@@ -144,7 +140,7 @@ push local 0
 push constant 0
 eq
 not
-push field 3
+push static 4
 not
 and
 not
@@ -162,7 +158,7 @@ goto WL2.1
 label WL2.2
 goto WL0.1
 label WL0.2
-push field 3
+push static 4
 if-goto IL3.1
 goto IL3.2
 label IL3.1
@@ -195,23 +191,22 @@ pop temp 0
 label IL3.2
 push constant 0
 return
- 
 function PongGame.moveBall 5
 call ball.move 0
-pop field 2
-push field 2
+pop static 3
+push static 3
 push constant 0
 gt
-push field 2
-push field 5
+push static 3
+push static 6
 eq
 not
 and
 if-goto IL4.1
 goto IL4.2
 label IL4.1
-push field 2
-pop field 5
+push static 3
+pop static 6
 push constant 0
 pop local 0
 call bat.getLeft 0
@@ -222,7 +217,7 @@ call ball.getLeft 0
 pop local 3
 call ball.getRight 0
 pop local 4
-push field 2
+push static 3
 push constant 4
 eq
 if-goto IL5.1
@@ -235,8 +230,8 @@ push local 2
 push local 3
 lt
 or
-pop field 3
-push field 3
+pop static 4
+push static 4
 not
 if-goto IL6.1
 goto IL6.2
@@ -264,22 +259,22 @@ push constant 1
 neg
 pop local 0
 label IL7.2
-push field 6
+push static 7
 push constant 2
 sub
-pop field 6
-push field 6
+pop static 7
+push static 7
 call bat.setWidth 1
 pop temp 0
-push field 4
+push static 5
 push constant 1
 add
-pop field 4
+pop static 5
 push constant 22
 push constant 7
 call Output.moveCursor 2
 pop temp 0
-push field 4
+push static 5
 call Output.printInt 1
 pop temp 0
 label IL6.2
@@ -290,4 +285,3 @@ pop temp 0
 label IL4.2
 push constant 0
 return
- 

@@ -1,26 +1,24 @@
 function Bat.new 0
 push argument 0
-pop field 0
+pop static 0
 push argument 1
-pop field 1
+pop static 1
 push argument 2
-pop field 2
+pop static 2
 push argument 3
-pop field 3
+pop static 3
 push constant 2
-pop field 4
+pop static 4
 call Bat.show 0
 pop temp 0
 push pointer 0
 return
- 
 function Bat.dispose 0
 push pointer 0
 call Memory.deAlloc 1
 pop temp 0
 push constant 0
 return
- 
 function Bat.show 0
 push constant 0
 not
@@ -30,7 +28,6 @@ call Bat.draw 0
 pop temp 0
 push constant 0
 return
- 
 function Bat.hide 0
 push constant 0
 call Screen.setColor 1
@@ -39,58 +36,52 @@ call Bat.draw 0
 pop temp 0
 push constant 0
 return
- 
 function Bat.draw 0
-push field 0
-push field 1
-push field 0
-push field 2
+push static 0
+push static 1
+push static 0
+push static 2
 add
-push field 1
-push field 3
+push static 1
+push static 3
 add
 call Screen.drawRectangle 4
 pop temp 0
 push constant 0
 return
- 
 function Bat.setDirection 0
 push argument 0
-pop field 4
+pop static 4
 push constant 0
 return
- 
 function Bat.getLeft 0
-push field 0
+push static 0
 return
- 
 function Bat.getRight 0
-push field 0
-push field 2
+push static 0
+push static 2
 add
 return
- 
 function Bat.setWidth 0
 call Bat.hide 0
 pop temp 0
 push argument 0
-pop field 2
+pop static 2
 call Bat.show 0
 pop temp 0
 push constant 0
 return
- 
 function Bat.move 0
-push field 4
+push static 4
 push constant 1
 eq
 if-goto IL0.1
-push field 0
+push static 0
 push constant 4
 add
-pop field 0
-push field 0
-push field 2
+pop static 0
+push static 0
+push static 2
 add
 push constant 511
 gt
@@ -98,22 +89,22 @@ if-goto IL1.1
 goto IL1.2
 label IL1.1
 push constant 511
-push field 2
+push static 2
 sub
-pop field 0
+pop static 0
 label IL1.2
 push constant 0
 call Screen.setColor 1
 pop temp 0
-push field 0
+push static 0
 push constant 4
 sub
-push field 1
-push field 0
+push static 1
+push static 0
 push constant 1
 sub
-push field 1
-push field 3
+push static 1
+push static 3
 add
 call Screen.drawRectangle 4
 pop temp 0
@@ -121,51 +112,51 @@ push constant 0
 not
 call Screen.setColor 1
 pop temp 0
-push field 0
-push field 2
+push static 0
+push static 2
 add
 push constant 3
 sub
-push field 1
-push field 0
-push field 2
+push static 1
+push static 0
+push static 2
 add
-push field 1
-push field 3
+push static 1
+push static 3
 add
 call Screen.drawRectangle 4
 pop temp 0
 goto IL0.2
 label IL0.1
-push field 0
+push static 0
 push constant 4
 sub
-pop field 0
-push field 0
+pop static 0
+push static 0
 push constant 0
 lt
 if-goto IL2.1
 goto IL2.2
 label IL2.1
 push constant 0
-pop field 0
+pop static 0
 label IL2.2
 push constant 0
 call Screen.setColor 1
 pop temp 0
-push field 0
-push field 2
+push static 0
+push static 2
 add
 push constant 1
 add
-push field 1
-push field 0
-push field 2
+push static 1
+push static 0
+push static 2
 add
 push constant 4
 add
-push field 1
-push field 3
+push static 1
+push static 3
 add
 call Screen.drawRectangle 4
 pop temp 0
@@ -173,17 +164,16 @@ push constant 0
 not
 call Screen.setColor 1
 pop temp 0
-push field 0
-push field 1
-push field 0
+push static 0
+push static 1
+push static 0
 push constant 3
 add
-push field 1
-push field 3
+push static 1
+push static 3
 add
 call Screen.drawRectangle 4
 pop temp 0
 label IL0.2
 push constant 0
 return
- 

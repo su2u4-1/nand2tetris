@@ -13,7 +13,6 @@ def main(text1, text2):
     lvList = []
     ls, gs = variableAnalysis(text1)
     text = structure(text2)
-    # walk_dict(text)
     classname = text[0][1][1][1]
     di = ["base"]
     code = compiler(text)
@@ -33,7 +32,7 @@ def walk_dict(d, depth=0):
 def variableAnalysis(text: list[xml]):
     sp = 0
     gsymbol = {}
-    gsp = {"className": 0, "functionName": 0, "field": 0, "static": 0}
+    gsp = {"className": 0, "functionName": 0, "static": 0}
     lsymbol = {}
     lsp = {}
     lia = ""
@@ -58,20 +57,17 @@ def variableAnalysis(text: list[xml]):
         Class()
 
     def ClassVarDec():
-        global varvalue, vartype0
+        global vartype0
         nonlocal gsp, sp
         now = source[sp]
-        if now.tag == "keyword" and now.content in ["field", "static", "int", "char", "boolean"]:
-            if now.content in ["field", "static"]:
-                varvalue = now.content
-        elif now.tag == "identifier":
+        if now.tag == "identifier":
             if source[sp - 2].content in ["field", "static"]:
                 vartype0 = source[sp - 1].content
-                gsymbol[now.content] = [vartype0, varvalue, gsp[varvalue]]
-                gsp[varvalue] += 1
+                gsymbol[now.content] = [vartype0, "static", gsp["static"]]
+                gsp["static"] += 1
             elif source[sp - 1].content == ",":
-                gsymbol[now.content] = [vartype0, varvalue, gsp[varvalue]]
-                gsp[varvalue] += 1
+                gsymbol[now.content] = [vartype0, "static", gsp["static"]]
+                gsp["static"] += 1
         elif now.tag == "symbol":
             if now.content == ";":
                 return
@@ -207,23 +203,15 @@ def compiler(d: dict[int:list]):
         content = []
         for v in d.values():
             if v[0] == "dict_letStatement":
-                #content.append(f"//{v[1]}")
                 content.extend(compileLet(v[1]))
             elif v[0] == "dict_doStatement":
-                #content.append(f"//{v[1]}")
                 content.extend(compileDo(v[1]))
             elif v[0] == "dict_returnStatement":
-                #content.append(f"//{v[1]}")
                 content.extend(compileReturn(v[1]))
-                content.append(" ")
             elif v[0] == "dict_ifStatement":
-                #content.append("//if-start")
                 content.extend(compileIf(v[1]))
-                #content.append("//if-end")
             elif v[0] == "dict_whileStatement":
-                #content.append("//while-start")
                 content.extend(compileWhile(v[1]))
-                #content.append("//while-end")
         return content
 
     def compileLet(d: dict[int, list[str, str | dict]]):
@@ -391,6 +379,7 @@ def compiler(d: dict[int:list]):
         if mode == 1:
             content.append(f"call {classname}.{d[0][1]} {n}")
         else:
+            # 沒有做物件.方法()
             content.append(f"call {d[0][1]}.{d[2][1]} {n}")
         return content
 
