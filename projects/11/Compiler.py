@@ -32,7 +32,7 @@ def walk_dict(d, depth=0):
 def variableAnalysis(text: list[xml]):
     sp = 0
     gsymbol = {}
-    gsp = {"className": 0, "functionName": 0, "static": 0}
+    gsp = {"className": 0, "functionName": 0, "field": 0, "static": 0}
     lsymbol = {}
     lsp = {}
     lia = ""
@@ -57,17 +57,20 @@ def variableAnalysis(text: list[xml]):
         Class()
 
     def ClassVarDec():
-        global vartype0
+        global varvalue, vartype0
         nonlocal gsp, sp
         now = source[sp]
-        if now.tag == "identifier":
+        if now.tag == "keyword" and now.content in ["field", "static", "int", "char", "boolean"]:
+            if now.content in ["field", "static"]:
+                varvalue = now.content
+        elif now.tag == "identifier":
             if source[sp - 2].content in ["field", "static"]:
                 vartype0 = source[sp - 1].content
-                gsymbol[now.content] = [vartype0, "static", gsp["static"]]
-                gsp["static"] += 1
+                gsymbol[now.content] = [vartype0, varvalue, gsp[varvalue]]
+                gsp[varvalue] += 1
             elif source[sp - 1].content == ",":
-                gsymbol[now.content] = [vartype0, "static", gsp["static"]]
-                gsp["static"] += 1
+                gsymbol[now.content] = [vartype0, varvalue, gsp[varvalue]]
+                gsp[varvalue] += 1
         elif now.tag == "symbol":
             if now.content == ";":
                 return
@@ -181,7 +184,7 @@ def structure(text: list[str]):
 
 def compiler(d: dict[int:list]):
     def compile(d: dict[int:list]):
-        global local_symbol
+        global local_symbol, fn
         content = []
         if di[-1] == "subroutineDec":
             local_symbol = ls[d[2][1]]
@@ -190,6 +193,15 @@ def compiler(d: dict[int:list]):
                 if i[1] == "local":
                     localn += 1
             content.append(f"function {classname}.{d[2][1]} {localn}")
+            fn = 0
+            for i in gs.values():
+                if i[1] == "field":
+                    fn += 1
+        elif di[-1] == "subroutineDec":
+            if d[0][1] == "constructor":
+                content.append(f"push constant {fn}")
+                content.append("call Memory.alloc 1")
+                content.append("push pointer 0")
         if di[-1] == "statements":
             content.extend(compileStatement(d))
         else:
@@ -226,6 +238,8 @@ def compiler(d: dict[int:list]):
             content.extend(compileExpression(d[3][1]))
             if d[1][1] in local_symbol:
                 content.append(f"push {local_symbol[d[1][1]][1]} {local_symbol[d[1][1]][2]}")
+            elif gs[d[0][1]][1] == "field":
+                content.append(f"push this {gs[d[1][1]][2]}")
             else:
                 content.append(f"push {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
             content.append("add")
@@ -334,6 +348,8 @@ def compiler(d: dict[int:list]):
         elif 3 in d and d[0][0] == "str_identifier" and d[1][1] == "[" and d[2][0] == "dict_expression" and d[3][1] == "]":
             if d[0][1] in local_symbol:
                 content.append(f"push {local_symbol[d[0][1]][1]} {local_symbol[d[0][1]][2]}")
+            elif gs[d[0][1]][1] == "field":
+                content.append(f"push this {gs[d[0][1]][2]}")
             else:
                 content.append(f"push {gs[d[0][1]][1]} {gs[d[0][1]][2]}")
             content.extend(compileExpression(d[2][1]))
@@ -362,6 +378,8 @@ def compiler(d: dict[int:list]):
             if d[0][0] == "str_identifier":
                 if d[0][1] in local_symbol:
                     content.append(f"push {local_symbol[d[0][1]][1]} {local_symbol[d[0][1]][2]}")
+                elif gs[d[0][1]][1] == "field":
+                    content.append(f"push this {gs[d[0][1]][2]}")
                 else:
                     content.append(f"push {gs[d[0][1]][1]} {gs[d[0][1]][2]}")
         return content
@@ -378,9 +396,12 @@ def compiler(d: dict[int:list]):
             content.extend(t)
         if mode == 1:
             content.append(f"call {classname}.{d[0][1]} {n}")
-        else:
-            # 沒有做物件.方法()
+        elif d[0][1] in local_symbol and local_symbol[d[0][1]][0] == "className":
             content.append(f"call {d[0][1]}.{d[2][1]} {n}")
+        elif d[0][1] in gs and gs[d[0][1]][0] == "className":
+            content.append(f"call {d[0][1]}.{d[2][1]} {n}")
+        else:
+            content.append("push ")  # push物件基址,method要增加接收self的
         return content
 
     def compileExpressionList(d: dict[int, list[str, str | dict]]):
