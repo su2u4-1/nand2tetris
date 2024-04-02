@@ -32,7 +32,7 @@ def walk_dict(d, depth=0):
 def variableAnalysis(text: list[xml]):
     sp = 0
     gsymbol = {}
-    gsp = {"className": 0, "functionName": 0, "field": 0, "static": 0}
+    gsp = {"className": 0, "function": 0, "method": 0, "constructor": 0, "field": 0, "static": 0}
     lsymbol = {}
     lsp = {}
     lia = ""
@@ -82,9 +82,10 @@ def variableAnalysis(text: list[xml]):
         now = source[sp]
         if now.tag == "identifier":
             if source[sp - 2].content in ["constructor", "function", "method"]:
+                t = source[sp - 2].content
                 lia = now.content
-                gsymbol[now.content] = [source[sp - 1].content, "functionName", gsp["functionName"]]
-                gsp["functionName"] += 1
+                gsymbol[now.content] = [source[sp - 1].content, t, gsp[t]]
+                gsp[t] += 1
         elif now.tag == "symbol":
             if now.content == "(":
                 lsymbol[lia] = {}
@@ -232,13 +233,15 @@ def compiler(d: dict[int:list]):
             content.extend(compileExpression(d[3][1]))
             if d[1][1] in local_symbol:
                 content.append(f"pop {local_symbol[d[1][1]][1]} {local_symbol[d[1][1]][2]}")
+            elif gs[d[1][1]][1] == "field":
+                content.append(f"push this {gs[d[1][1]][2]}")
             else:
                 content.append(f"pop {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
         elif d[2][1] == "[":
             content.extend(compileExpression(d[3][1]))
             if d[1][1] in local_symbol:
                 content.append(f"push {local_symbol[d[1][1]][1]} {local_symbol[d[1][1]][2]}")
-            elif gs[d[0][1]][1] == "field":
+            elif gs[d[1][1]][1] == "field":
                 content.append(f"push this {gs[d[1][1]][2]}")
             else:
                 content.append(f"push {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
