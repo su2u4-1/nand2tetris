@@ -7,11 +7,11 @@ class xml:
 
 
 def main(text1, text2):
-    global ls, gs, lvList, di, ifn, classname, whilen
+    global local_symbol, gs, lvList, di, ifn, classname, whilen
     ifn = 0
     whilen = 0
     lvList = []
-    ls, gs = variableAnalysis(text1)
+    local_symbol, gs = variableAnalysis(text1)
     text = structure(text2)
     classname = text[0][1][1][1]
     di = ["base"]
@@ -185,12 +185,12 @@ def structure(text: list[str]):
 
 def compiler(d: dict[int:list]):
     def compile(d: dict[int:list]):
-        global local_symbol, fn
+        global ls, fn
         content = []
         if di[-1] == "subroutineDec":
-            local_symbol = ls[d[2][1]]
+            ls = local_symbol[d[2][1]]
             localn = 0
-            for i in local_symbol.values():
+            for i in ls.values():
                 if i[1] == "local":
                     localn += 1
             content.append(f"function {classname}.{d[2][1]} {localn}")
@@ -231,16 +231,16 @@ def compiler(d: dict[int:list]):
         content = []
         if d[2][1] == "=":
             content.extend(compileExpression(d[3][1]))
-            if d[1][1] in local_symbol:
-                content.append(f"pop {local_symbol[d[1][1]][1]} {local_symbol[d[1][1]][2]}")
+            if d[1][1] in ls:
+                content.append(f"pop {ls[d[1][1]][1]} {ls[d[1][1]][2]}")
             elif gs[d[1][1]][1] == "field":
-                content.append(f"push this {gs[d[1][1]][2]}")
+                content.append(f"pop this {gs[d[1][1]][2]}")
             else:
                 content.append(f"pop {gs[d[1][1]][1]} {gs[d[1][1]][2]}")
         elif d[2][1] == "[":
             content.extend(compileExpression(d[3][1]))
-            if d[1][1] in local_symbol:
-                content.append(f"push {local_symbol[d[1][1]][1]} {local_symbol[d[1][1]][2]}")
+            if d[1][1] in ls:
+                content.append(f"push {ls[d[1][1]][1]} {ls[d[1][1]][2]}")
             elif gs[d[1][1]][1] == "field":
                 content.append(f"push this {gs[d[1][1]][2]}")
             else:
@@ -349,8 +349,8 @@ def compiler(d: dict[int:list]):
         elif 2 in d and d[0][1] == "(" and d[1][0] == "dict_expression" and d[2][1] == ")":
             content.extend(compileExpression(d[1][1]))
         elif 3 in d and d[0][0] == "str_identifier" and d[1][1] == "[" and d[2][0] == "dict_expression" and d[3][1] == "]":
-            if d[0][1] in local_symbol:
-                content.append(f"push {local_symbol[d[0][1]][1]} {local_symbol[d[0][1]][2]}")
+            if d[0][1] in ls:
+                content.append(f"push {ls[d[0][1]][1]} {ls[d[0][1]][2]}")
             elif gs[d[0][1]][1] == "field":
                 content.append(f"push this {gs[d[0][1]][2]}")
             else:
@@ -379,8 +379,8 @@ def compiler(d: dict[int:list]):
                 elif d[0][1] == "this":
                     content.append("push pointer 0")
             if d[0][0] == "str_identifier":
-                if d[0][1] in local_symbol:
-                    content.append(f"push {local_symbol[d[0][1]][1]} {local_symbol[d[0][1]][2]}")
+                if d[0][1] in ls:
+                    content.append(f"push {ls[d[0][1]][1]} {ls[d[0][1]][2]}")
                 elif gs[d[0][1]][1] == "field":
                     content.append(f"push this {gs[d[0][1]][2]}")
                 else:
@@ -399,12 +399,18 @@ def compiler(d: dict[int:list]):
             content.extend(t)
         if mode == 1:
             content.append(f"call {classname}.{d[0][1]} {n}")
-        elif d[0][1] in local_symbol and local_symbol[d[0][1]][0] == "className":
+        elif d[0][1] in ls and ls[d[0][1]][0] == "className":
             content.append(f"call {d[0][1]}.{d[2][1]} {n}")
         elif d[0][1] in gs and gs[d[0][1]][0] == "className":
             content.append(f"call {d[0][1]}.{d[2][1]} {n}")
         else:
-            content.append("push ")  # push物件基址,method要增加接收self的
+            # push物件基址,method要增加接收self的
+            if d[0][1] in gs:
+                content.append("push ")
+                content.append(f"call {gs[d[0][1]][0]}.{d[2][1]} {n+1}")
+            elif d[0][1] in ls:
+                content.append("push ")
+                content.append(f"call {ls[d[0][1]][0]}.{d[2][1]} {n+1}")
         return content
 
     def compileExpressionList(d: dict[int, list[str, str | dict]]):
