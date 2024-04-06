@@ -19,16 +19,6 @@ def main(text1, text2):
     return code
 
 
-def walk_dict(d, depth=0):
-    for key, value in d.items():
-        print("  " * depth + str(key), end=": ")
-        if type(value) == list and value[0].startswith("dict_"):
-            print("dict", value[0][5:])
-            walk_dict(value[1], depth + 1)
-        else:
-            print(value[0][4:], value[1])
-
-
 def variableAnalysis(text: list[xml]):
     sp = 0
     gsymbol = {}
@@ -46,7 +36,7 @@ def variableAnalysis(text: list[xml]):
             if now.content in ["field", "static"]:
                 ClassVarDec()
             elif now.content in ["constructor", "function", "method"]:
-                SubroutineDec()
+                SubroutineDec(now.content)
         elif now.tag == "identifier":
             gsymbol[now.content] = ["className", "className", gsp["className"]]
             gsp["className"] += 1
@@ -77,7 +67,7 @@ def variableAnalysis(text: list[xml]):
         sp += 1
         ClassVarDec()
 
-    def SubroutineDec():
+    def SubroutineDec(subroutineType):
         nonlocal sp, gsp, lia
         now = source[sp]
         if now.tag == "identifier":
@@ -89,13 +79,16 @@ def variableAnalysis(text: list[xml]):
         elif now.tag == "symbol":
             if now.content == "(":
                 lsymbol[lia] = {}
-                lsp[lia] = {"local": 0, "argument": 0}
+                if subroutineType == "method":
+                    lsp[lia] = {"local": 0, "argument": 1}
+                else:
+                    lsp[lia] = {"local": 0, "argument": 0}
                 ParameterList()
             elif now.content == "{":
                 SubroutineBody()
                 return
         sp += 1
-        SubroutineDec()
+        SubroutineDec(subroutineType)
 
     def ParameterList():
         nonlocal sp

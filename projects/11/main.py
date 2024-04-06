@@ -11,12 +11,6 @@ def listAllFiles(path: str):
     return result
 
 
-def xml(code: list):
-    for i in range(len(code)):
-        code[i] = f"<{code[i][1]}> {code[i][0]} </{code[i][1]}>"
-    return code
-
-
 if __name__ == "__main__":
     path = input("file or path:")
     if path.endswith(".jack"):
@@ -32,15 +26,7 @@ if __name__ == "__main__":
             sourceCode = f.readlines()
             f.close()
             processedSourceCode = Preprocessor.main(sourceCode)
-            # f = open(i.split(".")[0] + "_T.xml", "w")
-            # tl = processedSourceCode.copy()
-            # f.write("\n".join(["<tokens>"] + xml(tl) + ["</tokens>\n"]))
-            # f.close()
-            xmlcode = Parser.main(processedSourceCode)
-            # f = open(i.split(".")[0] + "_M.xml", "w")
-            # f.write("\n".join(xmlcode) + "\n")
-            # f.close()
-            vmcode = Compiler.main(processedSourceCode, xmlcode)
+            vmcode = Compiler.main(processedSourceCode, Parser.main(processedSourceCode))
             f = open(i.split(".")[0] + ".vm", "w")
             f.write("\n".join(vmcode) + "\n")
             f.close()
