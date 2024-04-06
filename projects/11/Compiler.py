@@ -198,11 +198,13 @@ def compiler(d: dict[int:list]):
             for i in gs.values():
                 if i[1] == "field":
                     fn += 1
-        elif di[-1] == "subroutineDec":
             if d[0][1] == "constructor":
                 content.append(f"push constant {fn}")
                 content.append("call Memory.alloc 1")
-                content.append("push pointer 0")
+                content.append("pop pointer 0")
+            elif d[0][1] == "method":
+                content.append("push argument 0")
+                content.append("pop pointer 0")
         if di[-1] == "statements":
             content.extend(compileStatement(d))
         else:
@@ -398,19 +400,21 @@ def compiler(d: dict[int:list]):
             t, n = compileExpressionList(d[4][1])
             content.extend(t)
         if mode == 1:
+            if gs[d[0][1]][1] == "method":
+                content.insert(0, f"push pointer 0")
+                n += 1
             content.append(f"call {classname}.{d[0][1]} {n}")
-        elif d[0][1] in ls and ls[d[0][1]][0] == "className":
-            content.append(f"call {d[0][1]}.{d[2][1]} {n}")
-        elif d[0][1] in gs and gs[d[0][1]][0] == "className":
-            content.append(f"call {d[0][1]}.{d[2][1]} {n}")
+        elif d[0][1] in gs and gs[d[0][1]][0] != "className":
+            if gs[d[0][1]][1] == "field":
+                content.insert(0, f"push this {gs[d[0][1]][2]}")
+            else:
+                content.insert(0, f"push {gs[d[0][1]][1]} {gs[d[0][1]][2]}")
+            content.append(f"call {gs[d[0][1]][0]}.{d[2][1]} {n+1}")
+        elif d[0][1] in ls and ls[d[0][1]][0] != "className":
+            content.insert(0, f"push local {ls[d[0][1]][2]}")
+            content.append(f"call {ls[d[0][1]][0]}.{d[2][1]} {n+1}")
         else:
-            # push物件基址,method要增加接收self的
-            if d[0][1] in gs:
-                content.append("push ")
-                content.append(f"call {gs[d[0][1]][0]}.{d[2][1]} {n+1}")
-            elif d[0][1] in ls:
-                content.append("push ")
-                content.append(f"call {ls[d[0][1]][0]}.{d[2][1]} {n+1}")
+            content.append(f"call {d[0][1]}.{d[2][1]} {n}")
         return content
 
     def compileExpressionList(d: dict[int, list[str, str | dict]]):

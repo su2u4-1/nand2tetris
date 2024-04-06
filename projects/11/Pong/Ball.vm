@@ -1,56 +1,70 @@
 function Ball.new 0
+push constant 15
+call Memory.alloc 1
+pop pointer 0
 push argument 0
-pop static 0
+pop this 0
 push argument 1
-pop static 1
+pop this 1
 push argument 2
-pop static 10
+pop this 10
 push argument 3
 push constant 6
 sub
-pop static 11
+pop this 11
 push argument 4
-pop static 12
+pop this 12
 push argument 5
 push constant 6
 sub
-pop static 13
+pop this 13
 push constant 0
-pop static 14
-call Ball.show 0
+pop this 14
+push pointer 0
+call Ball.show 1
 pop temp 0
 push pointer 0
 return
 function Ball.dispose 0
+push argument 0
+pop pointer 0
 push pointer 0
 call Memory.deAlloc 1
 pop temp 0
 push constant 0
 return
 function Ball.show 0
+push argument 0
+pop pointer 0
 push constant 0
 not
 call Screen.setColor 1
 pop temp 0
-call Ball.draw 0
+push pointer 0
+call Ball.draw 1
 pop temp 0
 push constant 0
 return
 function Ball.hide 0
+push argument 0
+pop pointer 0
 push constant 0
 call Screen.setColor 1
 pop temp 0
-call Ball.draw 0
+push pointer 0
+call Ball.draw 1
 pop temp 0
 push constant 0
 return
 function Ball.draw 0
-push static 0
-push static 1
-push static 0
+push argument 0
+pop pointer 0
+push this 0
+push this 1
+push this 0
 push constant 5
 add
-push static 1
+push this 1
 push constant 5
 add
 call Screen.drawRectangle 4
@@ -58,42 +72,48 @@ pop temp 0
 push constant 0
 return
 function Ball.getLeft 0
-push static 0
+push argument 0
+pop pointer 0
+push this 0
 return
 function Ball.getRight 0
-push static 0
+push argument 0
+pop pointer 0
+push this 0
 push constant 5
 add
 return
 function Ball.setDestination 3
 push argument 0
-push static 0
+pop pointer 0
+push argument 0
+push this 0
 sub
-pop static 2
+pop this 2
 push argument 1
-push static 1
+push this 1
 sub
-pop static 3
-push static 2
+pop this 3
+push this 2
 call Math.abs 1
 pop local 0
-push static 3
+push this 3
 call Math.abs 1
 pop local 1
 push local 0
 push local 1
 lt
-pop static 7
-push static 7
+pop this 7
+push this 7
 if-goto IL0.1
-push static 0
+push this 0
 push argument 0
 lt
-pop static 8
-push static 1
+pop this 8
+push this 1
 push argument 1
 lt
-pop static 9
+pop this 9
 goto IL0.2
 label IL0.1
 push local 0
@@ -102,171 +122,177 @@ push local 1
 pop local 0
 push local 2
 pop local 1
-push static 1
+push this 1
 push argument 1
 lt
-pop static 8
-push static 0
+pop this 8
+push this 0
 push argument 0
 lt
-pop static 9
+pop this 9
 label IL0.2
 push constant 2
 push local 1
 call Math.multiply 2
 push local 0
 sub
-pop static 4
+pop this 4
 push constant 2
 push local 1
 call Math.multiply 2
-pop static 5
+pop this 5
 push constant 2
 push local 1
 push local 0
 sub
 call Math.multiply 2
-pop static 6
+pop this 6
 push constant 0
 return
 function Ball.move 0
-call Ball.hide 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Ball.hide 1
 pop temp 0
-push static 4
+push this 4
 push constant 0
 lt
 if-goto IL1.1
-push static 4
-push static 6
+push this 4
+push this 6
 add
-pop static 4
-push static 9
+pop this 4
+push this 9
 if-goto IL2.1
-push static 7
+push this 7
 if-goto IL3.1
-push static 1
+push this 1
 push constant 4
 sub
-pop static 1
+pop this 1
 goto IL3.2
 label IL3.1
-push static 0
+push this 0
 push constant 4
 sub
-pop static 0
+pop this 0
 label IL3.2
 goto IL2.2
 label IL2.1
-push static 7
+push this 7
 if-goto IL4.1
-push static 1
+push this 1
 push constant 4
 add
-pop static 1
+pop this 1
 goto IL4.2
 label IL4.1
-push static 0
+push this 0
 push constant 4
 add
-pop static 0
+pop this 0
 label IL4.2
 label IL2.2
 goto IL1.2
 label IL1.1
-push static 4
-push static 5
+push this 4
+push this 5
 add
-pop static 4
+pop this 4
 label IL1.2
-push static 8
+push this 8
 if-goto IL5.1
-push static 7
+push this 7
 if-goto IL6.1
-push static 0
+push this 0
 push constant 4
 sub
-pop static 0
+pop this 0
 goto IL6.2
 label IL6.1
-push static 1
+push this 1
 push constant 4
 sub
-pop static 1
+pop this 1
 label IL6.2
 goto IL5.2
 label IL5.1
-push static 7
+push this 7
 if-goto IL7.1
-push static 0
+push this 0
 push constant 4
 add
-pop static 0
+pop this 0
 goto IL7.2
 label IL7.1
-push static 1
+push this 1
 push constant 4
 add
-pop static 1
+pop this 1
 label IL7.2
 label IL5.2
-push static 0
-push static 10
+push this 0
+push this 10
 gt
 not
 if-goto IL8.1
 goto IL8.2
 label IL8.1
 push constant 1
-pop static 14
-push static 10
-pop static 0
+pop this 14
+push this 10
+pop this 0
 label IL8.2
-push static 0
-push static 11
+push this 0
+push this 11
 lt
 not
 if-goto IL9.1
 goto IL9.2
 label IL9.1
 push constant 2
-pop static 14
-push static 11
-pop static 0
+pop this 14
+push this 11
+pop this 0
 label IL9.2
-push static 1
-push static 12
+push this 1
+push this 12
 gt
 not
 if-goto IL10.1
 goto IL10.2
 label IL10.1
 push constant 3
-pop static 14
-push static 12
-pop static 1
+pop this 14
+push this 12
+pop this 1
 label IL10.2
-push static 1
-push static 13
+push this 1
+push this 13
 lt
 not
 if-goto IL11.1
 goto IL11.2
 label IL11.1
 push constant 4
-pop static 14
-push static 13
-pop static 1
+pop this 14
+push this 13
+pop this 1
 label IL11.2
-call Ball.show 0
+push pointer 0
+call Ball.show 1
 pop temp 0
-push static 14
+push this 14
 return
 function Ball.bounce 5
-push static 2
+push argument 0
+pop pointer 0
+push this 2
 push constant 10
 call Math.divide 2
 pop local 2
-push static 3
+push this 3
 push constant 10
 call Math.divide 2
 pop local 3
@@ -274,7 +300,7 @@ push argument 0
 push constant 0
 eq
 if-goto IL12.1
-push static 2
+push this 2
 push constant 0
 lt
 not
@@ -282,7 +308,7 @@ push argument 0
 push constant 1
 eq
 and
-push static 2
+push this 2
 push constant 0
 lt
 push argument 0
@@ -304,15 +330,15 @@ label IL12.1
 push constant 10
 pop local 4
 label IL12.2
-push static 14
+push this 14
 push constant 1
 eq
 if-goto IL14.1
-push static 14
+push this 14
 push constant 2
 eq
 if-goto IL15.1
-push static 14
+push this 14
 push constant 3
 eq
 if-goto IL16.1
@@ -324,7 +350,7 @@ call Math.multiply 2
 push local 3
 call Math.divide 2
 pop local 0
-push static 0
+push this 0
 push local 0
 push local 4
 call Math.multiply 2
@@ -341,7 +367,7 @@ call Math.multiply 2
 push local 3
 call Math.divide 2
 pop local 0
-push static 0
+push this 0
 push local 0
 push local 4
 call Math.multiply 2
@@ -358,7 +384,7 @@ call Math.multiply 2
 push local 2
 call Math.divide 2
 pop local 1
-push static 1
+push this 1
 push local 1
 push local 4
 call Math.multiply 2
@@ -376,16 +402,17 @@ call Math.multiply 2
 push local 2
 call Math.divide 2
 pop local 1
-push static 1
+push this 1
 push local 1
 push local 4
 call Math.multiply 2
 add
 pop local 1
 label IL14.2
+push pointer 0
 push local 0
 push local 1
-call Ball.setDestination 2
+call Ball.setDestination 3
 pop temp 0
 push constant 0
 return
