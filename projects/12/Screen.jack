@@ -10,9 +10,11 @@
  * the screen is indexed (0,0).
  */
 class Screen {
+    static Array s;
 
     /** Initializes the Screen. */
     function void init() {
+        let s = 16384;
     }
 
     /** Erases the entire screen. */

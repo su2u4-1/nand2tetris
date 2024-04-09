@@ -9,9 +9,11 @@
  * consists of 32,768 words, each holding a 16-bit binary number.
  */ 
 class Memory {
+    static Array m;
 
     /** Initializes the class. */
     function void init() {
+        let m = 0;
     }
 
     /** Returns the RAM value at the given address. */
