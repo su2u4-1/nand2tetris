@@ -15,6 +15,16 @@ class Math {
 
     // Initializes the Math library.
     function void init() {
+        var int i;
+        let i = 0;
+        let n = 1;
+        let powersOfTwo = Array.new(16);
+        while (i < 16) {
+            let powersOfTwo[i] = n;
+            let n = n + n;
+            let i = i + 1;
+        }
+        return;
     }
 
     /** Returns the product of x and y. 
@@ -23,6 +33,17 @@ class Math {
      *  Thus, in Jack, x * y and Math.multiply(x,y) return the same value.
      */
     function int multiply(int x, int y) {
+        var int i, sum;
+        let i = 0;
+        let sum = 0;
+        while (i < 16) {
+            if (x & powersOfTwo[i] > 0) {
+                let sum = sum + y;
+            }
+            let y = y + y;
+            let i = i + 1;
+        }
+        return sum;
     }
 
     /** Returns the integer part of x / y.
@@ -59,6 +80,9 @@ class Math {
     /** Returns the absolute value of x
     */
     function int abs(int x) {
-        return x & 32767;
+        if (x < 0) {
+            return -x;
+        }
+        return x;
     }
 }
