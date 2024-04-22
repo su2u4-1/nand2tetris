@@ -15,6 +15,10 @@ class Memory {
     /** Initializes the class. */
     function void init() {
         let m = 0;
+        let start = 2050
+        let m[2048] = 31740;
+        let m[2049] = -1;
+        return;
     }
 
     /** Returns the RAM value at the given address. */
@@ -31,6 +35,39 @@ class Memory {
     /** Finds an available RAM block of the given size and returns
      *  a reference to its base address. */
     function int alloc(int size) {
+        var int sp, tu;
+        let sp = start;
+        let tu = -1;
+        while (true) {
+            if (m[sp-2] = size) {
+                if (tu <= 0) {
+                    let start = m[sp-1];
+                }
+                else {
+                    let m[tu-1] = m[sp-1];
+                }
+                return sp;
+            }
+            if (m[sp-2] > (size+2)) {
+                if (tu <= 0) {
+                    let start = sp+size+2;
+                }
+                else {
+                    let m[tu-1] = sp+size+2;
+                }
+                let m[sp+size+1] = m[sp-1];
+                let m[sp+size] = m[sp-2]-size-2;
+                let m[sp-1] = sp+size+2;
+                let m[sp-2] = size;
+                return sp;
+            }
+            let tu = sp;
+            if (m[sp-1] <= 0) {
+                return -1;
+            }
+            let sp = m[sp-1];
+        }
+
     }
 
     /** De-allocates the given object (cast as an array) by making
