@@ -297,7 +297,7 @@ def CompileReturnStatement():
     now = source[sp]
     if now.tag == "keyword" and now.content == "return":
         addCode(now.text)
-    elif now.tag == "symbol" or now.content == ";":
+    elif now.tag == "symbol" and now.content == ";":
         addCode(now.text)
         return
     else:

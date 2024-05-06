@@ -52,11 +52,39 @@ class Math {
      *  Thus, x/y and Math.divide(x,y) return the same value.
      */
     function int divide(int x, int y) {
+        if (y = 0) {
+            return 0;
+        }
+        var int q;
+        var int t;
+        if (y > x) {
+            return 0;
+        }
+        let q = divide(x, 2 * y);
+        let t = 2 * q;
+        if (x - t * y < y) {
+            return t;
+        }
+        else {
+            return t + 1;
+        }
     }
 
     /** Returns the integer part of the square root of x.
     */
     function int sqrt(int x) {
+        if (x < 2) {
+            return x;
+        }
+        var int y, j;
+        let y = 0;
+        let j = x / 2;
+        while (j > 0) {
+            if ((y + powersOfTwo[j]) * (y + powersOfTwo[j]) + 1 > x) {
+                let y = y + powersOfTwo[j-1];
+            }
+        }
+        return y;
     }
 
     /** Returns the greater value.
