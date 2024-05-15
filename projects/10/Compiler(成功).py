@@ -1,40 +1,8 @@
 import os, re
 
 symbolL = ["{", "}", "[", "]", "(", ")", ",", ";", "+", "-", "*", "/", "&", "|", "~", ">", "<", "=", "."]
-keyList = [
-    "class",
-    "constructor",
-    "function",
-    "method",
-    "field",
-    "static",
-    "var",
-    "int",
-    "char",
-    "boolean",
-    "void",
-    "true",
-    "false",
-    "null",
-    "this",
-    "let",
-    "do",
-    "if",
-    "else",
-    "while",
-    "return",
-]
-opList = [
-    "<symbol> + </symbol>",
-    "<symbol> - </symbol>",
-    "<symbol> * </symbol>",
-    "<symbol> / </symbol>",
-    "<symbol> &amp; </symbol>",
-    "<symbol> | </symbol>",
-    "<symbol> &gt; </symbol>",
-    "<symbol> &lt; </symbol>",
-    "<symbol> = </symbol>",
-]
+keyList = ["class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean", "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return"]
+opList = ["<symbol> + </symbol>", "<symbol> - </symbol>", "<symbol> * </symbol>", "<symbol> / </symbol>", "<symbol> &amp; </symbol>", "<symbol> | </symbol>", "<symbol> &gt; </symbol>", "<symbol> &lt; </symbol>", "<symbol> = </symbol>"]
 
 
 def xmlTag(text, tag):

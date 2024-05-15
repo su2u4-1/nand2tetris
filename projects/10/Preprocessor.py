@@ -1,29 +1,7 @@
 import re
 
 symbolL = ["{", "}", "[", "]", "(", ")", ",", ";", "+", "-", "*", "/", "&", "|", "~", ">", "<", "=", "."]
-keyList = [
-    "class",
-    "constructor",
-    "function",
-    "method",
-    "field",
-    "static",
-    "var",
-    "int",
-    "char",
-    "boolean",
-    "void",
-    "true",
-    "false",
-    "null",
-    "this",
-    "let",
-    "do",
-    "if",
-    "else",
-    "while",
-    "return",
-]
+keyList = ["class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean", "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return"]
 
 
 # 將嵌套的列表展開為一個平面列表
