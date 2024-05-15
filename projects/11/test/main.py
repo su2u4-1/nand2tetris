@@ -1,4 +1,6 @@
-import os, Preprocessor, Parser
+import os
+from JackTokenizer import *
+from CompilationEngine import *
 
 
 def listAllFiles(path: str):
@@ -11,7 +13,7 @@ def listAllFiles(path: str):
     return result
 
 
-def xml(code: list):
+def turn_xml(code: list):
     for i in range(len(code)):
         code[i] = f"<{code[i][1]}> {code[i][0]} </{code[i][1]}>"
     return code
@@ -19,7 +21,7 @@ def xml(code: list):
 
 if __name__ == "__main__":
     path = input("file or path:")
-    if ".jack" in path:
+    if path.endswith(".jack"):
         result = [path]
     else:
         if "C:\\Users\\joey2\\code\\nand2tetris\\" in path:
@@ -27,17 +29,12 @@ if __name__ == "__main__":
         else:
             result = listAllFiles("C:\\Users\\joey2\\code\\nand2tetris\\" + path)
     for i in result:
-        if ".jack" in i:
-            f = open(i, "r")
-            sourceCode = f.readlines()
-            processedSourceCode = Preprocessor.preprocessor(sourceCode)
-            tl = processedSourceCode.copy()
-            f.close()
-            f = open(i.split(".")[0] + "_T.xml", "w")
-            f.write("\n".join(["<tokens>"] + xml(tl) + ["</tokens>\n"]))
-            f.close()
-            xmlcode = Parser.grammarAnalyzer(processedSourceCode)
-            xmlcode[-1] += "\n"
-            f = open(i.split(".")[0] + "_M.xml", "w")
-            f.write("\n".join(xmlcode))
-            f.close()
+        if i.endswith(".jack"):
+            with open(i, "r") as f:
+                source = f.readlines()
+            compiler = CompilationEngine()
+            tokens = tokenizer(source)
+            exit()
+            xml = compiler.main(tokens)
+            with open(i.split(".")[0] + "_M.xml", "w") as f:
+                f.write("\n".join(xml))
