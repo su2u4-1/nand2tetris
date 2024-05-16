@@ -53,15 +53,15 @@ def tokenizer(text: list[str]):
     # 附上類型
     for i in range(len(code)):
         if code[i] in symbolList:
-            code[i] = [code[i], "symbol"]
+            code[i] = (code[i], "symbol")
         elif code[i] in keyWordList:
-            code[i] = [code[i], "symbol"]
+            code[i] = (code[i], "symbol")
         elif code[i].isdigit() and int(i) < 32768:
-            code[i] = [code[i], "integerConstant"]
+            code[i] = (code[i], "integerConstant")
         elif code[i][0] == '"' and code[i][-1] == '"':
-            code[i] = [code[i][1:-1], "sttringConstant"]
+            code[i] = (code[i][1:-1], "sttringConstant")
         elif code[i][0] in identifier:
-            code[i] = [code[i], "identifier"]
+            code[i] = (code[i], "identifier")
         else:
             print(f"error: The identifier cannot start with {code[i][0]}")
     return code

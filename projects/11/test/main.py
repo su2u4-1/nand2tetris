@@ -1,4 +1,4 @@
-import os
+import os, sys
 from JackTokenizer import *
 from CompilationEngine import *
 
@@ -20,21 +20,25 @@ def turn_xml(code: list):
 
 
 if __name__ == "__main__":
-    path = input("file or path:")
+    if len(sys.argv) > 1:
+        path = sys.argv[1]
+    else:
+        path = input("file or path:")
+    dir = os.getcwd()
+
+    if dir not in path:
+        path = dir + "\\" + path
     if path.endswith(".jack"):
         result = [path]
     else:
-        if "C:\\Users\\joey2\\code\\nand2tetris\\" in path:
-            result = listAllFiles(path)
-        else:
-            result = listAllFiles("C:\\Users\\joey2\\code\\nand2tetris\\" + path)
+        result = listAllFiles(path)
+
     for i in result:
         if i.endswith(".jack"):
             with open(i, "r") as f:
                 source = f.readlines()
-            compiler = CompilationEngine()
             tokens = tokenizer(source)
-            exit()
-            xml = compiler.main(tokens)
+            compiler = CompilationEngine(tokens)
+            xml = compiler.main()
             with open(i.split(".")[0] + "_M.xml", "w") as f:
                 f.write("\n".join(xml))
