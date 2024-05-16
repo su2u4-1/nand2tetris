@@ -9,19 +9,39 @@ class CompilationEngine:
         self.argument = 0
         self.local = 0
         self.code = []
+        self.level = [0, 0, 0]
 
     def get(self) -> tuple[str]:
-        """git next token"""
         if self.point < self.len:
             t = self.token[self.point]
             self.point += 1
+            if t == ("(", "symbol"):
+                self.level[0] += 1
+            elif t == (")", "symbol"):
+                self.level[0] -= 1
+                if self.level[0] < 0:
+                    print("error: ( not closed")
+                    exit()
+            elif t == ("[", "symbol"):
+                self.level[1] += 1
+            elif t == ("]", "symbol"):
+                self.level[1] -= 1
+                if self.level[1] < 0:
+                    print("error: [ not closed")
+                    exit()
+            elif t == ("{", "symbol"):
+                self.level[2] += 1
+            elif t == ("}", "symbol"):
+                self.level[2] -= 1
+                if self.level[2] < 0:
+                    print("error: { not closed")
+                    exit()
             return t
         else:
             print("error: Code file is incomplete")
             exit()
 
     def main(self) -> list[str]:
-        """start compile"""
         now = self.get()
         if now == ("class", "keyword"):
             self.compileClass()
@@ -42,16 +62,17 @@ class CompilationEngine:
             next = self.token[self.point]
             if next == ("static", "keyword") or next == ("field", "keyword"):
                 self.compileClassVarDec()
-            elif next[1] == "keyword" and next[0] in ["function", "method", "constructor"]:
-                f = True
-            else:
+            elif next[1] != "keyword" or next[0] not in ["function", "method", "constructor"]:
                 print("error: The first one in class is not var or subroutine")
                 exit()
         else:
             print("error: class messing {")
             exit()
-        while f:
-            f = self.compileSubroutine()
+        next = self.token[self.point]
+        if next[1] == "keyword" and next[0] in ["function", "method", "constructor"]:
+            f = True
+            while f:
+                f = self.compileSubroutine()
 
     def compileClassVarDec(self):
         now = self.get()
@@ -79,12 +100,25 @@ class CompilationEngine:
                     exit()
 
     def compileSubroutine(self) -> bool:
-        pass
+        temp = []
+        now = self.get()
+        if now == ("constructor", "keyword"):
+            temp.append(f"push constant {self.vardec["field"]}")
+            temp.append("call Memory.alloc 1")
+            temp.append("pop pointer 0")
+        elif now == ("method", "keyword"):
+            temp.append("push argument 0")
+            temp.append("pop pointer 0")
+        now = self.get()
+        if (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "void"]) or now[1] == "identifier":
+            pass
+        else:
+            print(f"error: {now[0]} is not a legal type")
 
     def compileParameterList(self):
         pass
 
-    def compileDec(self):
+    def compileVarDec(self):
         pass
 
     def compileStatement(self):
