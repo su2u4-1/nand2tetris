@@ -10,15 +10,15 @@ def tokenizer(text: list[str]):
         text[i] = text[i].split("//")[0]
     text = " ".join(text)
     # 處理多行註釋
-    while "/**" in text and "*/" in text:
-        t = text.split("/**")
+    while "/*" in text and "*/" in text:
+        t = text.split("/*")
         t[1] = t[1].split("*/")[1]
         text = " ".join(t)
     # 註釋未關閉
-    if "/**" in text and "*/" not in text:
+    if "/*" in text and "*/" not in text:
         print("error: Comment is not closed")
         exit()
-    elif "/**" not in text and "*/" in text:
+    elif "/*" not in text and "*/" in text:
         print("error: Comment is not closed")
         exit()
     # 主要分解區
