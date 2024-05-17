@@ -21,21 +21,21 @@ class CompilationEngine:
             elif t == (")", "symbol"):
                 self.level[0] -= 1
                 if self.level[0] < 0:
-                    print("error: ( not closed")
+                    print("error: '(' not closed")
                     exit()
             elif t == ("[", "symbol"):
                 self.level[1] += 1
             elif t == ("]", "symbol"):
                 self.level[1] -= 1
                 if self.level[1] < 0:
-                    print("error: [ not closed")
+                    print("error: '[' not closed")
                     exit()
             elif t == ("{", "symbol"):
                 self.level[2] += 1
             elif t == ("}", "symbol"):
                 self.level[2] -= 1
                 if self.level[2] < 0:
-                    print("error: { not closed")
+                    print("error: '{' not closed")
                     exit()
             return t
         else:
@@ -43,12 +43,12 @@ class CompilationEngine:
             exit()
 
     def main(self) -> list[str]:
-        # start with class
+        # start processing class
         now = self.get()
         if now == ("class", "keyword"):
             self.compileClass()
         else:
-            print("error: The beginning of the file is not class")
+            print("error: The beginning of the file is not 'class'")
             exit()
         return self.code
 
@@ -58,7 +58,7 @@ class CompilationEngine:
         if now[1] == "identifier":
             self.className = now[0]
         else:
-            print(f"error: {now[1]} {now[0]} cannot be used as the name of class")
+            print(f"error: {now[1]} '{now[0]}' cannot be used as the name of class")
             exit()
 
         # { after className
@@ -72,10 +72,10 @@ class CompilationEngine:
                 elif next[1] == "keyword" and next[0] in ["function", "method", "constructor"]:
                     break
                 else:
-                    print("error: There are only field, static or subroutine in class")
+                    print("error: There are only 'field', 'static' or 'subroutine' in class")
                     exit()
         else:
-            print("error: Class missing {")
+            print("error: Class missing '{'")
             exit()
 
         # function, method or constructor
@@ -100,7 +100,7 @@ class CompilationEngine:
             if now[1] == "identifier" or (now[1] == "keyword" and now[0] in ["int", "boolean", "char"]):
                 type = now[0]
             else:
-                print(f"error: type cannot be {now[0]}")
+                print(f"error: type cannot be '{now[0]}'")
                 exit()
 
             # everything before the ;
@@ -111,7 +111,7 @@ class CompilationEngine:
                     self.gv[now[0]] = [type, kind, self.gvCount[kind]]
                     self.gvCount[kind] += 1
                 else:
-                    print(f"error: {now[1]} {now[0]} cannot be used as a variable name")
+                    print(f"error: {now[1]} '{now[0]}' cannot be used as a variable name")
                     exit()
 
                 # ends with ;
@@ -119,7 +119,7 @@ class CompilationEngine:
                 if now == (";", "symbol"):
                     break
                 elif now != (",", "symbol"):
-                    print(f"error: unknow {now[1]} {now[0]}")
+                    print(f"error: unknown {now[1]} '{now[0]}'")
                     exit()
 
     def compileSubroutine(self):
@@ -142,7 +142,7 @@ class CompilationEngine:
         if (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "void"]) or now[1] == "identifier":
             type = now[0]
         else:
-            print(f"error: {now[0]} is not a legal type")
+            print(f"error: '{now[0]}' is not a legal type")
             exit()
 
         # subroutine name
@@ -152,13 +152,13 @@ class CompilationEngine:
             self.gvCount[kind] += 1
             self.functionName = now[0]
         else:
-            print(f"error: {now[1]} {now[0]} cannot be used as a sbroutine name")
+            print(f"error: {now[1]} '{now[0]}' cannot be used as a subroutine name")
             exit()
 
         # argument list
         now = self.get()
         if now != ("(", "symbol"):
-            print("error: Missing (")
+            print("error: Missing '('")
             exit()
         next = self.token[self.point]
         argCount = 0
@@ -170,7 +170,7 @@ class CompilationEngine:
         # subroutine body
         now = self.get()
         if now != ("{", "symbol"):
-            print("error: Missing {")
+            print("error: Missing '{'")
             exit()
         varCount = 0
         while True:
@@ -188,7 +188,7 @@ class CompilationEngine:
         self.compileStatement()
         now = self.get()
         if now != ("}", "symbol"):
-            print("error: Missing }")
+            print("error: Missing '}'")
             exit()
 
     def compileParameterList(self) -> int:
