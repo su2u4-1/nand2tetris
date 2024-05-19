@@ -14,27 +14,29 @@ class CompilationEngine:
         if self.point < self.len:
             t = self.token[self.point]
             self.point += 1
-            if t == ("(", "symbol"):
-                self.level[0] += 1
-            elif t == (")", "symbol"):
-                self.level[0] -= 1
-                if self.level[0] < 0:
-                    print("error: '(' not closed")
-                    exit()
-            elif t == ("[", "symbol"):
-                self.level[1] += 1
-            elif t == ("]", "symbol"):
-                self.level[1] -= 1
-                if self.level[1] < 0:
-                    print("error: '[' not closed")
-                    exit()
-            elif t == ("{", "symbol"):
-                self.level[2] += 1
-            elif t == ("}", "symbol"):
-                self.level[2] -= 1
-                if self.level[2] < 0:
-                    print("error: '{' not closed")
-                    exit()
+            if t[1] == "symbol":
+                match t[0]:
+                    case "(":
+                        self.level[0] += 1
+                    case ")":
+                        self.level[0] -= 1
+                        if self.level[0] < 0:
+                            print("error: '(' not closed")
+                            exit()
+                    case "[":
+                        self.level[1] += 1
+                    case "]":
+                        self.level[1] -= 1
+                        if self.level[1] < 0:
+                            print("error: '[' not closed")
+                            exit()
+                    case "{":
+                        self.level[2] += 1
+                    case "}":
+                        self.level[2] -= 1
+                        if self.level[2] < 0:
+                            print("error: '{' not closed")
+                            exit()
             return t
         else:
             print("error: Code file is incomplete")
@@ -43,7 +45,7 @@ class CompilationEngine:
     def main(self) -> list[str]:
         # start processing class
         now = self.get()
-        if now == ("class", "keyword"):
+        if now[1] == "keyword" and now[0] == "class":
             self.compileClass()
         else:
             print("error: The beginning of the file is not 'class'")
@@ -61,11 +63,11 @@ class CompilationEngine:
 
         # { after className
         now = self.get()
-        if now == ("{", "symbol"):
+        if now[1] == "symbol" and now[0] == "{":
             # field or static
             while True:
                 next = self.token[self.point]
-                if next == ("static", "keyword") or next == ("field", "keyword"):
+                if next[1] == "keyword" and next[0] in ["field", "static"]:
                     self.compileClassVarDec()
                 elif next[1] == "keyword" and next[0] in ["function", "method", "constructor"]:
                     break
@@ -90,7 +92,6 @@ class CompilationEngine:
         # static or field
         now = self.get()
         if now[1] == "keyword" and now[0] in ["static", "field"]:
-            # kind = static or field
             kind = now[0]
 
             # type = int, boolean, char or identifier
@@ -101,7 +102,6 @@ class CompilationEngine:
                 print(f"error: type cannot be '{now[0]}'")
                 exit()
 
-            # everything before the ;
             while True:
                 # variable
                 now = self.get()
@@ -114,9 +114,9 @@ class CompilationEngine:
 
                 # ends with ;
                 now = self.get()
-                if now == (";", "symbol"):
+                if now[1] == "symbol" and now[0] == ";":
                     break
-                elif now != (",", "symbol"):
+                elif now[1] != "symbol" or now[1] != ",":
                     print(f"error: unknown {now[1]} '{now[0]}'")
                     exit()
 
@@ -124,13 +124,12 @@ class CompilationEngine:
         # kind = function, method or constructor
         now = self.get()
         kind = now[0]
-        # special treatment for method and constructor
         t = len(self.code)
-        if now == ("constructor", "keyword"):
+        if now[1] == "keyword" and now[0] == "constructor":
             self.code.append(f"push constant {self.gvCount['field']}")
             self.code.append("call Memory.alloc 1")
             self.code.append("pop pointer 0")
-        elif now == ("method", "keyword"):
+        elif now[1] == "keyword" and now[0] == "method":
             self.code.append("push argument 0")
             self.code.append("pop pointer 0")
 
@@ -154,32 +153,32 @@ class CompilationEngine:
 
         # argument list
         now = self.get()
-        if now != ("(", "symbol"):
+        if now[1] != "symbol" or now[0] != "(":
             print("error: Missing '('")
             exit()
+
         next = self.token[self.point]
-        if next != (")", "symbol"):
+        if next[1] != "symbol" or next[0] != ")":
             self.compileParameterList()
         else:
             self.get()
 
         # local variable
         now = self.get()
-        if now != ("{", "symbol"):
+        if now[1] != "symbol" or now[0] != "{":
             print("error: Missing '{'")
             exit()
         while True:
             next = self.token[self.point]
-            if next == ("var", "keyword"):
+            if next[1] == "keyword" and next[0] == "var":
                 self.compileVarDec()
             else:
                 break
-        # write code
         self.code.insert(t, f"function {self.className}.{self.functionName} {self.lvCount['argument'] + self.lvCount['local']}")
-        # processing statement
         self.compileStatement()
+
         now = self.get()
-        if now != ("}", "symbol"):
+        if now[1] != "symbol" or now[0] != "}":
             print("error: Missing '}'")
             exit()
 
@@ -198,9 +197,9 @@ class CompilationEngine:
                 print(f"error: {now[1]} '{now[0]}' is not legal variable name")
                 exit()
             now = self.get()
-            if now == (")", "symbol"):
+            if now[1] == "symbol" and now[0] == ")":
                 break
-            elif now != (",", "symbol"):
+            elif now[1] != "symbol" or now[0] != ",":
                 print("error:")
                 exit()
 
@@ -221,31 +220,35 @@ class CompilationEngine:
                 exit()
 
             now = self.get()
-            if now == (";", "symbol"):
+            if now[1] == "symbol" and now[0] == ";":
                 break
-            elif now != (",", "symbol"):
+            elif now[1] != "symbol" or now[0] != ",":
                 print("error:")
                 exit()
 
     def compileStatement(self):
         while True:
             now = self.get()
-            if now == ("do", "keyword"):
-                self.compileDo()
-            elif now == ("let", "keyword"):
-                self.compileLet()
-            elif now == ("while", "keyword"):
-                self.compileWhile()
-            elif now == ("return", "keyword"):
-                self.compileReturn()
-            elif now == ("if", "keyword"):
-                self.compileIf()
+            if now[1] == "keyword":
+                if now[0] == "do":
+                    self.compileDo()
+                elif now[0] == "let":
+                    self.compileLet()
+                elif now[0] == "while":
+                    self.compileWhile()
+                elif now[0] == "return":
+                    self.compileReturn()
+                elif now[0] == "if":
+                    self.compileIf()
+                else:
+                    print(f"error: Unknown keyword '{now[0]}'")
+                    exit()
             else:
-                print(f"error: Unknown {now[1]} '{now[0]}'")
+                print(f"error: {now[0]} is not a keyword")
                 exit()
 
             next = self.token[self.point]
-            if next == ("}", "symbol"):
+            if next[1] == "symbol" and next[0] == "}":
                 break
             elif next[1] != "keyword" or next[0] not in ["do", "let", "while", "return", "if"]:
                 print(f"error: Unknown {next[1]} '{next[0]}'")
@@ -271,21 +274,21 @@ class CompilationEngine:
             exit()
 
         now = self.get()
-        if now == ("=", "symbol"):
+        if now[1] == "symbol" and now[0] == "=":
             self.compileExpression()
             self.code.append("pop " + t)
-        elif now == ("[", "symbol"):
+        elif now[1] == "symbol" and now[0] == "[":
             self.compileExpression()
             self.code.append("push " + t)
             self.code.append("add")
 
             now = self.get()
-            if now != ("]", "symbol"):
+            if now[1] != "symbol" or now[0] != "]":
                 print("error: '[' is not closed")
                 exit()
 
             now = self.get()
-            if now != ("=", "symbol"):
+            if now[1] != "symbol" or now[0] != "=":
                 print("error: Missing '='")
                 exit()
             self.compileExpression()
@@ -298,7 +301,7 @@ class CompilationEngine:
             exit()
 
         now = self.get()
-        if now != (";", "symbol"):
+        if now[1] != "symbol" or now[0] != ";":
             print("error: Missing ';'")
             exit()
 
