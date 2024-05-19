@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, traceback
 from JackTokenizer import *
 from CompilationEngine import *
 
@@ -39,6 +39,12 @@ if __name__ == "__main__":
                 source = f.readlines()
             tokens = tokenizer(source)
             compiler = CompilationEngine(tokens)
-            xml = compiler.main()
+            try:
+                xml = compiler.main()
+            except CompileError as e:
+                _, _, exc_traceback = sys.exc_info()
+                traceback.print_tb(exc_traceback)
+                print(e.m())
+                exit()
             with open(i.split(".")[0] + "_M.xml", "w") as f:
                 f.write("\n".join(xml))
