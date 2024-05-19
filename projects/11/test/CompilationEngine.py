@@ -125,14 +125,14 @@ class CompilationEngine:
         now = self.get()
         kind = now[0]
         # special treatment for method and constructor
-        temp = []
+        t = len(self.code)
         if now == ("constructor", "keyword"):
-            temp.append(f"push constant {self.gvCount['field']}")
-            temp.append("call Memory.alloc 1")
-            temp.append("pop pointer 0")
+            self.code.append(f"push constant {self.gvCount['field']}")
+            self.code.append("call Memory.alloc 1")
+            self.code.append("pop pointer 0")
         elif now == ("method", "keyword"):
-            temp.append("push argument 0")
-            temp.append("pop pointer 0")
+            self.code.append("push argument 0")
+            self.code.append("pop pointer 0")
 
         # type = int, boolean, char, void or identifier
         now = self.get()
@@ -175,8 +175,7 @@ class CompilationEngine:
             else:
                 break
         # write code
-        self.code.append(f"function {self.className}.{self.functionName} {self.lvCount['argument'] + self.lvCount['local']}")
-        self.code.extend(temp)
+        self.code.insert(t, f"function {self.className}.{self.functionName} {self.lvCount['argument'] + self.lvCount['local']}")
         # processing statement
         self.compileStatement()
         now = self.get()
@@ -220,6 +219,7 @@ class CompilationEngine:
             else:
                 print(f"error: {now[1]} '{now[0]}' is not legal variable name")
                 exit()
+
             now = self.get()
             if now == (";", "symbol"):
                 break
@@ -228,13 +228,79 @@ class CompilationEngine:
                 exit()
 
     def compileStatement(self):
-        pass
+        while True:
+            now = self.get()
+            if now == ("do", "keyword"):
+                self.compileDo()
+            elif now == ("let", "keyword"):
+                self.compileLet()
+            elif now == ("while", "keyword"):
+                self.compileWhile()
+            elif now == ("return", "keyword"):
+                self.compileReturn()
+            elif now == ("if", "keyword"):
+                self.compileIf()
+            else:
+                print(f"error: Unknown {now[1]} '{now[0]}'")
+                exit()
+
+            next = self.token[self.point]
+            if next == ("}", "symbol"):
+                break
+            elif next[1] != "keyword" or next[0] not in ["do", "let", "while", "return", "if"]:
+                print(f"error: Unknown {next[1]} '{next[0]}'")
+                exit()
 
     def compileDo(self):
         pass
 
     def compileLet(self):
-        pass
+        now = self.get()
+        if now[1] != "identifier":
+            print(f"error: {now[1]} '{now[0]}' is not an identifier")
+            exit()
+        if now[0] in self.lv:
+            t = f"{self.lv[now[0]][1]} {self.lv[now[0]][2]}"
+        elif now[0] in self.gv:
+            if self.gv[now[0]][1] == "field":
+                t = f"this {self.gv[now[0]][2]}"
+            else:
+                t = f"{self.gv[now[0]][1]} {self.gv[now[0]][2]}"
+        else:
+            print(f"error: identifier '{now[0]}' not found")
+            exit()
+
+        now = self.get()
+        if now == ("=", "symbol"):
+            self.compileExpression()
+            self.code.append("pop " + t)
+        elif now == ("[", "symbol"):
+            self.compileExpression()
+            self.code.append("push " + t)
+            self.code.append("add")
+
+            now = self.get()
+            if now != ("]", "symbol"):
+                print("error: '[' is not closed")
+                exit()
+
+            now = self.get()
+            if now != ("=", "symbol"):
+                print("error: Missing '='")
+                exit()
+            self.compileExpression()
+            self.code.append("pop temp 0")
+            self.code.append("pop pointer 1")
+            self.code.append("push temp 0")
+            self.code.append("pop that 0")
+        else:
+            print("error: Must be one of '=' or '['")
+            exit()
+
+        now = self.get()
+        if now != (";", "symbol"):
+            print("error: Missing ';'")
+            exit()
 
     def compileWhile(self):
         pass

@@ -1,5 +1,5 @@
 symbolList = ["{", "}", "[", "]", "(", ")", ",", ";", "+", "-", "*", "/", "&", "|", "~", ">", "<", "=", "."]
-keyWordList = ["class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean", "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return"]
+keyWordList = ["class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean", "Int", "Char", "Boolean", "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return"]
 identifier = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
@@ -11,8 +11,8 @@ def tokenizer(text: list[str]):
     text = " ".join(text)
     # 處理多行註釋
     while "/*" in text and "*/" in text:
-        t = text.split("/*")
-        t[1] = t[1].split("*/")[1]
+        t = text.split("/*", 1)
+        t[1] = t[1].split("*/", 1)[1]
         text = " ".join(t)
     # 註釋未關閉
     if "/*" in text and "*/" not in text:
@@ -59,7 +59,7 @@ def tokenizer(text: list[str]):
         elif code[i].isdigit() and int(i) < 32768:
             code[i] = (code[i], "integerConstant")
         elif code[i][0] == '"' and code[i][-1] == '"':
-            code[i] = (code[i][1:-1], "sttringConstant")
+            code[i] = (code[i][1:-1], "stringConstant")
         elif code[i][0] in identifier:
             code[i] = (code[i], "identifier")
         else:
