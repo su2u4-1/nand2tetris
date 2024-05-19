@@ -1,3 +1,16 @@
+class CompileError(Exception):
+    def __init__(self, number, message, code=None):
+        self.code = number
+        self.message = message
+        self.location = code
+
+    def m(self):
+        if self.location is None:
+            return f"CompileError[ErrorCode {self.code}]: {self.message}"
+        else:
+            return f"CompileError[ErrorCode {self.code}]: {self.message}\nError location: {self.location}"
+
+
 symbolList = ["{", "}", "[", "]", "(", ")", ",", ";", "+", "-", "*", "/", "&", "|", "~", ">", "<", "=", "."]
 keyWordList = ["class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean", "Int", "Char", "Boolean", "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return"]
 identifier = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -16,11 +29,9 @@ def tokenizer(text: list[str]):
         text = " ".join(t)
     # 註釋未關閉
     if "/*" in text and "*/" not in text:
-        print("error: Comment is not closed")
-        exit()
+        raise CompileError(0, "Comment is not closed")
     elif "/*" not in text and "*/" in text:
-        print("error: Comment is not closed")
-        exit()
+        raise CompileError(0, "Comment is not closed")
     # 主要分解區
     code = []
     t = ""
@@ -63,5 +74,5 @@ def tokenizer(text: list[str]):
         elif code[i][0] in identifier:
             code[i] = (code[i], "identifier", i)
         else:
-            print(f"error: The identifier cannot start with {code[i][0]}")
+            raise CompileError(1, f"error: The identifier cannot start with {code[i][0]}", code[i])
     return code

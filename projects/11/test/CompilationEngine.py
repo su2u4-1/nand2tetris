@@ -1,10 +1,4 @@
-class CompileError(Exception):
-    def __init__(self, code, message):
-        self.code = code
-        self.message = message
-
-    def m(self):
-        return f"CompileError[ErrorCode {self.code}]: {self.message}"
+from JackTokenizer import CompileError
 
 
 class CompilationEngine:
@@ -30,35 +24,39 @@ class CompilationEngine:
                     case ")":
                         self.level[0] -= 1
                         if self.level[0] < 0:
-                            raise CompileError(0, "unmatched ')'")
+                            raise CompileError(2, "unmatched ')'", self.peek())
                     case "[":
                         self.level[1] += 1
                     case "]":
                         self.level[1] -= 1
                         if self.level[1] < 0:
-                            raise CompileError(1, "unmatched ']'")
+                            raise CompileError(3, "unmatched ']'", self.peek())
                     case "{":
                         self.level[2] += 1
                     case "}":
                         self.level[2] -= 1
                         if self.level[2] < 0:
-                            raise CompileError(2, "unmatched '}'")
+                            raise CompileError(44, "unmatched '}'", self.peek())
             return t
         else:
-            raise CompileError(3, "incomplete code file")
+            raise CompileError(5, "incomplete code file", self.peek(-1))
 
-    def peek(self) -> tuple[str]:
-        if self.point < self.len:
-            return self.token[self.point]
+    def peek(self, n=None) -> tuple[str]:
+        if n == None:
+            n = self.point
         else:
-            raise CompileError(3, "incomplete code file")
+            n = self.point + n
+        if n < self.len:
+            return self.token[n]
+        else:
+            raise CompileError(5, "incomplete code file", self.peek(-1))
 
     def main(self) -> list[str]:
         now = self.get()
         if now[1] == "keyword" and now[0] == "class":
             self.compileClass()
         else:
-            raise CompileError(4, "file must start with 'class' declaration")
+            raise CompileError(6, "file must start with 'class' declaration", self.peek())
         return self.code
 
     def compileClass(self):
@@ -66,7 +64,7 @@ class CompilationEngine:
         if now[1] == "identifier":
             self.className = now[0]
         else:
-            raise CompileError(5, f"'{now[0]}' is not a valid class name")
+            raise CompileError(7, f"'{now[0]}' is not a valid class name", self.peek())
 
         now = self.get()
         if now[1] == "symbol" and now[0] == "{":
@@ -77,9 +75,9 @@ class CompilationEngine:
                 elif next[1] == "keyword" and next[0] in ["function", "method", "constructor"]:
                     break
                 else:
-                    raise CompileError(6, "invalid class member, expected 'field', 'static', or subroutine declaration")
+                    raise CompileError(8, "invalid class member, expected 'field', 'static', or subroutine declaration", self.peek())
         else:
-            raise CompileError(7, "missing '{' after class declaration")
+            raise CompileError(9, "missing '{' after class declaration", self.peek())
 
         while True:
             next = self.peek()
@@ -99,7 +97,7 @@ class CompilationEngine:
             if now[1] == "identifier" or (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "Int", "Boolean", "Char"]):
                 type = now[0]
             else:
-                raise CompileError(8, f"invalid type '{now[0]}'")
+                raise CompileError(10, f"invalid type '{now[0]}'", self.peek())
 
             while True:
                 now = self.get()
@@ -107,13 +105,13 @@ class CompilationEngine:
                     self.gv[now[0]] = [type, kind, self.gvCount[kind]]
                     self.gvCount[kind] += 1
                 else:
-                    raise CompileError(9, f"'{now[0]}' is not a valid variable name")
+                    raise CompileError(11, f"'{now[0]}' is not a valid variable name", self.peek())
 
                 now = self.get()
                 if now[1] == "symbol" and now[0] == ";":
                     break
                 elif now[1] != "symbol" or now[0] != ",":
-                    raise CompileError(10, f"unexpected token '{now[0]}'")
+                    raise CompileError(12, f"unexpected token '{now[0]}'", self.peek())
 
     def compileSubroutine(self):
         now = self.get()
@@ -131,7 +129,7 @@ class CompilationEngine:
         if (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "Int", "Boolean", "Char", "void"]) or now[1] == "identifier":
             type = now[0]
         else:
-            raise CompileError(11, f"'{now[0]}' is not a valid return type")
+            raise CompileError(13, f"'{now[0]}' is not a valid return type", self.peek())
 
         now = self.get()
         if now[1] == "identifier":
@@ -139,11 +137,11 @@ class CompilationEngine:
             self.gvCount[kind] += 1
             self.functionName = now[0]
         else:
-            raise CompileError(12, f"'{now[0]}' is not a valid subroutine name")
+            raise CompileError(14, f"'{now[0]}' is not a valid subroutine name", self.peek())
 
         now = self.get()
         if now[1] != "symbol" or now[0] != "(":
-            raise CompileError(13, "missing '(' after subroutine name")
+            raise CompileError(15, "missing '(' after subroutine name", self.peek())
 
         next = self.peek()
         if next[1] != "symbol" or next[0] != ")":
@@ -153,7 +151,7 @@ class CompilationEngine:
 
         now = self.get()
         if now[1] != "symbol" or now[0] != "{":
-            raise CompileError(14, "missing '{' before subroutine body")
+            raise CompileError(16, "missing '{' before subroutine body", self.peek())
         while True:
             next = self.peek()
             if next[1] == "keyword" and next[0] == "var":
@@ -165,7 +163,7 @@ class CompilationEngine:
 
         now = self.get()
         if now[1] != "symbol" or now[0] != "}":
-            raise CompileError(15, "missing '}' after subroutine body")
+            raise CompileError(17, "missing '}' after subroutine body", self.peek())
 
     def compileParameterList(self):
         while True:
@@ -173,18 +171,18 @@ class CompilationEngine:
             if (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "Int", "Boolean", "Char"]) or now[1] == "identifier":
                 type = now[0]
             else:
-                raise CompileError(16, f"'{now[0]}' is not a valid type")
+                raise CompileError(18, f"'{now[0]}' is not a valid type", self.peek())
             now = self.get()
             if now[1] == "identifier":
                 self.lv[now[0]] = [type, "argument", self.lvCount["argument"]]
                 self.lvCount["argument"] += 1
             else:
-                raise CompileError(17, f"'{now[0]}' is not a valid variable name")
+                raise CompileError(19, f"'{now[0]}' is not a valid variable name", self.peek())
             now = self.get()
             if now[1] == "symbol" and now[0] == ")":
                 break
             elif now[1] != "symbol" or now[0] != ",":
-                raise CompileError(18, "expected ',' or ')'")
+                raise CompileError(20, "expected ',' or ')'", self.peek())
 
     def compileVarDec(self):
         now = self.get()
@@ -192,20 +190,20 @@ class CompilationEngine:
         if (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "Int", "Boolean", "Char"]) or now[1] == "identifier":
             type = now[0]
         else:
-            raise CompileError(19, f"'{now[0]}' is not a valid type")
+            raise CompileError(21, f"'{now[0]}' is not a valid type", self.peek())
         while True:
             now = self.get()
             if now[1] == "identifier":
                 self.lv[now[0]] = [type, "local", self.lvCount["local"]]
                 self.lvCount["local"] += 1
             else:
-                raise CompileError(20, f"'{now[0]}' is not a valid variable name")
+                raise CompileError(22, f"'{now[0]}' is not a valid variable name", self.peek())
 
             now = self.get()
             if now[1] == "symbol" and now[0] == ";":
                 break
             elif now[1] != "symbol" or now[0] != ",":
-                raise CompileError(21, "expected ',' or ';'")
+                raise CompileError(23, "expected ',' or ';'", self.peek())
 
     def compileStatement(self):
         while True:
@@ -222,15 +220,15 @@ class CompilationEngine:
                 elif now[0] == "if":
                     self.compileIf()
                 else:
-                    raise CompileError(22, f"unknown keyword '{now[0]}'")
+                    raise CompileError(24, f"unknown keyword '{now[0]}'", self.peek())
             else:
-                raise CompileError(23, f"expected a keyword, got '{now[0]}'")
+                raise CompileError(25, f"expected a keyword, got '{now[0]}'", self.peek())
 
             next = self.peek()
             if next[1] == "symbol" and next[0] == "}":
                 break
             elif next[1] != "keyword" or next[0] not in ["do", "let", "while", "return", "if"]:
-                raise CompileError(24, f"invalid statement '{next[0]}'")
+                raise CompileError(26, f"invalid statement '{next[0]}'", self.peek())
 
     def compileDo(self):
         pass
@@ -238,7 +236,7 @@ class CompilationEngine:
     def compileLet(self):
         now = self.get()
         if now[1] != "identifier":
-            raise CompileError(25, f"expected identifier, got '{now[0]}'")
+            raise CompileError(27, f"expected identifier, got '{now[0]}'", self.peek())
         if now[0] in self.lv:
             t = f"{self.lv[now[0]][1]} {self.lv[now[0]][2]}"
         elif now[0] in self.gv:
@@ -247,7 +245,7 @@ class CompilationEngine:
             else:
                 t = f"{self.gv[now[0]][1]} {self.gv[now[0]][2]}"
         else:
-            raise CompileError(26, f"identifier '{now[0]}' not found")
+            raise CompileError(28, f"identifier '{now[0]}' not found", self.peek())
 
         now = self.get()
         if now[1] == "symbol" and now[0] == "=":
@@ -260,22 +258,22 @@ class CompilationEngine:
 
             now = self.get()
             if now[1] != "symbol" or now[0] != "]":
-                raise CompileError(27, "unmatched '['")
+                raise CompileError(29, "unmatched '['", self.peek())
 
             now = self.get()
             if now[1] != "symbol" or now[0] != "=":
-                raise CompileError(28, "missing '=' after ']'")
+                raise CompileError(30, "missing '=' after ']'", self.peek())
             self.compileExpression()
             self.code.append("pop temp 0")
             self.code.append("pop pointer 1")
             self.code.append("push temp 0")
             self.code.append("pop that 0")
         else:
-            raise CompileError(29, "expected '=' or '['")
+            raise CompileError(31, "expected '=' or '['", self.peek())
 
         now = self.get()
         if now[1] != "symbol" or now[0] != ";":
-            raise CompileError(30, "missing ';' after statement")
+            raise CompileError(32, "missing ';' after statement", self.peek())
 
     def compileWhile(self):
         pass

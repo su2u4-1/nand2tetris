@@ -45,6 +45,10 @@ if __name__ == "__main__":
                 _, _, exc_traceback = sys.exc_info()
                 traceback.print_tb(exc_traceback)
                 print(e.m())
+                op = input("Enter any to close, enter 'show' to display all tokens:")
+                if op == "show":
+                    for i in tokens:
+                        print(i)
                 exit()
             with open(i.split(".")[0] + "_M.xml", "w") as f:
                 f.write("\n".join(xml))
