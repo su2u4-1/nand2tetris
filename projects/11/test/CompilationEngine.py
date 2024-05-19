@@ -7,8 +7,6 @@ class CompilationEngine:
         self.lv = {}  # local variable
         self.gvCount = {"static": 0, "field": 0, "function": 0, "constructor": 0, "method": 0}
         self.lvCount = {"argument": 0, "local": 0}
-        self.argument = 0
-        self.local = 0
         self.code = []
         self.level = [0, 0, 0]
 
@@ -126,7 +124,6 @@ class CompilationEngine:
         # kind = function, method or constructor
         now = self.get()
         kind = now[0]
-
         # special treatment for method and constructor
         temp = []
         if now == ("constructor", "keyword"):
@@ -161,29 +158,25 @@ class CompilationEngine:
             print("error: Missing '('")
             exit()
         next = self.token[self.point]
-        argCount = 0
         if next != (")", "symbol"):
-            argCount += self.compileParameterList()
+            self.compileParameterList()
         else:
             self.get()
 
-        # subroutine body
+        # local variable
         now = self.get()
         if now != ("{", "symbol"):
             print("error: Missing '{'")
             exit()
-        varCount = 0
         while True:
             next = self.token[self.point]
             if next == ("var", "keyword"):
                 varCount += self.compileVarDec()
             else:
                 break
-
         # write code
-        self.code.append(f"function {self.className}.{self.functionName} {argCount + varCount}")
+        self.code.append(f"function {self.className}.{self.functionName} {self.lv['argument'] + varCount}")
         self.code.extend(temp)
-
         # processing statement
         self.compileStatement()
         now = self.get()
@@ -191,8 +184,26 @@ class CompilationEngine:
             print("error: Missing '}'")
             exit()
 
-    def compileParameterList(self) -> int:
-        pass
+    def compileParameterList(self):
+        while True:
+            now = self.get()
+            if (now[1] == "keyword" and now[0] in ["int", "boolean", "char"]) or now[1] == "identifier":
+                type = now[0]
+            else:
+                print(f"error: {now[1]} '{now[0]}' is not legal type")
+            now = self.get()
+            if now[1] == "identifier":
+                self.lv[now[0]] = [type, "argument", self.lvCount["argument"]]
+                self.lvCount["argument"] += 1
+            else:
+                print(f"error: {now[1]} '{now[0]}' is not legal variable name")
+                exit()
+            now = self.get()
+            if now == (")", "symbol"):
+                break
+            elif now != (",", "symbol"):
+                print("error:")
+                exit()
 
     def compileVarDec(self) -> int:
         pass
