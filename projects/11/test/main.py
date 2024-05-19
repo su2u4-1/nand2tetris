@@ -47,8 +47,8 @@ if __name__ == "__main__":
                 print(e.m())
                 op = input("Enter any to close, enter 'show' to display all tokens:")
                 if op == "show":
-                    for i in tokens:
-                        print(i)
+                    for i in range(len(tokens)):
+                        print(i, tokens[i])
                 exit()
             with open(i.split(".")[0] + "_M.xml", "w") as f:
                 f.write("\n".join(xml))

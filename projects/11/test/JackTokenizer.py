@@ -1,10 +1,12 @@
 class CompileError(Exception):
-    def __init__(self, number, message, code=None):
+    def __init__(self, number, message, code=None, n=None):
         self.code = number
         self.message = message
         self.location = code
+        if code is not None and n is not None:
+            self.code = f"{n} {self.code}"
 
-    def m(self):
+    def m(self) -> str:
         if self.location is None:
             return f"CompileError[ErrorCode {self.code}]: {self.message}"
         else:
@@ -16,7 +18,7 @@ keyWordList = ["class", "constructor", "function", "method", "field", "static", 
 identifier = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
-def tokenizer(text: list[str]):
+def tokenizer(text: list[str]) -> tuple[str]:
     # 處理前後空白與單行註釋
     for i in range(len(text)):
         text[i] = text[i].strip()
@@ -64,15 +66,15 @@ def tokenizer(text: list[str]):
     # 附上類型
     for i in range(len(code)):
         if code[i] in symbolList:
-            code[i] = (code[i], "symbol", i)
+            code[i] = (code[i], "symbol")
         elif code[i] in keyWordList:
-            code[i] = (code[i], "keyword", i)
+            code[i] = (code[i], "keyword")
         elif code[i].isdigit() and int(i) < 32768:
-            code[i] = (code[i], "integerConstant", i)
+            code[i] = (code[i], "integerConstant")
         elif code[i][0] == '"' and code[i][-1] == '"':
-            code[i] = (code[i][1:-1], "stringConstant", i)
+            code[i] = (code[i][1:-1], "stringConstant")
         elif code[i][0] in identifier:
-            code[i] = (code[i], "identifier", i)
+            code[i] = (code[i], "identifier")
         else:
-            raise CompileError(1, f"error: The identifier cannot start with {code[i][0]}", code[i])
+            raise CompileError(1, f"error: The identifier cannot start with {code[i][0]}", code[i], i)
     return code
