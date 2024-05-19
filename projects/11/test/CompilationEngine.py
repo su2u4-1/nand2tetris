@@ -3,8 +3,8 @@ class CompilationEngine:
         self.token = token
         self.point = 0
         self.len = len(token)
-        self.gv = {}  # global variable
-        self.lv = {}  # local variable
+        self.gv = {}  # global variables
+        self.lv = {}  # local variables
         self.gvCount = {"static": 0, "field": 0, "function": 0, "constructor": 0, "method": 0}
         self.lvCount = {"argument": 0, "local": 0}
         self.code = []
@@ -21,50 +21,46 @@ class CompilationEngine:
                     case ")":
                         self.level[0] -= 1
                         if self.level[0] < 0:
-                            print("error: '(' not closed")
+                            print("error_code:0, error_message: unmatched ')'")
                             exit()
                     case "[":
                         self.level[1] += 1
                     case "]":
                         self.level[1] -= 1
                         if self.level[1] < 0:
-                            print("error: '[' not closed")
+                            print("error_code:1, error_message: unmatched ']'")
                             exit()
                     case "{":
                         self.level[2] += 1
                     case "}":
                         self.level[2] -= 1
                         if self.level[2] < 0:
-                            print("error: '{' not closed")
+                            print("error_code:2, error_message: unmatched '}'")
                             exit()
             return t
         else:
-            print("error: Code file is incomplete")
+            print("error_code:3, error_message: incomplete code file")
             exit()
 
     def main(self) -> list[str]:
-        # start processing class
         now = self.get()
         if now[1] == "keyword" and now[0] == "class":
             self.compileClass()
         else:
-            print("error: The beginning of the file is not 'class'")
+            print("error_code:4, error_message: file must start with 'class' declaration")
             exit()
         return self.code
 
     def compileClass(self):
-        # className
         now = self.get()
         if now[1] == "identifier":
             self.className = now[0]
         else:
-            print(f"error: {now[1]} '{now[0]}' cannot be used as the name of class")
+            print(f"error_code:5, error_message: '{now[0]}' is not a valid class name")
             exit()
 
-        # { after className
         now = self.get()
         if now[1] == "symbol" and now[0] == "{":
-            # field or static
             while True:
                 next = self.token[self.point]
                 if next[1] == "keyword" and next[0] in ["field", "static"]:
@@ -72,13 +68,12 @@ class CompilationEngine:
                 elif next[1] == "keyword" and next[0] in ["function", "method", "constructor"]:
                     break
                 else:
-                    print("error: There are only 'field', 'static' or 'subroutine' in class")
+                    print("error_code:6, error_message: invalid class member, expected 'field', 'static', or subroutine declaration")
                     exit()
         else:
-            print("error: Class missing '{'")
+            print("error_code:7, error_message: missing '{' after class declaration")
             exit()
 
-        # function, method or constructor
         while True:
             next = self.token[self.point]
             if next[1] == "keyword" and next[0] in ["function", "method", "constructor"]:
@@ -89,39 +84,34 @@ class CompilationEngine:
                 break
 
     def compileClassVarDec(self):
-        # static or field
         now = self.get()
         if now[1] == "keyword" and now[0] in ["static", "field"]:
             kind = now[0]
 
-            # type = int, boolean, char or identifier
             now = self.get()
             if now[1] == "identifier" or (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "Int", "Boolean", "Char"]):
                 type = now[0]
             else:
-                print(f"error: type cannot be '{now[0]}'")
+                print(f"error_code:8, error_message: invalid type '{now[0]}'")
                 exit()
 
             while True:
-                # variable
                 now = self.get()
                 if now[1] == "identifier":
                     self.gv[now[0]] = [type, kind, self.gvCount[kind]]
                     self.gvCount[kind] += 1
                 else:
-                    print(f"error: {now[1]} '{now[0]}' cannot be used as a variable name")
+                    print(f"error_code:9, error_message: '{now[0]}' is not a valid variable name")
                     exit()
 
-                # ends with ;
                 now = self.get()
                 if now[1] == "symbol" and now[0] == ";":
                     break
-                elif now[1] != "symbol" or now[1] != ",":
-                    print(f"error: unknown {now[1]} '{now[0]}'")
+                elif now[1] != "symbol" or now[0] != ",":
+                    print(f"error_code:10, error_message: unexpected token '{now[0]}'")
                     exit()
 
     def compileSubroutine(self):
-        # kind = function, method or constructor
         now = self.get()
         kind = now[0]
         t = len(self.code)
@@ -133,28 +123,25 @@ class CompilationEngine:
             self.code.append("push argument 0")
             self.code.append("pop pointer 0")
 
-        # type = int, boolean, char, void or identifier
         now = self.get()
         if (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "Int", "Boolean", "Char", "void"]) or now[1] == "identifier":
             type = now[0]
         else:
-            print(f"error: '{now[0]}' is not a legal type")
+            print(f"error_code:11, error_message: '{now[0]}' is not a valid return type")
             exit()
 
-        # subroutine name
         now = self.get()
         if now[1] == "identifier":
             self.gv[now[0]] = [type, kind, self.gvCount[kind]]
             self.gvCount[kind] += 1
             self.functionName = now[0]
         else:
-            print(f"error: {now[1]} '{now[0]}' cannot be used as a subroutine name")
+            print(f"error_code:12, error_message: '{now[0]}' is not a valid subroutine name")
             exit()
 
-        # argument list
         now = self.get()
         if now[1] != "symbol" or now[0] != "(":
-            print("error: Missing '('")
+            print("error_code:13, error_message: missing '(' after subroutine name")
             exit()
 
         next = self.token[self.point]
@@ -163,10 +150,9 @@ class CompilationEngine:
         else:
             self.get()
 
-        # local variable
         now = self.get()
         if now[1] != "symbol" or now[0] != "{":
-            print("error: Missing '{'")
+            print("error_code:14, error_message: missing '{' before subroutine body")
             exit()
         while True:
             next = self.token[self.point]
@@ -179,7 +165,7 @@ class CompilationEngine:
 
         now = self.get()
         if now[1] != "symbol" or now[0] != "}":
-            print("error: Missing '}'")
+            print("error_code:15, error_message: missing '}' after subroutine body")
             exit()
 
     def compileParameterList(self):
@@ -188,19 +174,20 @@ class CompilationEngine:
             if (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "Int", "Boolean", "Char"]) or now[1] == "identifier":
                 type = now[0]
             else:
-                print(f"error: {now[1]} '{now[0]}' is not legal type")
+                print(f"error_code:16, error_message: '{now[0]}' is not a valid type")
+                exit()
             now = self.get()
             if now[1] == "identifier":
                 self.lv[now[0]] = [type, "argument", self.lvCount["argument"]]
                 self.lvCount["argument"] += 1
             else:
-                print(f"error: {now[1]} '{now[0]}' is not legal variable name")
+                print(f"error_code:17, error_message: '{now[0]}' is not a valid variable name")
                 exit()
             now = self.get()
             if now[1] == "symbol" and now[0] == ")":
                 break
             elif now[1] != "symbol" or now[0] != ",":
-                print("error:")
+                print("error_code:18, error_message: expected ',' or ')'")
                 exit()
 
     def compileVarDec(self):
@@ -209,21 +196,22 @@ class CompilationEngine:
         if (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "Int", "Boolean", "Char"]) or now[1] == "identifier":
             type = now[0]
         else:
-            print(f"error: {now[1]} '{now[0]}' is not legal type")
+            print(f"error_code:19, error_message: '{now[0]}' is not a valid type")
+            exit()
         while True:
             now = self.get()
             if now[1] == "identifier":
                 self.lv[now[0]] = [type, "local", self.lvCount["local"]]
                 self.lvCount["local"] += 1
             else:
-                print(f"error: {now[1]} '{now[0]}' is not legal variable name")
+                print(f"error_code:20, error_message: '{now[0]}' is not a valid variable name")
                 exit()
 
             now = self.get()
             if now[1] == "symbol" and now[0] == ";":
                 break
             elif now[1] != "symbol" or now[0] != ",":
-                print("error:")
+                print(f"error_code:21, error_message: expected ',' or ';'")
                 exit()
 
     def compileStatement(self):
@@ -241,17 +229,17 @@ class CompilationEngine:
                 elif now[0] == "if":
                     self.compileIf()
                 else:
-                    print(f"error: Unknown keyword '{now[0]}'")
+                    print(f"error_code:22, error_message: unknown keyword '{now[0]}'")
                     exit()
             else:
-                print(f"error: {now[0]} is not a keyword")
+                print(f"error_code:23, error_message: expected a keyword, got '{now[0]}'")
                 exit()
 
             next = self.token[self.point]
             if next[1] == "symbol" and next[0] == "}":
                 break
             elif next[1] != "keyword" or next[0] not in ["do", "let", "while", "return", "if"]:
-                print(f"error: Unknown {next[1]} '{next[0]}'")
+                print(f"error_code:24, error_message: invalid statement '{next[0]}'")
                 exit()
 
     def compileDo(self):
@@ -260,7 +248,7 @@ class CompilationEngine:
     def compileLet(self):
         now = self.get()
         if now[1] != "identifier":
-            print(f"error: {now[1]} '{now[0]}' is not an identifier")
+            print(f"error_code:25, error_message: expected identifier, got '{now[0]}'")
             exit()
         if now[0] in self.lv:
             t = f"{self.lv[now[0]][1]} {self.lv[now[0]][2]}"
@@ -270,7 +258,7 @@ class CompilationEngine:
             else:
                 t = f"{self.gv[now[0]][1]} {self.gv[now[0]][2]}"
         else:
-            print(f"error: identifier '{now[0]}' not found")
+            print(f"error_code:26, error_message: identifier '{now[0]}' not found")
             exit()
 
         now = self.get()
@@ -284,12 +272,12 @@ class CompilationEngine:
 
             now = self.get()
             if now[1] != "symbol" or now[0] != "]":
-                print("error: '[' is not closed")
+                print("error_code:27, error_message: unmatched '['")
                 exit()
 
             now = self.get()
             if now[1] != "symbol" or now[0] != "=":
-                print("error: Missing '='")
+                print("error_code:28, error_message: missing '=' after ']'")
                 exit()
             self.compileExpression()
             self.code.append("pop temp 0")
@@ -297,12 +285,12 @@ class CompilationEngine:
             self.code.append("push temp 0")
             self.code.append("pop that 0")
         else:
-            print("error: Must be one of '=' or '['")
+            print("error_code:29, error_message: expected '=' or '['")
             exit()
 
         now = self.get()
         if now[1] != "symbol" or now[0] != ";":
-            print("error: Missing ';'")
+            print("error_code:30, error_message: missing ';' after statement")
             exit()
 
     def compileWhile(self):
