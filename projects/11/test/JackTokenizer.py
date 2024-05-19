@@ -55,7 +55,7 @@ def tokenizer(text: list[str]):
         if code[i] in symbolList:
             code[i] = (code[i], "symbol")
         elif code[i] in keyWordList:
-            code[i] = (code[i], "symbol")
+            code[i] = (code[i], "keyword")
         elif code[i].isdigit() and int(i) < 32768:
             code[i] = (code[i], "integerConstant")
         elif code[i][0] == '"' and code[i][-1] == '"':

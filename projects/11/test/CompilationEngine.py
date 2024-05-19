@@ -95,7 +95,7 @@ class CompilationEngine:
 
             # type = int, boolean, char or identifier
             now = self.get()
-            if now[1] == "identifier" or (now[1] == "keyword" and now[0] in ["int", "boolean", "char"]):
+            if now[1] == "identifier" or (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "Int", "Boolean", "Char"]):
                 type = now[0]
             else:
                 print(f"error: type cannot be '{now[0]}'")
@@ -136,7 +136,7 @@ class CompilationEngine:
 
         # type = int, boolean, char, void or identifier
         now = self.get()
-        if (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "void"]) or now[1] == "identifier":
+        if (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "Int", "Boolean", "Char", "void"]) or now[1] == "identifier":
             type = now[0]
         else:
             print(f"error: '{now[0]}' is not a legal type")
@@ -171,11 +171,11 @@ class CompilationEngine:
         while True:
             next = self.token[self.point]
             if next == ("var", "keyword"):
-                varCount += self.compileVarDec()
+                self.compileVarDec()
             else:
                 break
         # write code
-        self.code.append(f"function {self.className}.{self.functionName} {self.lv['argument'] + varCount}")
+        self.code.append(f"function {self.className}.{self.functionName} {self.lvCount['argument'] + self.lvCount['local']}")
         self.code.extend(temp)
         # processing statement
         self.compileStatement()
@@ -187,7 +187,7 @@ class CompilationEngine:
     def compileParameterList(self):
         while True:
             now = self.get()
-            if (now[1] == "keyword" and now[0] in ["int", "boolean", "char"]) or now[1] == "identifier":
+            if (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "Int", "Boolean", "Char"]) or now[1] == "identifier":
                 type = now[0]
             else:
                 print(f"error: {now[1]} '{now[0]}' is not legal type")
@@ -205,8 +205,27 @@ class CompilationEngine:
                 print("error:")
                 exit()
 
-    def compileVarDec(self) -> int:
-        pass
+    def compileVarDec(self):
+        now = self.get()
+        now = self.get()
+        if (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "Int", "Boolean", "Char"]) or now[1] == "identifier":
+            type = now[0]
+        else:
+            print(f"error: {now[1]} '{now[0]}' is not legal type")
+        while True:
+            now = self.get()
+            if now[1] == "identifier":
+                self.lv[now[0]] = [type, "local", self.lvCount["local"]]
+                self.lvCount["local"] += 1
+            else:
+                print(f"error: {now[1]} '{now[0]}' is not legal variable name")
+                exit()
+            now = self.get()
+            if now == (";", "symbol"):
+                break
+            elif now != (",", "symbol"):
+                print("error:")
+                exit()
 
     def compileStatement(self):
         pass
