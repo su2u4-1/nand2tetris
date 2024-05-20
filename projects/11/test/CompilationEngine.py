@@ -260,10 +260,21 @@ class CompilationEngine:
             raise CompileError(31, "expected '=' or '['", self.peek(), self.point)
 
         if self.get() != (";", "symbol"):
-            raise CompileError(32, "missing ';' after statement", self.peek(), self.point)
+            raise CompileError(32, "missing ';' after statement 'let'", self.peek(), self.point)
 
     def compileWhile(self):
-        pass
+        if self.get() != ("(", "symbol"):
+            raise CompileError(33, "missing '(' after keyword 'while'", self.peek(), self.point)
+        if self.peek() == (")", "symbol"):
+            raise CompileError(34, "missing conditional expression", self.peek(), self.point)
+        self.compileExpression()
+        if self.get() != (")", "symbol"):
+            raise CompileError(35, "unmatched ')'", self.peek(), self.point)
+        if self.get() != ("{", "symbol"):
+            raise CompileError(36, "missing '{'", self.peek(), self.point)
+        self.compileStatement()
+        if self.get() != ("}", "symbol"):
+            raise CompileError(37, "unmatched '}'", self.peek(), self.point)
 
     def compileReturn(self):
         if self.peek() == (";", "symbol"):
@@ -274,13 +285,62 @@ class CompilationEngine:
         self.code.append("return")
 
     def compileIf(self):
-        pass
+        if self.get() != ("(", "symbol"):
+            raise CompileError(38, "missing '(' after keyword 'if'", self.peek(), self.point)
+        if self.peek() == (")", "symbol"):
+            raise CompileError(39, "missing conditional expression", self.peek(), self.point)
+        self.compileExpression()
+        if self.get() != (")", "symbol"):
+            raise CompileError(40, "unmatched ')'", self.peek(), self.point)
+        if self.get() != ("{", "symbol"):
+            raise CompileError(41, "missing '{'", self.peek(), self.point)
+        self.compileStatement()
+        if self.get() != ("}", "symbol"):
+            raise CompileError(42, "unmatched '}'", self.peek(), self.point)
+        if self.peek() != ("else", "keyword"):
+            return
+        if self.get() != ("{", "symbol"):
+            raise CompileError(43, "missing '{'", self.peek(), self.point)
+        self.compileStatement()
+        if self.get() != ("}", "symbol"):
+            raise CompileError(44, "unmatched '}'", self.peek(), self.point)
 
     def compileExpression(self):
-        pass
+        t = sum(self.level)
+        while True:
+            self.compileTerm()
+            now = self.get()
+            if t > sum(self.level):
+                self.point -= 1
+                break
+            if now != (",", "symbol"):
+                raise CompileError(45, "missing ','", self.peek(), self.point)
 
     def compileTerm(self):
-        pass
+        now = self.get()
+        if now[1] == "stringContent":
+            self.code.append(f"push constant {len(now[0])}")
+            self.code.append("call String.new 1")
+            for i in now[0]:
+                self.code.append(f"push constant {ord(i)}")
+                self.code.append("call String.appendChar 2")
+        elif now[1] == "keyword" and now[0] in ["true", "false", "null", "this"]:
+            if now[0] == "true":
+                self.code.append("push constant 0")
+                self.code.append("not")
+            elif now[0] == "false":
+                self.code.append("push constant 0")
+            elif now[0] == "null":
+                self.code.append("push constant 0")
+            elif now[0] == "this":
+                self.code.append("push pointer 0")
+        elif now[1] == "integerConstant":
+            self.code.append(f"push constant {now[0]}")
+        elif now == ("(", "symbol"):
+            self.compileExpression()
+            if self.get() != (")", "symbol"):
+                raise CompileError(46, "missing ')'", self.peek(), self.point)
+        #varName, varName[expression], subroutineCall, unaryOp term
 
     def compileSubroutineCall(self):
         pass
