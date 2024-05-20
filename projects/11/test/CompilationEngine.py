@@ -12,6 +12,8 @@ class CompilationEngine:
         self.lvCount = {"argument": 0, "local": 0}
         self.code = []
         self.level = [0, 0, 0]
+        self.ifCount = 0
+        self.whileCount = 0
 
     def get(self) -> tuple[str]:
         if self.point < self.len:
@@ -64,7 +66,6 @@ class CompilationEngine:
             self.className = now[0]
         else:
             raise CompileError(7, f"'{now[0]}' is not a valid class name", self.peek(), self.point)
-
         if self.get() == ("{", "symbol"):
             while True:
                 next = self.peek()
@@ -76,7 +77,6 @@ class CompilationEngine:
                     raise CompileError(8, "invalid class member, expected 'field', 'static', or subroutine declaration", self.peek(), self.point)
         else:
             raise CompileError(9, "missing '{' after class declaration", self.peek(), self.point)
-
         while True:
             next = self.peek()
             if next[1] == "keyword" and next[0] in ["function", "method", "constructor"]:
@@ -88,13 +88,11 @@ class CompilationEngine:
 
     def compileClassVarDec(self):
         kind = self.get()[0]
-
         now = self.get()
         if now[1] == "identifier" or (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "Int", "Boolean", "Char"]):
             type = now[0]
         else:
             raise CompileError(10, f"invalid type '{now[0]}'", self.peek(), self.point)
-
         while True:
             now = self.get()
             if now[1] == "identifier":
@@ -102,7 +100,6 @@ class CompilationEngine:
                 self.gvCount[kind] += 1
             else:
                 raise CompileError(11, f"'{now[0]}' is not a valid variable name", self.peek(), self.point)
-
             now = self.get()
             if now == (";", "symbol"):
                 break
@@ -120,13 +117,11 @@ class CompilationEngine:
         elif now == ("method", "keyword"):
             self.code.append("push argument 0")
             self.code.append("pop pointer 0")
-
         now = self.get()
         if (now[1] == "keyword" and now[0] in ["int", "boolean", "char", "Int", "Boolean", "Char", "void"]) or now[1] == "identifier":
             type = now[0]
         else:
             raise CompileError(13, f"'{now[0]}' is not a valid return type", self.peek(), self.point)
-
         now = self.get()
         if now[1] == "identifier":
             self.gv[now[0]] = [type, kind, self.gvCount[kind]]
@@ -134,15 +129,12 @@ class CompilationEngine:
             self.functionName = now[0]
         else:
             raise CompileError(14, f"'{now[0]}' is not a valid subroutine name", self.peek(), self.point)
-
         if self.get() != ("(", "symbol"):
             raise CompileError(15, "missing '(' after subroutine name", self.peek(), self.point)
-
         if self.peek() != (")", "symbol"):
             self.compileParameterList()
         else:
             self.get()
-
         if self.get() != ("{", "symbol"):
             raise CompileError(16, "missing '{' before subroutine body", self.peek(), self.point)
         while True:
@@ -152,7 +144,6 @@ class CompilationEngine:
             self.compileVarDec()
         self.code.insert(t, f"function {self.className}.{self.functionName} {self.lvCount['argument'] + self.lvCount['local']}")
         self.compileStatement()
-
         if self.get() != ("}", "symbol"):
             raise CompileError(17, "missing '}' after subroutine body", self.peek(), self.point)
 
@@ -188,7 +179,6 @@ class CompilationEngine:
                 self.lvCount["local"] += 1
             else:
                 raise CompileError(22, f"'{now[0]}' is not a valid variable name", self.peek(), self.point)
-
             now = self.get()
             if now != (";", "symbol"):
                 break
@@ -213,7 +203,6 @@ class CompilationEngine:
                     raise CompileError(24, f"unknown keyword '{now[0]}'", self.peek(), self.point)
             else:
                 raise CompileError(25, f"expected a keyword, got '{now[0]}'", self.peek(), self.point)
-
             if self.peek() == ("}", "symbol"):
                 break
 
@@ -236,7 +225,6 @@ class CompilationEngine:
                 t = f"{self.gv[now[0]][1]} {self.gv[now[0]][2]}"
         else:
             raise CompileError(28, f"identifier '{now[0]}' not found", self.peek(), self.point)
-
         now = self.get()
         if now == ("=", "symbol"):
             self.compileExpression()
@@ -245,10 +233,8 @@ class CompilationEngine:
             self.compileExpression()
             self.code.append("push " + t)
             self.code.append("add")
-
             if self.get() != ("]", "symbol"):
                 raise CompileError(29, "unmatched '['", self.peek(), self.point)
-
             if self.get() != ("=", "symbol"):
                 raise CompileError(30, "missing '=' after ']'", self.peek(), self.point)
             self.compileExpression()
@@ -258,7 +244,6 @@ class CompilationEngine:
             self.code.append("pop that 0")
         else:
             raise CompileError(31, "expected '=' or '['", self.peek(), self.point)
-
         if self.get() != (";", "symbol"):
             raise CompileError(32, "missing ';' after statement 'let'", self.peek(), self.point)
 
@@ -267,14 +252,20 @@ class CompilationEngine:
             raise CompileError(33, "missing '(' after keyword 'while'", self.peek(), self.point)
         if self.peek() == (")", "symbol"):
             raise CompileError(34, "missing conditional expression", self.peek(), self.point)
+        self.code.append(f"label while-{self.whileCount}-1")
         self.compileExpression()
+        self.code.append(f"not")
+        self.code.append(f"if-goto while-{self.whileCount}-2")
         if self.get() != (")", "symbol"):
             raise CompileError(35, "unmatched ')'", self.peek(), self.point)
         if self.get() != ("{", "symbol"):
             raise CompileError(36, "missing '{'", self.peek(), self.point)
         self.compileStatement()
+        self.code.append(f"goto while-{self.whileCount}-1")
+        self.code.append(f"label while-{self.whileCount}-2")
         if self.get() != ("}", "symbol"):
             raise CompileError(37, "unmatched '}'", self.peek(), self.point)
+        self.whileCount += 1
 
     def compileReturn(self):
         if self.peek() == (";", "symbol"):
@@ -290,6 +281,8 @@ class CompilationEngine:
         if self.peek() == (")", "symbol"):
             raise CompileError(39, "missing conditional expression", self.peek(), self.point)
         self.compileExpression()
+        self.code.append("not")
+        self.code.append(f"if-goto if-{self.ifCount}-1")
         if self.get() != (")", "symbol"):
             raise CompileError(40, "unmatched ')'", self.peek(), self.point)
         if self.get() != ("{", "symbol"):
@@ -298,10 +291,14 @@ class CompilationEngine:
         if self.get() != ("}", "symbol"):
             raise CompileError(42, "unmatched '}'", self.peek(), self.point)
         if self.peek() != ("else", "keyword"):
+            self.code.append(f"label if-{self.ifCount}-1")
             return
+        self.code.append(f"goto if-{self.ifCount}-2")
+        self.code.append(f"label if-{self.ifCount}-1")
         if self.get() != ("{", "symbol"):
             raise CompileError(43, "missing '{'", self.peek(), self.point)
         self.compileStatement()
+        self.code.append(f"label if-{self.ifCount}-2")
         if self.get() != ("}", "symbol"):
             raise CompileError(44, "unmatched '}'", self.peek(), self.point)
 
@@ -336,11 +333,28 @@ class CompilationEngine:
                 self.code.append("push pointer 0")
         elif now[1] == "integerConstant":
             self.code.append(f"push constant {now[0]}")
-        elif now == ("(", "symbol"):
-            self.compileExpression()
-            if self.get() != (")", "symbol"):
-                raise CompileError(46, "missing ')'", self.peek(), self.point)
-        #varName, varName[expression], subroutineCall, unaryOp term
+        elif now[1] == "symbol" and now[0] in ["-", "~", "("]:
+            if now[0] == "-":
+                self.code.append("neg")
+                self.compileTerm()
+            elif now[0] == "~":
+                self.code.append("not")
+                self.compileTerm()
+            elif now[0] == "(":
+                self.compileExpression()
+                if self.get() != (")", "symbol"):
+                    raise CompileError(46, "missing ')'", self.peek(), self.point)
+        elif now[1] == "identifier":
+            next = self.peek()
+            if next == ("[", "symbol"):
+                pass
+            elif next == (".", "symbol") or next == ("(", "symbol"):
+                self.point -= 1
+                self.compileSubroutineCall()
+            else:
+                pass
+        else:
+            raise CompileError(47, "", self.peek(), self.point)
 
     def compileSubroutineCall(self):
         pass
