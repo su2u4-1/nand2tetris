@@ -347,14 +347,36 @@ class CompilationEngine:
         elif now[1] == "identifier":
             next = self.peek()
             if next == ("[", "symbol"):
-                pass
+                if now[0] in self.lv:
+                    self.code.append(f"pop {self.lv[now[0]][1]} {self.lv[now[0]][2]}")
+                elif now[0] in self.gv:
+                    if self.gv[now[0]][1] == "field":
+                        self.code.append(f"pop this {self.gv[now[0]][2]}")
+                    else:
+                        self.code.append(f"pop {self.gv[now[0]][1]} {self.gv[now[0]][2]}")
+                else:
+                    raise CompileError(47, f"identifier '{now[0]}' not found", self.peek(), self.point)
+                self.compileExpression()
+                if self.get() != ("]", "symbol"):
+                    raise CompileError(48, "unmatched '['", self.peek(), self.point)
+                self.code.append("add")
+                self.code.append("pop pointer 1")
+                self.code.append("push that 0")
             elif next == (".", "symbol") or next == ("(", "symbol"):
                 self.point -= 1
                 self.compileSubroutineCall()
             else:
-                pass
+                if now[0] in self.lv:
+                    self.code.append(f"push {self.lv[now[0]][1]} {self.lv[now[0]][2]}")
+                elif now[0] in self.gv:
+                    if self.gv[now[0]][1] == "field":
+                        self.code.append(f"push this {self.gv[now[0]][2]}")
+                    else:
+                        self.code.append(f"push {self.gv[now[0]][1]} {self.gv[now[0]][2]}")
+                else:
+                    raise CompileError(49, f"identifier '{now[0]}' not found", self.peek(), self.point)
         else:
-            raise CompileError(47, "", self.peek(), self.point)
+            raise CompileError(50, "", self.peek(), self.point)
 
     def compileSubroutineCall(self):
         pass
