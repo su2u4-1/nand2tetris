@@ -1,21 +1,75 @@
-class CompileError(Exception):
-    def __init__(self, number, message, code=None, n=None):
-        self.code = number
-        self.message = message
-        self.location = code
-        if code is not None and n is not None:
-            self.code = f"{n} {self.code}"
-
-    def m(self) -> str:
-        if self.location is None:
-            return f"CompileError[ErrorCode {self.code}]: {self.message}"
-        else:
-            return f"CompileError[ErrorCode {self.code}]: {self.message}\nError location: {self.location}"
-
-
 symbolList = ["{", "}", "[", "]", "(", ")", ",", ";", "+", "-", "*", "/", "&", "|", "~", ">", "<", "=", "."]
 keyWordList = ["class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean", "Int", "Char", "Boolean", "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return"]
 identifier = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+message_list = {
+    2: "Unmatched closing parenthesis ')'",
+    3: "Unmatched closing bracket ']'",
+    4: "Unmatched closing brace '}'",
+    5: "Incomplete code file",
+    6: "File must start with a 'class' declaration",
+    7: "'{}' is not a valid class name",
+    8: "Invalid class member, expected 'field', 'static', or a subroutine declaration",
+    9: "Missing '{' after class declaration",
+    10: "Invalid type '{}'",
+    11: "'{}' is not a valid variable name",
+    12: "Unexpected token '{}'",
+    13: "'{}' is not a valid return type",
+    14: "'{}' is not a valid subroutine name",
+    15: "Missing '(' after subroutine name",
+    16: "Missing '{' before subroutine body",
+    17: "Missing '}' after subroutine body",
+    18: "'{}' is not a valid type",
+    19: "'{}' is not a valid variable name",
+    20: "Expected ',' or ')'",
+    21: "'{}' is not a valid type",
+    22: "'{}' is not a valid variable name",
+    23: "Expected ',' or ';'",
+    24: "Unknown keyword '{}'",
+    25: "Expected a keyword, got '{}'",
+    26: "Missing ';' after statement",
+    27: "Expected identifier, got '{}'",
+    28: "Identifier '{}' not found",
+    29: "Unmatched opening bracket '['",
+    30: "Missing '=' after ']'",
+    31: "Expected '=' or '['",
+    32: "Missing ';' after statement 'let'",
+    33: "Missing '(' after keyword 'while'",
+    34: "Missing conditional expression",
+    35: "Unmatched closing parenthesis ')'",
+    36: "Missing '{'",
+    37: "Unmatched closing brace '}'",
+    38: "Missing '(' after keyword 'if'",
+    39: "Missing conditional expression",
+    40: "Unmatched closing parenthesis ')'",
+    41: "Missing '{'",
+    42: "Unmatched closing brace '}'",
+    43: "Missing '{'",
+    44: "Unmatched closing brace '}'",
+    45: "Missing ','",
+    46: "Missing closing parenthesis ')'",
+    47: "Identifier '{}' not found",
+    48: "Unmatched opening bracket '['",
+    49: "Identifier '{}' not found",
+    50: "An unspecified compile error occurred",
+}
+
+
+class CompileError(Exception):
+    def __init__(self, code, now, next=None, n=None):
+        self.code = code
+        if now is None:
+            self.message = message_list[code]
+        else:
+            self.message = message_list[code].format(now)
+        self.location = next
+        if next is not None and n is not None:
+            self.code = f"{self.code}, Token:{n}"
+
+    def m(self) -> str:
+        t = f"CompileError[ErrorCode:{self.code}]: {self.message}"
+        if self.location is not None:
+            t += f"\nError location: {self.location}"
+        return t
 
 
 def tokenizer(text: list[str]) -> tuple[str]:
