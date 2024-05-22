@@ -161,7 +161,7 @@ class CompilationEngine:
             else:
                 raise CompileError(19, now[0], self.peek(), self.point)
             now = self.get()
-            if now != (")", "symbol"):
+            if now == (")", "symbol"):
                 break
             elif now != (",", "symbol"):
                 raise CompileError(20, None, self.peek(), self.point)
@@ -303,15 +303,36 @@ class CompilationEngine:
             raise CompileError(44, None, self.peek(), self.point)
 
     def compileExpression(self):
-        t = sum(self.level)
+        t = ""
+        self.compileTerm()
+        now = self.get()
         while True:
-            self.compileTerm()
-            now = self.get()
-            if t > sum(self.level):
+            if now in [(";", "symbol"), (")", "symbol"), ("]", "symbol")]:
                 self.point -= 1
                 break
-            if now != (",", "symbol"):
+            elif now == ("+", "symbol"):
+                t = "add"
+            elif now == ("-", "symbol"):
+                t = "sub"
+            elif now == ("*", "symbol"):
+                t = "call Math.multiply 2"
+            elif now == ("/", "symbol"):
+                t = "call Math.divide 2"
+            elif now == ("&", "symbol"):
+                t = "and"
+            elif now == ("|", "symbol"):
+                t = "or"
+            elif now == (">", "symbol"):
+                t = "gt"
+            elif now == ("<", "symbol"):
+                t = "lt"
+            elif now == ("=", "symbol"):
+                t = "eq"
+            else:
                 raise CompileError(45, None, self.peek(), self.point)
+            self.compileTerm()
+            self.code.append(t)
+            now = self.get()
 
     def compileTerm(self):
         now = self.get()
@@ -379,7 +400,63 @@ class CompilationEngine:
             raise CompileError(50, None, self.peek(), self.point)
 
     def compileSubroutineCall(self):
-        pass
+        now = self.get()
+        t = now[0]
+        if self.peek() == (".", "symbol"):
+            now = self.get()
+            if now[1] != "identifier":
+                raise CompileError()
+            t1 = now[0]
+            if t in self.gv:
+                m = 0
+                if self.gv[t][1] == "field":
+                    self.code.append(f"push this {self.gv[t][2]}")
+                else:
+                    self.code.append(f"push {self.gv[t][1]} {self.gv[t][2]}")
+            elif t in self.lv:
+                m = 1
+                self.code.append(f"push local {self.lv[t][2]}")
+            else:
+                m = 2
+            if self.get() != ("(", "symbol"):
+                raise CompileError()
+            n = self.compileExpressionList()
+            if self.get() != (")", "symbol"):
+                raise CompileError()
+            if m == 0:
+                self.code.append(f"call {self.gv[t][0]}.{t1} {n+1}")
+            elif m == 1:
+                self.code.append(f"call {self.lv[t][0]}.{t1} {n+1}")
+            else:
+                self.code.append(f"call {t}.{t1} {n}")
+        else:
+            if t not in self.gv:  # 出問題
+                raise CompileError()
+            if self.gv[t][1] not in ["method", "function", "constructor"]:
+                raise CompileError()
+            n = 0
+            if self.gv[t][1] == "method":
+                n += 1
+                self.code.append("push point 0")
+            if self.get() != ("(", "symbol"):
+                raise CompileError()
+            n += self.compileExpressionList()
+            if self.get() != (")", "symbol"):
+                raise CompileError()
+            self.code.append(f"call {self.className}.{t} {n}")
+        if self.get() != (";", "symbol"):
+            raise CompileError()
 
-    def compileExpressionList(self):
-        pass
+    def compileExpressionList(self) -> int:
+        if self.peek() == (")", "symbol"):
+            return 0
+        n = 0
+        while True:
+            self.compileExpression()
+            n += 1
+            next = self.peek()
+            if next == (")", "symbol"):
+                break
+            elif next != (",", "symbol"):
+                raise CompileError()
+        return n
