@@ -8,8 +8,6 @@ def listAllFiles(path: str):
     for f in os.listdir(path):
         if os.path.isfile(os.path.join(path, f)):
             result.append(os.path.join(path, f))
-        else:
-            result += listAllFiles(os.path.join(path, f))
     return result
 
 
@@ -18,10 +16,8 @@ if __name__ == "__main__":
         path = sys.argv[1]
     else:
         path = input("file or path:")
-    dir = os.getcwd()
+    path = os.path.abspath(path)
 
-    if dir not in path:
-        path = dir + "\\" + path
     if path.endswith(".jack"):
         result = [path]
     else:
@@ -29,6 +25,7 @@ if __name__ == "__main__":
 
     for i in result:
         if i.endswith(".jack"):
+            filename = i.split('\\')[-1]
             with open(i, "r") as f:
                 source = f.readlines()
             tokens = tokenizer(source)
@@ -36,7 +33,7 @@ if __name__ == "__main__":
             try:
                 code = compiler.main()
             except CompileError as e:
-                print("error file:", i)
+                print("error file:", filename)
                 _, _, exc_traceback = sys.exc_info()
                 traceback.print_tb(exc_traceback)
                 print(e.m())
@@ -47,3 +44,4 @@ if __name__ == "__main__":
                 exit()
             with open(i.split(".")[0] + ".vm", "w") as f:
                 f.write("\n".join(code) + "\n")
+            print(f"Compile {filename} successfully")

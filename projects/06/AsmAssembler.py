@@ -1,19 +1,27 @@
-import re
+import re, sys, os
 
 comp = {"0": "0101010", "1": "0111111", "-1": "0111010", "D": "0001100", "A": "0110000", "!D": "0001101", "!A": "0110001", "-D": "0001111", "-A": "0110011", "D+1": "0011111", "A+1": "0110111", "D-1": "0001110", "A-1": "0110010", "D+A": "0000010", "A+D": "0000010", "D-A": "0010011", "A-D": "0000111", "D&A": "0000000", "A&D": "0000000", "D|A": "0010101", "A|D": "0010101", "M": "1110000", "!M": "1110001", "-M": "1110011", "M+1": "1110111", "M-1": "1110010", "D+M": "1000010", "M+D": "1000010", "D-M": "1010011", "M-D": "1000111", "D&M": "1000000", "M&D": "1000000", "D|M": "1010101", "M|D": "1010101"}
 jump = {"Null": "000", "JGT": "001", "JEQ": "010", "JGE": "011", "JLT": "100", "JNE": "101", "JLE": "110", "JMP": "111"}
 symbol = {"SP": 0, "LCL": 1, "ARG": 2, "THIS": 3, "THAT": 4, "R0": 0, "R1": 1, "R2": 2, "R3": 3, "R4": 4, "R5": 5, "R6": 6, "R7": 7, "R8": 8, "R9": 9, "R10": 10, "R11": 11, "R12": 12, "R13": 13, "R14": 14, "R15": 15, "SCREEN": 16384, "KBD": 24576}
 
+def listAllFiles(path: str):
+    result = []
+    for f in os.listdir(path):
+        if os.path.isfile(os.path.join(path, f)):
+            result.append(os.path.join(path, f))
+    return result
 
-def assemble(path):
+
+
+def assemble(path: str):
     symbolList = []
     n1 = 0
     r = []
     err = False
     error = []
     pattern = re.compile(r"^Null$|^[MDA]+$")
-    f = open(path, "r")
-    text = f.readlines()
+    with open(path, "r") as f:
+        text = f.readlines()
     for i in range(len(text)):
         text[i] = re.sub(r"\s+", "", text[i])
     for i in text:
@@ -114,18 +122,30 @@ def assemble(path):
     for i in r:
         text.remove(i)
     text = "\n".join(text)
-    f.close()
+    filename = path.split('\\')[-1]
     if err:
+        print("error file:", filename)
         print(f"Error x{len(error)}")
         for i in error:
             print(i)
     else:
-        path = path.split(".")
-        f = open(path[0] + ".hack", "w")
-        f.write(text)
-        f.close()
+        with open(path.split(".")[0] + ".hack", "w") as f:
+            f.write(text)
+        print(f"Assembled {filename} successfully")
 
 
 if __name__ == "__main__":
-    path = input("file path and name:")
-    assemble(path)
+    if len(sys.argv) > 1:
+        path = sys.argv[1]
+    else:
+        path = input("file or path:")
+    path = os.path.abspath(path)
+
+    if path.endswith(".asm"):
+        result = [path]
+    else:
+        result = listAllFiles(path)
+
+    for i in result:
+        if i.endswith(".asm"):
+            assemble(i)
