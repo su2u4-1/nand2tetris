@@ -4,13 +4,13 @@ comp = {"0": "0101010", "1": "0111111", "-1": "0111010", "D": "0001100", "A": "0
 jump = {"Null": "000", "JGT": "001", "JEQ": "010", "JGE": "011", "JLT": "100", "JNE": "101", "JLE": "110", "JMP": "111"}
 symbol = {"SP": 0, "LCL": 1, "ARG": 2, "THIS": 3, "THAT": 4, "R0": 0, "R1": 1, "R2": 2, "R3": 3, "R4": 4, "R5": 5, "R6": 6, "R7": 7, "R8": 8, "R9": 9, "R10": 10, "R11": 11, "R12": 12, "R13": 13, "R14": 14, "R15": 15, "SCREEN": 16384, "KBD": 24576}
 
+
 def listAllFiles(path: str):
     result = []
     for f in os.listdir(path):
         if os.path.isfile(os.path.join(path, f)):
             result.append(os.path.join(path, f))
     return result
-
 
 
 def assemble(path: str):
@@ -122,7 +122,7 @@ def assemble(path: str):
     for i in r:
         text.remove(i)
     text = "\n".join(text)
-    filename = path.split('\\')[-1]
+    filename = path.split("\\")[-1]
     if err:
         print("error file:", filename)
         print(f"Error x{len(error)}")

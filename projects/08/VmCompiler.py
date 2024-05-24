@@ -142,6 +142,7 @@ def main1(path: str):
     f.close()
     print(f"Compile {filename} successfully")
 
+
 def main2(result: list[str]):
     text = []
     for i in result:

@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     for i in result:
         if i.endswith(".jack"):
-            filename = i.split('\\')[-1]
+            filename = i.split("\\")[-1]
             with open(i, "r") as f:
                 source = f.readlines()
             tokens = tokenizer(source)
