@@ -105,17 +105,8 @@ push local 1
 lt
 pop this 7
 push this 7
-if-goto IL0.1
-push this 0
-push argument 1
-lt
-pop this 8
-push this 1
-push argument 2
-lt
-pop this 9
-goto IL0.2
-label IL0.1
+not
+if-goto if-0-1
 push local 0
 pop local 2
 push local 1
@@ -130,7 +121,17 @@ push this 0
 push argument 1
 lt
 pop this 9
-label IL0.2
+goto if-0-2
+label if-0-1
+push this 0
+push argument 1
+lt
+pop this 8
+push this 1
+push argument 2
+lt
+pop this 9
+label if-0-2
 push constant 2
 push local 1
 call Math.multiply 2
@@ -158,128 +159,131 @@ pop temp 0
 push this 4
 push constant 0
 lt
-if-goto IL1.1
+not
+if-goto if-1-1
+push this 4
+push this 5
+add
+pop this 4
+goto if-1-2
+label if-1-1
 push this 4
 push this 6
 add
 pop this 4
 push this 9
-if-goto IL2.1
+not
+if-goto if-2-1
 push this 7
-if-goto IL3.1
-push this 1
-push constant 4
-sub
-pop this 1
-goto IL3.2
-label IL3.1
-push this 0
-push constant 4
-sub
-pop this 0
-label IL3.2
-goto IL2.2
-label IL2.1
-push this 7
-if-goto IL4.1
-push this 1
-push constant 4
-add
-pop this 1
-goto IL4.2
-label IL4.1
+not
+if-goto if-3-1
 push this 0
 push constant 4
 add
 pop this 0
-label IL4.2
-label IL2.2
-goto IL1.2
-label IL1.1
-push this 4
-push this 5
+goto if-3-2
+label if-3-1
+push this 1
+push constant 4
 add
-pop this 4
-label IL1.2
+pop this 1
+label if-3-2
+goto if-2-2
+label if-2-1
+push this 7
+not
+if-goto if-4-1
+push this 0
+push constant 4
+sub
+pop this 0
+goto if-4-2
+label if-4-1
+push this 1
+push constant 4
+sub
+pop this 1
+label if-4-2
+label if-2-2
+label if-1-2
 push this 8
-if-goto IL5.1
+not
+if-goto if-5-1
 push this 7
-if-goto IL6.1
-push this 0
-push constant 4
-sub
-pop this 0
-goto IL6.2
-label IL6.1
-push this 1
-push constant 4
-sub
-pop this 1
-label IL6.2
-goto IL5.2
-label IL5.1
-push this 7
-if-goto IL7.1
-push this 0
-push constant 4
-add
-pop this 0
-goto IL7.2
-label IL7.1
+not
+if-goto if-6-1
 push this 1
 push constant 4
 add
 pop this 1
-label IL7.2
-label IL5.2
+goto if-6-2
+label if-6-1
+push this 0
+push constant 4
+add
+pop this 0
+label if-6-2
+goto if-5-2
+label if-5-1
+push this 7
+not
+if-goto if-7-1
+push this 1
+push constant 4
+sub
+pop this 1
+goto if-7-2
+label if-7-1
+push this 0
+push constant 4
+sub
+pop this 0
+label if-7-2
+label if-5-2
 push this 0
 push this 10
 gt
 not
-if-goto IL8.1
-goto IL8.2
-label IL8.1
+not
+if-goto if-8-1
 push constant 1
 pop this 14
 push this 10
 pop this 0
-label IL8.2
+label if-8-1
 push this 0
 push this 11
 lt
 not
-if-goto IL9.1
-goto IL9.2
-label IL9.1
+not
+if-goto if-9-1
 push constant 2
 pop this 14
 push this 11
 pop this 0
-label IL9.2
+label if-9-1
 push this 1
 push this 12
 gt
 not
-if-goto IL10.1
-goto IL10.2
-label IL10.1
+not
+if-goto if-10-1
 push constant 3
 pop this 14
 push this 12
 pop this 1
-label IL10.2
+label if-10-1
 push this 1
 push this 13
 lt
 not
-if-goto IL11.1
-goto IL11.2
-label IL11.1
+not
+if-goto if-11-1
 push constant 4
 pop this 14
 push this 13
 pop this 1
-label IL11.2
+label if-11-1
 push pointer 0
 call Ball.show 1
 pop temp 0
@@ -299,7 +303,12 @@ pop local 3
 push argument 1
 push constant 0
 eq
-if-goto IL12.1
+not
+if-goto if-12-1
+push constant 10
+pop local 4
+goto if-12-2
+label if-12-1
 push this 2
 push constant 0
 lt
@@ -317,82 +326,21 @@ neg
 eq
 and
 or
-if-goto IL13.1
-push constant 5
-pop local 4
-goto IL13.2
-label IL13.1
+not
+if-goto if-13-1
 push constant 20
 pop local 4
-label IL13.2
-goto IL12.2
-label IL12.1
-push constant 10
+goto if-13-2
+label if-13-1
+push constant 5
 pop local 4
-label IL12.2
+label if-13-2
+label if-12-2
 push this 14
 push constant 1
 eq
-if-goto IL14.1
-push this 14
-push constant 2
-eq
-if-goto IL15.1
-push this 14
-push constant 3
-eq
-if-goto IL16.1
-push constant 0
-pop local 1
-push local 2
-push constant 25
-call Math.multiply 2
-push local 3
-call Math.divide 2
-pop local 0
-push this 0
-push local 0
-push local 4
-call Math.multiply 2
-add
-pop local 0
-goto IL16.2
-label IL16.1
-push constant 250
-pop local 1
-push local 2
-push constant 25
-neg
-call Math.multiply 2
-push local 3
-call Math.divide 2
-pop local 0
-push this 0
-push local 0
-push local 4
-call Math.multiply 2
-add
-pop local 0
-label IL16.2
-goto IL15.2
-label IL15.1
-push constant 0
-pop local 0
-push local 3
-push constant 50
-call Math.multiply 2
-push local 2
-call Math.divide 2
-pop local 1
-push this 1
-push local 1
-push local 4
-call Math.multiply 2
-add
-pop local 1
-label IL15.2
-goto IL14.2
-label IL14.1
+not
+if-goto if-14-1
 push constant 506
 pop local 0
 push local 3
@@ -408,7 +356,68 @@ push local 4
 call Math.multiply 2
 add
 pop local 1
-label IL14.2
+goto if-14-2
+label if-14-1
+push this 14
+push constant 2
+eq
+not
+if-goto if-15-1
+push constant 0
+pop local 0
+push local 3
+push constant 50
+call Math.multiply 2
+push local 2
+call Math.divide 2
+pop local 1
+push this 1
+push local 1
+push local 4
+call Math.multiply 2
+add
+pop local 1
+goto if-15-2
+label if-15-1
+push this 14
+push constant 3
+eq
+not
+if-goto if-16-1
+push constant 250
+pop local 1
+push local 2
+push constant 25
+neg
+call Math.multiply 2
+push local 3
+call Math.divide 2
+pop local 0
+push this 0
+push local 0
+push local 4
+call Math.multiply 2
+add
+pop local 0
+goto if-16-2
+label if-16-1
+push constant 0
+pop local 1
+push local 2
+push constant 25
+call Math.multiply 2
+push local 3
+call Math.divide 2
+pop local 0
+push this 0
+push local 0
+push local 4
+call Math.multiply 2
+add
+pop local 0
+label if-16-2
+label if-15-2
+label if-14-2
 push pointer 0
 push local 0
 push local 1

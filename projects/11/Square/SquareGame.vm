@@ -28,43 +28,39 @@ pop pointer 0
 push this 1
 push constant 1
 eq
-if-goto IL0.1
-goto IL0.2
-label IL0.1
+not
+if-goto if-0-1
 push this 0
 call Square.moveUp 1
 pop temp 0
-label IL0.2
+label if-0-1
 push this 1
 push constant 2
 eq
-if-goto IL1.1
-goto IL1.2
-label IL1.1
+not
+if-goto if-1-1
 push this 0
 call Square.moveDown 1
 pop temp 0
-label IL1.2
+label if-1-1
 push this 1
 push constant 3
 eq
-if-goto IL2.1
-goto IL2.2
-label IL2.1
+not
+if-goto if-2-1
 push this 0
 call Square.moveLeft 1
 pop temp 0
-label IL2.2
+label if-2-1
 push this 1
 push constant 4
 eq
-if-goto IL3.1
-goto IL3.2
-label IL3.1
+not
+if-goto if-3-1
 push this 0
 call Square.moveRight 1
 pop temp 0
-label IL3.2
+label if-3-1
 push constant 5
 call Sys.wait 1
 pop temp 0
@@ -75,105 +71,98 @@ push argument 0
 pop pointer 0
 push constant 0
 pop local 1
-label WL0.1
+label while-0-1
 push local 1
 not
 not
-if-goto WL0.2
-label WL1.1
+if-goto while-0-2
+label while-1-1
 push local 0
 push constant 0
 eq
 not
-if-goto WL1.2
+if-goto while-1-2
 call Keyboard.keyPressed 0
 pop local 0
 push pointer 0
 call SquareGame.moveSquare 1
 pop temp 0
-goto WL1.1
-label WL1.2
+goto while-1-1
+label while-1-2
 push local 0
 push constant 81
 eq
-if-goto IL4.1
-goto IL4.2
-label IL4.1
+not
+if-goto if-4-1
 push constant 0
 not
 pop local 1
-label IL4.2
+label if-4-1
 push local 0
 push constant 90
 eq
-if-goto IL5.1
-goto IL5.2
-label IL5.1
+not
+if-goto if-5-1
 push this 0
 call Square.decSize 1
 pop temp 0
-label IL5.2
+label if-5-1
 push local 0
 push constant 88
 eq
-if-goto IL6.1
-goto IL6.2
-label IL6.1
+not
+if-goto if-6-1
 push this 0
 call Square.incSize 1
 pop temp 0
-label IL6.2
+label if-6-1
 push local 0
 push constant 131
 eq
-if-goto IL7.1
-goto IL7.2
-label IL7.1
+not
+if-goto if-7-1
 push constant 1
 pop this 1
-label IL7.2
+label if-7-1
 push local 0
 push constant 133
 eq
-if-goto IL8.1
-goto IL8.2
-label IL8.1
+not
+if-goto if-8-1
 push constant 2
 pop this 1
-label IL8.2
+label if-8-1
 push local 0
 push constant 130
 eq
-if-goto IL9.1
-goto IL9.2
-label IL9.1
+not
+if-goto if-9-1
 push constant 3
 pop this 1
-label IL9.2
+label if-9-1
 push local 0
 push constant 132
 eq
-if-goto IL10.1
-goto IL10.2
-label IL10.1
+not
+if-goto if-10-1
 push constant 4
 pop this 1
-label IL10.2
-label WL2.1
+label if-10-1
+label while-2-1
 push local 0
 push constant 0
 eq
 not
 not
-if-goto WL2.2
+if-goto while-2-2
 call Keyboard.keyPressed 0
 pop local 0
 push pointer 0
 call SquareGame.moveSquare 1
 pop temp 0
-goto WL2.1
-label WL2.2
-goto WL0.1
-label WL0.2
+goto while-2-1
+label while-2-2
+goto while-0-1
+label while-0-2
 push constant 0
 return

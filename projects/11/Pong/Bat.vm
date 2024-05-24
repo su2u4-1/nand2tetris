@@ -101,7 +101,55 @@ pop pointer 0
 push this 4
 push constant 1
 eq
-if-goto IL0.1
+not
+if-goto if-0-1
+push this 0
+push constant 4
+sub
+pop this 0
+push this 0
+push constant 0
+lt
+not
+if-goto if-1-1
+push constant 0
+pop this 0
+label if-1-1
+push constant 0
+call Screen.setColor 1
+pop temp 0
+push this 0
+push this 2
+add
+push constant 1
+add
+push this 1
+push this 0
+push this 2
+add
+push constant 4
+add
+push this 1
+push this 3
+add
+call Screen.drawRectangle 4
+pop temp 0
+push constant 0
+not
+call Screen.setColor 1
+pop temp 0
+push this 0
+push this 1
+push this 0
+push constant 3
+add
+push this 1
+push this 3
+add
+call Screen.drawRectangle 4
+pop temp 0
+goto if-0-2
+label if-0-1
 push this 0
 push constant 4
 add
@@ -111,14 +159,13 @@ push this 2
 add
 push constant 511
 gt
-if-goto IL1.1
-goto IL1.2
-label IL1.1
+not
+if-goto if-2-1
 push constant 511
 push this 2
 sub
 pop this 0
-label IL1.2
+label if-2-1
 push constant 0
 call Screen.setColor 1
 pop temp 0
@@ -152,54 +199,6 @@ push this 3
 add
 call Screen.drawRectangle 4
 pop temp 0
-goto IL0.2
-label IL0.1
-push this 0
-push constant 4
-sub
-pop this 0
-push this 0
-push constant 0
-lt
-if-goto IL2.1
-goto IL2.2
-label IL2.1
-push constant 0
-pop this 0
-label IL2.2
-push constant 0
-call Screen.setColor 1
-pop temp 0
-push this 0
-push this 2
-add
-push constant 1
-add
-push this 1
-push this 0
-push this 2
-add
-push constant 4
-add
-push this 1
-push this 3
-add
-call Screen.drawRectangle 4
-pop temp 0
-push constant 0
-not
-call Screen.setColor 1
-pop temp 0
-push this 0
-push this 1
-push this 0
-push constant 3
-add
-push this 1
-push this 3
-add
-call Screen.drawRectangle 4
-pop temp 0
-label IL0.2
+label if-0-2
 push constant 0
 return

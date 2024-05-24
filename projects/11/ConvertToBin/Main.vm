@@ -17,10 +17,10 @@ function Main.convert 3
 push constant 0
 not
 pop local 2
-label WL0.1
+label while-0-1
 push local 2
 not
-if-goto WL0.2
+if-goto while-0-2
 push local 1
 push constant 1
 add
@@ -32,59 +32,62 @@ push local 1
 push constant 16
 gt
 not
-if-goto IL0.1
-push constant 0
-pop local 2
-goto IL0.2
-label IL0.1
+not
+if-goto if-0-1
 push argument 0
 push local 0
 and
 push constant 0
 eq
 not
-if-goto IL1.1
-push constant 8000
-push local 1
-add
-push constant 0
-call Memory.poke 2
-pop temp 0
-goto IL1.2
-label IL1.1
+not
+if-goto if-1-1
 push constant 8000
 push local 1
 add
 push constant 1
 call Memory.poke 2
 pop temp 0
-label IL1.2
-label IL0.2
-goto WL0.1
-label WL0.2
+goto if-1-2
+label if-1-1
+push constant 8000
+push local 1
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+label if-1-2
+goto if-0-2
+label if-0-1
+push constant 0
+pop local 2
+label if-0-2
+goto while-0-1
+label while-0-2
 push constant 0
 return
 function Main.nextMask 0
 push argument 0
 push constant 0
 eq
-if-goto IL2.1
+not
+if-goto if-2-1
+push constant 1
+return
+goto if-2-2
+label if-2-1
 push argument 0
 push constant 2
 call Math.multiply 2
 return
-goto IL2.2
-label IL2.1
-push constant 1
-return
-label IL2.2
+label if-2-2
 function Main.fillMemory 0
-label WL1.1
+label while-1-1
 push argument 1
 push constant 0
 gt
 not
-if-goto WL1.2
+if-goto while-1-2
 push argument 0
 push argument 2
 call Memory.poke 2
@@ -97,7 +100,7 @@ push argument 0
 push constant 1
 add
 pop argument 0
-goto WL1.1
-label WL1.2
+goto while-1-1
+label while-1-2
 push constant 0
 return

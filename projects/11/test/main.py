@@ -13,12 +13,6 @@ def listAllFiles(path: str):
     return result
 
 
-def turn_xml(code: list):
-    for i in range(len(code)):
-        code[i] = f"<{code[i][1]}> {code[i][0]} </{code[i][1]}>"
-    return code
-
-
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         path = sys.argv[1]
@@ -40,8 +34,9 @@ if __name__ == "__main__":
             tokens = tokenizer(source)
             compiler = CompilationEngine(tokens)
             try:
-                xml = compiler.main()
+                code = compiler.main()
             except CompileError as e:
+                print("error file:", i)
                 _, _, exc_traceback = sys.exc_info()
                 traceback.print_tb(exc_traceback)
                 print(e.m())
@@ -50,5 +45,5 @@ if __name__ == "__main__":
                     for i in range(len(tokens)):
                         print(i, tokens[i])
                 exit()
-            with open(i.split(".")[0] + "_M.xml", "w") as f:
-                f.write("\n".join(xml))
+            with open(i.split(".")[0] + ".vm", "w") as f:
+                f.write("\n".join(code) + "\n")

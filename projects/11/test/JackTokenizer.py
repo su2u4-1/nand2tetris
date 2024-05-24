@@ -38,19 +38,26 @@ message_list = {
     35: "Unmatched closing parenthesis ')'",
     36: "Missing '{'",
     37: "Unmatched closing brace '}'",
-    38: "Missing '(' after keyword 'if'",
-    39: "Missing conditional expression",
-    40: "Unmatched closing parenthesis ')'",
-    41: "Missing '{'",
-    42: "Unmatched closing brace '}'",
-    43: "Missing '{'",
-    44: "Unmatched closing brace '}'",
-    45: "Missing ','",
-    46: "Missing closing parenthesis ')'",
-    47: "Identifier '{}' not found",
-    48: "Unmatched opening bracket '['",
-    49: "Identifier '{}' not found",
-    50: "An unspecified compile error occurred",
+    38: "",
+    39: "Missing '(' after keyword 'if'",
+    40: "Missing conditional expression",
+    41: "Unmatched closing parenthesis ')'",
+    42: "Missing '{'",
+    43: "Unmatched closing brace '}'",
+    44: "Missing '{'",
+    45: "Unmatched closing brace '}'",
+    46: "Missing ','",
+    47: "Missing closing parenthesis ')'",
+    48: "Identifier '{}' not found",
+    49: "Unmatched opening bracket '['",
+    50: "Identifier '{}' not found",
+    51: "An unspecified compile error occurred",
+    52: "",
+    53: "",
+    54: "",
+    55: "",
+    56: "",
+    57: "",
 }
 
 
@@ -117,6 +124,8 @@ def tokenizer(text: list[str]) -> tuple[str]:
     # 清除多餘空字串
     while "" in code:
         code.remove("")
+    while '"' in code:
+        code.remove('"')
     # 附上類型
     for i in range(len(code)):
         if code[i] in symbolList:
@@ -126,7 +135,7 @@ def tokenizer(text: list[str]) -> tuple[str]:
         elif code[i].isdigit() and int(i) < 32768:
             code[i] = (code[i], "integerConstant")
         elif code[i][0] == '"' and code[i][-1] == '"':
-            code[i] = (code[i][1:-1], "stringConstant")
+            code[i] = (code[i][1:-1], "stringContent")
         elif code[i][0] in identifier:
             code[i] = (code[i], "identifier")
         else:
