@@ -1,6 +1,14 @@
 import os, sys
 
 
+def listAllFiles(path: str):
+    result = []
+    for f in os.listdir(path):
+        if os.path.isfile(os.path.join(path, f)):
+            result.append(os.path.join(path, f))
+    return result
+
+
 def translator(text):
     r = []
     command = ["@256\nD=M\n@SP\nA=M\nM=D"]
@@ -102,7 +110,7 @@ def translator(text):
         else:
             error += 1
             print("line", i, text[i], "\n------\n", command[-1], "\n------")
-    command = "\n".join(command) + "\n(END)\n@END\n0;JMP\n"
+    command = "\n".join(command) + "\n(END)\n@END\n0;JMP"
     if error > 0:
         print(f"Error x{error}")
         exit()
@@ -110,12 +118,52 @@ def translator(text):
         return command
 
 
-def listAllFiles(path: str):
+def file(path):
     result = []
     for f in os.listdir(path):
         if os.path.isfile(os.path.join(path, f)):
             result.append(os.path.join(path, f))
+        else:
+            result += file(os.path.join(path, f))
     return result
+
+
+def main1(path: str):
+    filename = path.split("\\")[-1]
+    name = filename.split(".")[0]
+    text = [f"name {name}"]
+    f = open(path, "r")
+    text = f.readlines()
+    f.close()
+    command = translator(text)
+    path = path.split(".")
+    f = open(path[0] + ".asm", "w")
+    f.write(command)
+    f.close()
+    print(f"Compile {filename} successfully")
+
+
+def main2(result: list[str]):
+    text = []
+    for i in result:
+        if "Sys.vm" in i:
+            text.append(f"name Sys")
+            f = open(i, "r")
+            text += f.readlines()
+            f.close()
+    for i in result:
+        if "Sys.vm" not in i and ".vm" in i:
+            name = i.split("\\")[-1].split(".")[0]
+            text.append(f"name {name}")
+            f = open(i, "r")
+            text += f.readlines()
+            f.close()
+    command = translator(text)
+    name = path.split("\\")[-1]
+    f = open(f"{path}\\{name}.asm", "w")
+    f.write(command)
+    f.close()
+    print(f"Compile {name} successfully")
 
 
 if __name__ == "__main__":
@@ -126,28 +174,6 @@ if __name__ == "__main__":
     path = os.path.abspath(path)
 
     if path.endswith(".vm"):
-        filename = path.split("\\")[-1]
-        source = [f"name {filename.split('.')[0]}"]
-        with open(path, "r") as f:
-            source += f.readlines()
-        code = translator(source)
-        with open(path.split(".")[0] + ".asm", "w") as f:
-            f.write(code)
-        print(f"Compile {filename} successfully")
+        main1(path)
     else:
-        p = listAllFiles(path)
-        source = []
-        filename = []
-        for i in p:
-            if i.endswith(".vm"):
-                filename.append(i.split("\\")[-1])
-                with open(i, "r") as f:
-                    if filename[-1] == "Sys.vm":
-                        source = ["name Sys"] + f.readlines() + source
-                    else:
-                        source += [f"name {filename[-1].split('.')[0]}"] + f.readlines()
-        code = translator(source)
-        with open(path.split(".")[0] + ".asm", "w") as f:
-            f.write(code)
-        for i in filename:
-            print(f"Compile {i} successfully")
+        main2(listAllFiles(path))
