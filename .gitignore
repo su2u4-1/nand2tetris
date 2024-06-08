@@ -4,6 +4,9 @@ __pycache__/
 *.cmp
 *.out
 *.py[cod]
+*.html
+*_M.xml
+*_T.xml
 *$py.class
 
 # C extensions
