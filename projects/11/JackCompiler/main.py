@@ -28,9 +28,9 @@ if __name__ == "__main__":
             filename = i.split("\\")[-1]
             with open(i, "r") as f:
                 source = f.readlines()
-            tokens = tokenizer(source)
-            compiler = CompilationEngine(tokens)
             try:
+                tokens = tokenizer(source)
+                compiler = CompilationEngine(tokens)
                 code = compiler.main()
             except CompileError as e:
                 print("error file:", filename)

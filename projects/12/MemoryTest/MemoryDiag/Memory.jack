@@ -40,7 +40,7 @@ class Memory {
         let tu = -1;
         while (true) {
             if (m[sp-2] = size) {
-                if (tu <= 0) {
+                if (~(tu > 0)) {
                     let start = m[sp-1];
                 }
                 else {
@@ -49,7 +49,7 @@ class Memory {
                 return sp;
             }
             if (m[sp-2] > (size+2)) {
-                if (tu <= 0) {
+                if (~(tu > 0)) {
                     let start = sp+size+2;
                 }
                 else {
@@ -62,7 +62,7 @@ class Memory {
                 return sp;
             }
             let tu = sp;
-            if (m[sp-1] <= 0) {
+            if (~(m[sp-1] > 0)) {
                 return -1;
             }
             let sp = m[sp-1];

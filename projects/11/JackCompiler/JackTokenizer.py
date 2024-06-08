@@ -2,6 +2,8 @@ symbolList = ["{", "}", "[", "]", "(", ")", ",", ";", "+", "-", "*", "/", "&", "
 keyWordList = ["class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean", "Int", "Char", "Boolean", "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return"]
 identifier = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 message_list = {
+    0: "Comment is not closed",
+    1: "error: The identifier cannot start with {}",
     2: "Unmatched closing parenthesis ')'",
     3: "Unmatched closing bracket ']'",
     4: "Unmatched closing brace '}'",
@@ -90,11 +92,13 @@ def tokenizer(text: list[str]) -> tuple[str]:
         t = text.split("/*", 1)
         t[1] = t[1].split("*/", 1)[1]
         text = " ".join(t)
+    while "\t" in text:
+        text = "".join(text.split("\t"))
     # 註釋未關閉
     if "/*" in text and "*/" not in text:
-        raise CompileError(0, "Comment is not closed")
+        raise CompileError(0, None)
     elif "/*" not in text and "*/" in text:
-        raise CompileError(0, "Comment is not closed")
+        raise CompileError(0, None)
     # 主要分解區
     code = []
     t = ""
@@ -139,5 +143,5 @@ def tokenizer(text: list[str]) -> tuple[str]:
         elif code[i][0] in identifier:
             code[i] = (code[i], "identifier")
         else:
-            raise CompileError(1, f"error: The identifier cannot start with {code[i][0]}", code[i], i)
+            raise CompileError(1, code[i][0], code[i], i)
     return code
