@@ -14,8 +14,8 @@ pop that 0
 push constant 1
 push local 0
 add
-push constant 0
 push local 0
+push constant 0
 add
 pop pointer 1
 push that 0
@@ -29,8 +29,8 @@ pop that 0
 push constant 2
 push local 0
 add
-push constant 1
 push local 0
+push constant 1
 add
 pop pointer 1
 push that 0
@@ -44,8 +44,8 @@ push constant 3
 push local 0
 add
 push constant 1
-push constant 2
 push local 0
+push constant 2
 add
 pop pointer 1
 push that 0
@@ -57,8 +57,8 @@ pop that 0
 push constant 4
 push local 0
 add
-push constant 3
 push local 0
+push constant 3
 add
 pop pointer 1
 push that 0
