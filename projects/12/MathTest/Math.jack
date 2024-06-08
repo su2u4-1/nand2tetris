@@ -73,9 +73,7 @@ class Math {
         if (x - (t1 * y) < y) {
             return t0 * t1;
         }
-        else {
-            return t0 * t1 + 1;
-        }
+        return t0 * t1 + 1;
     }
 
     /** Returns the integer part of the square root of x.

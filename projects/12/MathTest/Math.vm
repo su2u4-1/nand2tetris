@@ -143,7 +143,6 @@ push local 1
 push local 2
 call Math.multiply 2
 return
-goto IF_END4
 label IF_FALSE4
 push local 1
 push local 2
@@ -151,7 +150,6 @@ call Math.multiply 2
 push constant 1
 add
 return
-label IF_END4
 function Math.sqrt 2
 push argument 0
 push constant 2
