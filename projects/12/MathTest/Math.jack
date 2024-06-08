@@ -68,7 +68,7 @@ class Math {
         if (y > x) {
             return 0;
         }
-        let q = divide(x, 2 * y);
+        let q = Math.divide(x, 2 * y);
         let t1 = 2 * q;
         if (x - (t1 * y) < y) {
             return t0 * t1;
