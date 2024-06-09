@@ -12,6 +12,7 @@ class Keyboard {
     /** Initializes the keyboard. */
     function void init() {
         let kb = 24576;
+        return;
     } 
 
     /**
@@ -48,9 +49,7 @@ class Keyboard {
         while (~(kb[0] = 0)) {
             let t = kb[0];
         }
-        if (kb[0] = 0) {
-            do Output.printChar(t);
-        }
+        do Output.printChar(t);
         return t;
     }
 
@@ -61,20 +60,23 @@ class Keyboard {
      */
     function String readLine(String message) {
         var string ts;
+        var char t;
         let ts = "";
-        do Output.printString(kb[0]);
+        do Output.printString(message);
         while (true) {
-            whlie(kb[0] = 0) {
+            let t = Keyboard.readChar();
+            if (t = 128) {
+                return ts;
             }
-            if (~(kb[0] = 0)) {
-                if (kb[0] = 128) {
-                    return ts;
-                }
-                do ts.appendChar(kb[0]);
-                do Output.printChar(kb[0]);
+            if (t = 129 | t = 139) {
+                do ts.eraseLastChar();
+                do Output.backSpace();
+            }
+            if (t < 128) {
+                do ts.appendChar(t);
             }
         }
-    }   
+    }
 
     /**
      * Displays the message on the screen, reads from the keyboard the entered
@@ -84,7 +86,73 @@ class Keyboard {
      */
     function int readInt(String message) {
         var string in;
+        var int i, l, a;
         let in = readLine(message);
-        // 這裡
+        let l = in.length();
+        let i = 0;
+        let a = 0;
+        while (i < l) {
+            if (in[i] = 48) {
+                let a = a * 10;
+            }
+            else { 
+                if (in[i] = 49) {
+                    let a = a * 10;
+                    let a = a + 1;
+                }
+                else {
+                    if (in[i] = 50) {
+                        let a = a * 10;
+                        let a = a + 2;
+                    }
+                    else {
+                        if (in[i] = 51) {
+                            let a = a * 10;
+                            let a = a + 3;
+                        }
+                        else {
+                            if (in[i] = 52) {
+                                let a = a * 10;
+                                let a = a + 4;
+                            }
+                            else {
+                                if (in[i] = 53) {
+                                    let a = a * 10;
+                                    let a = a + 5;
+                                }
+                                else {
+                                    if (in[i] = 54) {
+                                        let a = a * 10;
+                                        let a = a + 6;
+                                    }
+                                    else {
+                                        if (in[i] = 55) {
+                                            let a = a * 10;
+                                            let a = a + 7;
+                                        }
+                                        else {
+                                            if (in[i] = 56) {
+                                                let a = a * 10;
+                                                let a = a + 8;
+                                            }
+                                            else {
+                                                if (in[i] = 57) {
+                                                    let a = a * 10;
+                                                    let a = a + 9;
+                                                }
+                                                else {
+                                                    return a;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            i = i + 1;
+        }
     }
 }

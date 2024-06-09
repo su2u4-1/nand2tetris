@@ -36,6 +36,10 @@ class Memory {
      *  a reference to its base address. */
     function int alloc(int size) {
         var int sp, tu;
+        if (size < 1) {
+            do Sys.error(5);
+            return 0;
+        }
         let sp = start;
         let tu = -1;
         while (true) {
@@ -76,5 +80,5 @@ class Memory {
         let m[o-1] = start;
         let start = o;
         return;
-    }    
+    }
 }

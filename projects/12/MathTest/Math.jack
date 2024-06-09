@@ -29,7 +29,7 @@ class Math {
 
     /** Returns the product of x and y. 
      *  When a Jack compiler detects the multiplication operator '*'
-     *  in an expression, it handles it by invoking this method. 
+     *  in an expression, it handles it by invoking this method.
      *  Thus, in Jack, x * y and Math.multiply(x,y) return the same value.
      */
     function int multiply(int x, int y) {
@@ -63,6 +63,7 @@ class Math {
             let y = -y;
         }
         if (y = 0) {
+            do Sys.error(3);
             return 0;
         }
         if (y > x) {
@@ -80,6 +81,10 @@ class Math {
     */
     function int sqrt(int x) {
         var int y, j, t;
+        if (x < 0) {
+            do Sys.error(4);
+            return 0;
+        }
         if (x < 2) {
             return x;
         }

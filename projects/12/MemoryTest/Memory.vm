@@ -41,6 +41,17 @@ pop that 0
 push constant 0
 return
 function Memory.alloc 2
+push argument 0
+push constant 1
+lt
+not
+if-goto if-0-1
+push constant 5
+call Sys.error 1
+pop temp 0
+push constant 0
+return
+label if-0-1
 push static 1
 pop local 0
 push constant 1
@@ -61,70 +72,70 @@ push that 0
 push argument 0
 eq
 not
-if-goto if-0-1
+if-goto if-1-1
 push local 1
 push constant 0
 gt
 not
-not
-if-goto if-1-1
-push static 0
-push local 0
-push constant 1
-sub
-add
-pop pointer 1
-push that 0
-pop static 1
-goto if-1-2
-label if-1-1
-push local 1
-push constant 1
-sub
-push static 0
-add
-push static 0
-push local 0
-push constant 1
-sub
-add
-pop pointer 1
-push that 0
-pop temp 0
-pop pointer 1
-push temp 0
-pop that 0
-label if-1-2
-push local 0
-return
-label if-0-1
-push static 0
-push local 0
-push constant 2
-sub
-add
-pop pointer 1
-push that 0
-push argument 0
-push constant 2
-add
-gt
 not
 if-goto if-2-1
+push static 0
+push local 0
+push constant 1
+sub
+add
+pop pointer 1
+push that 0
+pop static 1
+goto if-2-2
+label if-2-1
+push local 1
+push constant 1
+sub
+push static 0
+add
+push static 0
+push local 0
+push constant 1
+sub
+add
+pop pointer 1
+push that 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+label if-2-2
+push local 0
+return
+label if-1-1
+push static 0
+push local 0
+push constant 2
+sub
+add
+pop pointer 1
+push that 0
+push argument 0
+push constant 2
+add
+gt
+not
+if-goto if-3-1
 push local 1
 push constant 0
 gt
 not
 not
-if-goto if-3-1
+if-goto if-4-1
 push local 0
 push argument 0
 add
 push constant 2
 add
 pop static 1
-goto if-3-2
-label if-3-1
+goto if-4-2
+label if-4-1
 push local 1
 push constant 1
 sub
@@ -139,7 +150,7 @@ pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
-label if-3-2
+label if-4-2
 push local 0
 push argument 0
 add
@@ -204,7 +215,7 @@ push temp 0
 pop that 0
 push local 0
 return
-label if-2-1
+label if-3-1
 push local 0
 pop local 1
 push static 0
@@ -218,11 +229,11 @@ push constant 0
 gt
 not
 not
-if-goto if-4-1
+if-goto if-5-1
 push constant 1
 neg
 return
-label if-4-1
+label if-5-1
 push static 0
 push local 0
 push constant 1

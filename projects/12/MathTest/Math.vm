@@ -103,6 +103,9 @@ push constant 0
 eq
 not
 if-goto if-3-1
+push constant 3
+call Sys.error 1
+pop temp 0
 push constant 0
 return
 label if-3-1
@@ -146,13 +149,24 @@ add
 return
 function Math.sqrt 3
 push argument 0
-push constant 2
+push constant 0
 lt
 not
 if-goto if-6-1
-push argument 0
+push constant 4
+call Sys.error 1
+pop temp 0
+push constant 0
 return
 label if-6-1
+push argument 0
+push constant 2
+lt
+not
+if-goto if-7-1
+push argument 0
+return
+label if-7-1
 push constant 0
 pop local 0
 push constant 7
@@ -183,10 +197,10 @@ push constant 182
 lt
 and
 not
-if-goto if-7-1
+if-goto if-8-1
 push local 2
 pop local 0
-label if-7-1
+label if-8-1
 push local 1
 push constant 1
 sub
@@ -200,10 +214,10 @@ push argument 0
 push argument 1
 gt
 not
-if-goto if-8-1
+if-goto if-9-1
 push argument 0
 return
-label if-8-1
+label if-9-1
 push argument 1
 return
 function Math.min 0
@@ -211,10 +225,10 @@ push argument 0
 push argument 1
 lt
 not
-if-goto if-9-1
+if-goto if-10-1
 push argument 0
 return
-label if-9-1
+label if-10-1
 push argument 1
 return
 function Math.abs 0
@@ -222,10 +236,10 @@ push argument 0
 push constant 0
 lt
 not
-if-goto if-10-1
+if-goto if-11-1
 push argument 0
 neg
 return
-label if-10-1
+label if-11-1
 push argument 0
 return

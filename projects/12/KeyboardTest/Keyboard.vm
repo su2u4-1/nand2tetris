@@ -1,0 +1,99 @@
+function Keyboard.init 0
+push constant 24576
+pop static 0
+push constant 0
+call String.new 1
+pop static 1
+push constant 0
+return
+function Keyboard.keyPressed 0
+push static 0
+push constant 0
+add
+pop pointer 1
+push that 0
+return
+function Keyboard.readChar 2
+label while-0-1
+push local 0
+push constant 0
+eq
+not
+if-goto while-0-2
+push static 0
+push constant 0
+add
+pop pointer 1
+push that 0
+pop local 0
+goto while-0-1
+label while-0-2
+push local 0
+pop local 1
+label while-1-1
+push local 0
+push constant 0
+eq
+not
+not
+if-goto while-1-2
+push static 0
+push constant 0
+add
+pop pointer 1
+push that 0
+pop local 0
+goto while-1-1
+label while-1-2
+push local 1
+call Output.printChar 1
+pop temp 0
+push local 1
+return
+function Keyboard.readLine 1
+push static 1
+call String.dispose 1
+pop temp 0
+push constant 100
+call String.new 1
+pop static 1
+push argument 0
+call Output.printString 1
+pop temp 0
+label while-2-1
+push constant 0
+not
+not
+if-goto while-2-2
+call Keyboard.readChar 0
+pop local 0
+push local 0
+push constant 128
+eq
+not
+if-goto if-0-1
+push static 1
+return
+label if-0-1
+push local 0
+push constant 129
+eq
+not
+if-goto if-1-1
+push static 1
+call String.eraseLastChar 1
+pop temp 0
+goto if-1-2
+label if-1-1
+push static 1
+push local 0
+call String.appendChar 2
+pop static 1
+label if-1-2
+goto while-2-1
+label while-2-2
+function Keyboard.readInt 0
+push argument 0
+call Keyboard.readLine 1
+call String.intValue 1
+return
