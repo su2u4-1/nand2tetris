@@ -22,10 +22,13 @@ class Output {
 
     /** Initializes the screen, and locates the cursor at the screen's top-left. */
     function void init() {
+        var int i, n;
         do Output.initMap();
         let cursor_x = 0;
         let cursor_y = 0;
-        let powersOfTwo = Array.new(16);
+        let powersOfTwo = Array.new(8);
+        let i = 0;
+        let n = 1;
         while (i < 8) {
             let powersOfTwo[i] = n;
             let n = n + n;
