@@ -201,6 +201,8 @@ class CompilationEngine:
                 raise CompileError(23, None, self.peek(-1), self.point)
 
     def compileStatement(self):
+        if self.peek() == ("}", "symbol"):
+            return
         while True:
             now = self.get()
             if now[1] == "keyword":
