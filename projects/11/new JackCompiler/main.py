@@ -1,6 +1,41 @@
 import os.path, sys
-from JackTokenizer import tokenizer
+from JackTokenizer import tokenizer, Token
 from CompilationEngine import CompilationEngine
+
+
+def show(tokens: list[Token]) -> None:
+    n = tokens[0].line
+    l = 0
+    c = ""
+    for i in tokens:
+        if i.type == "symbol":
+            if i.content == "{":
+                l += 1
+            elif i.content == "}":
+                l -= 1
+        if i.line > n:
+            n += 1
+            print("\n" + "    " * l, end="")
+        if i.line > n:
+            n += 1
+            print("\n" + "    " * l, end="")
+        while i.line > n:
+            n += 1
+        if i.line == n:
+            if i.type in ["keyword", "identifier"] and c in ["keyword", "identifier", "string"]:
+                print(f" {i.content}", end="")
+            elif i.type == "string":
+                if c in ["keyword", "identifier"]:
+                    print(f' "{i.content}"', end="")
+                else:
+                    print(f'"{i.content}"', end="")
+            elif i.type == "symbol" and i.content in "+-*/><=&|":
+                print(f" {i.content} ", end="")
+            elif i.type == "symbol" and i.content == ",":
+                print(", ", end="")
+            else:
+                print(i.content, end="")
+            c = i.type
 
 
 if __name__ == "__main__":
@@ -24,10 +59,9 @@ if __name__ == "__main__":
             with open(i, "r") as f:
                 source = f.readlines()
             tokens = tokenizer(source)
+            show(tokens)
             compiler = CompilationEngine(tokens)
             code = compiler.main()
-            for i in code:
-                print(i)
             exit()
             with open(i.split(".")[0] + ".vm", "w") as f:
                 f.write("\n".join(code) + "\n")
