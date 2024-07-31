@@ -26,6 +26,9 @@ if __name__ == "__main__":
             tokens = tokenizer(source)
             compiler = CompilationEngine(tokens)
             code = compiler.main()
+            for i in code:
+                print(i)
+            exit()
             with open(i.split(".")[0] + ".vm", "w") as f:
                 f.write("\n".join(code) + "\n")
             print(f"Compile {filename} successfully")
