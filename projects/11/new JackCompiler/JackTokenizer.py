@@ -6,7 +6,7 @@ identifier = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
 class Token:
-    def __init__(self, content: str, type: Literal["keyword", "symbol", "string", "integer", "identifier"], line: int) -> None:
+    def __init__(self, content: str, type: Literal["keyword", "symbol", "string", "integer", "identifier"], line: int = -1) -> None:
         self.content = content
         self.type = type
         self.line = line
@@ -16,6 +16,20 @@ class Token:
 
     def __str__(self) -> str:
         return f"<{self.type}> {self.content} [line: {self.line}]"
+
+
+class Tokens:
+    def __init__(self, content: list[str], type: Literal["keyword", "symbol", "string", "integer", "identifier"]) -> None:
+        self.content = content
+        self.type = type
+
+    def __eq__(self, other: Token) -> bool:
+        if self.type != other.type:
+            return False
+        for i in self.content:
+            if i == other.content:
+                return True
+        return False
 
 
 def is_integer(w: str) -> bool:
@@ -75,6 +89,10 @@ def tokenizer(source: list[str]):
                     code.append(Token("/", "symbol", line))
             if fs:
                 if c == '"':
+                    if "\n" in ts:
+                        error.append(("The string cannot contain newlines", line))
+                    if '"' in ts:
+                        error.append((f"The string cannot contain '{'"'}'", line))
                     code.append(Token(ts, "string", line))
                     fs = False
                     ts = ""
@@ -86,7 +104,7 @@ def tokenizer(source: list[str]):
                 tc = c
             elif c == '"':
                 if len(tw) > 0:
-                    error.append(("The string cannot be( preceded by identifiers or keywords", line))
+                    error.append(("The string cannot be preceded by identifiers or keywords", line))
                     addcode(tw)
                 fs = True
                 ts = ""
