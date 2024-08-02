@@ -12,7 +12,7 @@ class CompilationEngine:
         self.lv = {}
         self.varCount = {"static": 0, "field": 0, "argument": 0, "local": 0}
 
-    def error(des: str, line: int) -> NoReturn:
+    def error(self, des: str, line: int) -> NoReturn:
         print(des, f"[line: {line}]")
         exit()
 
@@ -44,7 +44,7 @@ class CompilationEngine:
         while self.now == Tokens(["constructor", "function", "method"], "keyword"):
             self.compileSubroutine()
             self.next()
-        if self.now() != Token("}", "symbol"):
+        if self.now != Token("}", "symbol"):
             self.error("bracket '}' is not closed", self.now.line)
 
     def compileClassVarDec(self) -> None:
