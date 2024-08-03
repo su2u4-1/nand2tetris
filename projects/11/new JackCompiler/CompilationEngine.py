@@ -126,7 +126,7 @@ class CompilationEngine:
             self.error("missing symbol ';'")
 
     def compileStatements(self) -> None:
-        while self.next() == Tokens(["do", "let", "while", "return", "if"], "keyword"):
+        while self.next() != Token("}", "symbol"):
             if self.now == Token("do", "keyword"):
                 self.compileDo()
             elif self.now == Token("let", "keyword"):
@@ -138,9 +138,7 @@ class CompilationEngine:
             elif self.now == Token("if", "keyword"):
                 self.compileIf()
             else:
-                self.error("statement must start with do, let, while, return, if")
-        if self.next() != Token("}", "symbol"):
-            self.error("nissing symbol '}'")
+                self.error("statement must start with keyword 'do', 'let', 'while', 'return' or 'if'")
 
     def compileDo(self) -> None:
         if self.next().type != "identifier":
@@ -208,7 +206,9 @@ class CompilationEngine:
             self.code.append("pop that 0")
 
     def compileWhile(self) -> None:
-        pass
+        if self.next() != Token("(", "symbol"):
+            self.error("keyword 'while' must be followed by symbol '('")
+        self.compileExpression()
 
     def compileReturn(self) -> None:
         pass
