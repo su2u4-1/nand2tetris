@@ -54,8 +54,8 @@ def is_identifier(w: str) -> bool:
     return False
 
 
-def tokenizer(source: list[str]):
-    def addcode(t):
+def tokenizer(source: list[str]) -> list[Token]:
+    def addcode(t: str) -> None:
         if len(t) > 0:
             if t in symbolList:
                 code.append(Token(t, "symbol", line))

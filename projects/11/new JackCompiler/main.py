@@ -48,7 +48,7 @@ if __name__ == "__main__":
     if path.endswith(".jack"):
         files = [path]
     else:
-        files = []
+        files: list[str] = []
         for f in os.listdir(path):
             if os.path.isfile(os.path.join(path, f)):
                 files.append(os.path.join(path, f))
