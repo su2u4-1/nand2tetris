@@ -11,6 +11,8 @@ class CompilationEngine:
         self.gv: dict[str, tuple[str, int, str]] = {}
         self.lv: dict[str, tuple[str, int, str]] = {}
         self.varCount: dict[str, int] = {"static": 0, "this": 0, "argument": 0, "local": 0}
+        self.whileCount = 0
+        self.ifCount = 0
 
     def error(self, des: str, line: int = -1) -> NoReturn:
         if line == -1:
@@ -164,7 +166,7 @@ class CompilationEngine:
                 self.code.append(f"call {t[0]}.{t1} {n}")
             else:
                 self.code.append(f"call {t[1]}.{t1} {n+1}")
-        elif self.next() == Token("(", "symbol"):
+        elif self.now == Token("(", "symbol"):
             if t[1] != -1:
                 self.error(f"variable '{t[0]}' not callable")
             self.code.append("push pointer 0")
@@ -174,7 +176,6 @@ class CompilationEngine:
             self.code.append(f"call {t[1]}.{t[0]} {n+1}")
         else:
             self.error("identifier must be followed by symbol '(' or '.'")
-
         if self.next() != Token(";", "symbol"):
             self.error("missing symbol ';'")
         self.code.append("pop temp 0")
@@ -196,7 +197,7 @@ class CompilationEngine:
             self.code.append(f"push {t[0]} {t[1]}")
             self.code.append("add")
             self.code.append("pop temp 0")
-            if self.next() != Token("]", "symbol"):
+            if self.now != Token("]", "symbol"):
                 self.error("missing symbol ']'")
             if self.next() != Token("=", "symbol"):
                 self.error("missing symbol '='")
@@ -204,23 +205,130 @@ class CompilationEngine:
             self.code.append("push temp 0")
             self.code.append("pop pointer 1")
             self.code.append("pop that 0")
+        if self.now != Token(";", "symbol"):
+            self.error("missing symbol ';'")
 
     def compileWhile(self) -> None:
+        nowCount = self.whileCount
+        self.whileCount += 1
         if self.next() != Token("(", "symbol"):
             self.error("keyword 'while' must be followed by symbol '('")
+        self.code.append(f"label while-{nowCount}-1")
         self.compileExpression()
+        self.code.append(f"not")
+        self.code.append(f"if-goto while-{nowCount}-2")
+        if self.now != Token(")", "symbol"):
+            self.error("missing symbol ')'")
+        if self.next() != Token("{", "symbol"):
+            self.error("missing symbol '{'")
+        self.compileStatements()
+        self.code.append(f"goto while-{nowCount}-1")
+        self.code.append(f"label while-{nowCount}-2")
+        if self.next() != Token("}", "symbol"):
+            self.error("missing symbol '}'")
 
     def compileReturn(self) -> None:
-        pass
+        self.compileExpression()
+        if self.now != Token(";", "symbol"):
+            self.error("missing symbol ';'")
 
     def compileIf(self) -> None:
         pass
 
     def compileExpression(self) -> None:
-        pass
+        self.compileTerm()
+        while self.now == Tokens(["+", "-", "*", "/", "<", ">", "=", "&", "|"], "symbol"):
+            if self.now == Token("+", "symbol"):
+                t = "add"
+            elif self.now == Token("-", "symbol"):
+                t = "sub"
+            elif self.now == Token("*", "symbol"):
+                t = "call Math.multiply 2"
+            elif self.now == Token("/", "symbol"):
+                t = "call Math.divide 2"
+            elif self.now == Token("&", "symbol"):
+                t = "and"
+            elif self.now == Token("|", "symbol"):
+                t = "or"
+            elif self.now == Token(">", "symbol"):
+                t = "gt"
+            elif self.now == Token("<", "symbol"):
+                t = "lt"
+            elif self.now == Token("=", "symbol"):
+                t = "eq"
+            self.compileTerm()
+            self.code.append(t)
 
     def compileTerm(self) -> None:
-        pass
+        if self.next().type == "integer":
+            self.code.append(f"push constant {self.now.content}")
+        elif self.now == Token("true", "keyword"):
+            self.code.append("push constant 0")
+            self.code.append("not")
+        elif self.now == Token("false", "keyword"):
+            self.code.append("push constant 0")
+        elif self.now == Token("this", "keyword"):
+            self.code.append("push constant 0")
+        elif self.now == Token("null", "keyword"):
+            self.code.append("push pointer 0")
+        elif self.now == Token("-", "symbol"):
+            self.compileTerm()
+            self.code.append("not")
+        elif self.now == Token("~", "symbol"):
+            self.compileTerm()
+            self.code.append("neg")
+        elif self.now == Token("(", "symbol"):
+            self.compileExpression()
+            if self.now != Token(")", "symbol"):
+                self.error("missing symbol ')'")
+        elif self.now.type == "string":
+            self.code.append(f"push constant {len(self.now.content)}")
+            self.code.append("call String.new 1")
+            for i in self.now.content:
+                self.code.append(f"push constant {ord(i)}")
+                self.code.append("call String.appendChar 2")
+        elif self.now.type == "identifier":
+            if self.now.content in self.lv:
+                t = self.lv[self.now.content]
+            elif self.now.content in self.gv:
+                t = self.lv[self.now.content]
+            else:
+                t = (self.now.content, -1, self.class_name)
+            if self.next() == Token(".", "symbol"):
+                if t[1] != -1:
+                    self.code.append(f"push {t[0]} {t[1]}")
+                if self.next().type != "identifier":
+                    self.error("subroutine name must be identifier")
+                t1 = self.now.content
+                if self.next() != Token("(", "symbol"):
+                    self.error("missing symbol '('")
+                n = self.compileExpressionList()
+                if self.next() != Token(")", "symbol"):
+                    self.error("missing symbol ')'")
+                if t[1] == -1:
+                    self.code.append(f"call {t[0]}.{t1} {n}")
+                else:
+                    self.code.append(f"call {t[1]}.{t1} {n+1}")
+            elif self.now == Token("(", "symbol"):
+                if t[1] != -1:
+                    self.error(f"variable '{t[0]}' not callable")
+                self.code.append("push pointer 0")
+                n = self.compileExpressionList()
+                if self.next() != Token(")", "symbol"):
+                    self.error("missing symbol ')'")
+                self.code.append(f"call {t[1]}.{t[0]} {n+1}")
+            elif self.now == Token("[", "symbol"):
+                self.compileExpression()
+                if self.now != Token("]", "symbol"):
+                    self.error("missing symbol ']'")
+                self.code.append(f"push {t[0]} {t[1]}")
+                self.code.append("add")
+                self.code.append("pop pointer 1")
+                self.code.append("push that 0")
+            else:
+                if t[1] == -1:
+                    self.error(f"identifier '{t[0]}' is not variable")
+                self.code.append(f"push {t[0]} {t[1]}")
 
     def compileExpressionList(self) -> int:
         return 0
