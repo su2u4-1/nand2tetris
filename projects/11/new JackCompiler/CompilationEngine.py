@@ -160,7 +160,7 @@ class CompilationEngine:
             if self.next() != Token("(", "symbol"):
                 self.error("missing symbol '('")
             n = self.compileExpressionList()
-            if self.next() != Token(")", "symbol"):
+            if self.now != Token(")", "symbol"):
                 self.error("missing symbol ')'")
             if t[1] == -1:
                 self.code.append(f"call {t[0]}.{t1} {n}")
@@ -171,7 +171,7 @@ class CompilationEngine:
                 self.error(f"variable '{t[0]}' not callable")
             self.code.append("push pointer 0")
             n = self.compileExpressionList()
-            if self.next() != Token(")", "symbol"):
+            if self.now != Token(")", "symbol"):
                 self.error("missing symbol ')'")
             self.code.append(f"call {t[1]}.{t[0]} {n+1}")
         else:
@@ -233,9 +233,35 @@ class CompilationEngine:
             self.error("missing symbol ';'")
 
     def compileIf(self) -> None:
-        pass
+        nowCount = self.ifCount
+        self.ifCount += 1
+        if self.next() != Token("(", "symbol"):
+            self.error("missing symbol '('")
+        self.compileExpression()
+        self.code.append("not")
+        self.code.append(f"if-goto if-{nowCount}-1")
+        if self.now != Token(")", "symbol"):
+            self.error("missing symbol ')'")
+        if self.next() != Token("{", "symbol"):
+            self.error("missing symbol '{'")
+        self.compileStatements()
+        if self.next() != Token("}", "symbol"):
+            self.error("missing symbol '}'")
+        if self.next() == Token("else", "keyword"):
+            if self.next() != Token("{", "symbol"):
+                self.error("missing symbol '{'")
+            self.code.append(f"goto if-{nowCount}-2")
+            self.code.append(f"label if-{nowCount}-1")
+            self.compileStatements()
+            self.code.append(f"label if-{nowCount}-2")
+            if self.now != Token("}", "symbol"):
+                self.error("missing symbol '}'")
+        else:
+            self.code.append(f"label if-{nowCount}-1")
 
     def compileExpression(self) -> None:
+        if self.now == Tokens(["}", "]", ")", ";", ","], "symbol"):
+            return
         self.compileTerm()
         while self.now == Tokens(["+", "-", "*", "/", "<", ">", "=", "&", "|"], "symbol"):
             if self.now == Token("+", "symbol"):
@@ -303,7 +329,7 @@ class CompilationEngine:
                 if self.next() != Token("(", "symbol"):
                     self.error("missing symbol '('")
                 n = self.compileExpressionList()
-                if self.next() != Token(")", "symbol"):
+                if self.now != Token(")", "symbol"):
                     self.error("missing symbol ')'")
                 if t[1] == -1:
                     self.code.append(f"call {t[0]}.{t1} {n}")
@@ -314,7 +340,7 @@ class CompilationEngine:
                     self.error(f"variable '{t[0]}' not callable")
                 self.code.append("push pointer 0")
                 n = self.compileExpressionList()
-                if self.next() != Token(")", "symbol"):
+                if self.now != Token(")", "symbol"):
                     self.error("missing symbol ')'")
                 self.code.append(f"call {t[1]}.{t[0]} {n+1}")
             elif self.now == Token("[", "symbol"):
@@ -331,4 +357,10 @@ class CompilationEngine:
                 self.code.append(f"push {t[0]} {t[1]}")
 
     def compileExpressionList(self) -> int:
-        return 0
+        n = 0
+        while self.now != Token(")", "symbol"):
+            self.compileExpression()
+            n += 1
+            if self.now != Token(",", "symbol"):
+                self.error("missing symbol ','")
+        return n
