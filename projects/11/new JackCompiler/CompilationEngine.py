@@ -41,7 +41,7 @@ class CompilationEngine:
             self.error("missing symbol '{'")
         while self.next() == Tokens(["static", "field"], "keyword"):
             self.compileClassVarDec()
-        while self.next() == Tokens(["constructor", "function", "method"], "keyword"):
+        while self.now == Tokens(["constructor", "function", "method"], "keyword"):
             self.compileSubroutine()
         if self.now != Token("}", "symbol"):
             self.error("bracket '}' is not closed")

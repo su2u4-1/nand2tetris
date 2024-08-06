@@ -12,7 +12,10 @@ class Token:
         self.line = line
 
     def __eq__(self, other: Self) -> bool:
-        return self.type == other.type and self.content == other.content
+        if type(other) == Token:
+            return self.type == other.type and self.content == other.content
+        else:
+            return other.__eq__(self)
 
     def __str__(self) -> str:
         return f"<{self.type}> {self.content} [line: {self.line}]"
