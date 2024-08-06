@@ -36,6 +36,7 @@ def show(tokens: list[Token]) -> None:
             else:
                 print(i.content, end="")
             c = i.type
+    print()
 
 
 if __name__ == "__main__":
@@ -59,10 +60,9 @@ if __name__ == "__main__":
             with open(i, "r") as f:
                 source = f.readlines()
             tokens = tokenizer(source)
-            show(tokens)
+            # show(tokens)
             compiler = CompilationEngine(tokens)
             code = compiler.main()
-            exit()
             with open(i.split(".")[0] + ".vm", "w") as f:
                 f.write("\n".join(code) + "\n")
             print(f"Compile {filename} successfully")

@@ -9,7 +9,7 @@ class Token:
     def __init__(self, content: str, type: Literal["keyword", "symbol", "string", "integer", "identifier"], line: int = -1) -> None:
         self.content = content
         self.type = type
-        self.line = line
+        self.line = line + 1
 
     def __eq__(self, other: Self) -> bool:
         if type(other) == Token:
