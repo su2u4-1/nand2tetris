@@ -27,7 +27,7 @@ class CompilationEngine:
             self.error("Wrong end of file", self.tokens[-1].line)
         self.now = self.tokens[self.point]
         self.point += 1
-        print(self.now)
+        # print(self.now)
         return self.now
 
     def main(self) -> list[str]:

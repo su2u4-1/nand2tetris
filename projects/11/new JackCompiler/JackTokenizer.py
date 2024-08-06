@@ -111,7 +111,7 @@ def tokenizer(source: list[str]) -> list[Token]:
                     addcode(tw)
                 fs = True
                 ts = ""
-            elif c == " " or c == "\n":
+            elif c == " " or c == "\t" or c == "\n":
                 addcode(tw)
                 tw = ""
             elif c in symbolList and c != "/":
