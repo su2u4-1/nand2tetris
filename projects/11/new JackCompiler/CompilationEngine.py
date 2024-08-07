@@ -2,6 +2,16 @@ from typing import NoReturn
 from JackTokenizer import Token, Tokens
 
 
+class CompileError(Exception):
+    def __init__(self, des: str, token: Token) -> None:
+        self.token = token
+        self.des = des
+        super().__init__(des)
+
+    def __str__(self) -> str:
+        return f"Error: {self.des}\nToken: {self.token}"
+
+
 class CompilationEngine:
     def __init__(self, tokens: list[Token]) -> None:
         self.tokens = tokens
@@ -13,21 +23,23 @@ class CompilationEngine:
         self.varCount: dict[str, int] = {"static": 0, "this": 0, "argument": 0, "local": 0}
         self.whileCount = 0
         self.ifCount = 0
+        self.debug: list[str] = []
 
     def error(self, des: str, line: int = -1) -> NoReturn:
         if line == -1:
             line = self.now.line
-        # for i in self.code:
-        #     print(i)
-        print("error:", des, "\nnow:", self.now)
-        exit()
+        self.debug.append("")
+        for i in self.code:
+            self.debug.append(i)
+        self.debug.append("")
+        raise CompileError(des, self.now)
 
     def next(self) -> Token:
         if self.point >= len(self.tokens):
             self.error("Wrong end of file", self.tokens[-1].line)
         self.now = self.tokens[self.point]
         self.point += 1
-        # print(self.now)
+        self.debug.append(str(self.now))
         return self.now
 
     def main(self) -> list[str]:
@@ -40,8 +52,8 @@ class CompilationEngine:
         return self.code
 
     def compileClass(self) -> None:
-        # self.code.append("#Class_S")
-        # print("Class_S")
+        self.code.append("#Class_S")
+        self.debug.append("Class_S")
         if self.next() != Token("class", "keyword"):
             self.error("missing keyword 'class'")
         if self.next().type != "identifier":
@@ -53,14 +65,15 @@ class CompilationEngine:
             self.compileClassVarDec()
         while self.now == Tokens(["constructor", "function", "method"], "keyword"):
             self.compileSubroutine()
+            self.next()
         if self.now != Token("}", "symbol"):
             self.error("bracket '}' is not closed")
-        # self.code.append("#Class_E")
-        # print("Class_E")
+        self.code.append("#Class_E")
+        self.debug.append("Class_E")
 
     def compileClassVarDec(self) -> None:
-        # self.code.append("#ClassVarDec_S")
-        # print("ClassVarDec_S")
+        self.code.append("#ClassVarDec_S")
+        self.debug.append("ClassVarDec_S")
         scope_type = self.now.content
         if scope_type == "field":
             scope_type = "this"
@@ -78,12 +91,13 @@ class CompilationEngine:
                 self.error(f"variable name must be identifier, not {self.now.type} '{self.now.content}'")
             self.gv[self.now.content] = (scope_type, self.varCount[scope_type], var_type)
             self.varCount[scope_type] += 1
-        # self.code.append("#ClassVarDec_E")
-        # print("ClassVarDec_E")
+        self.code.append("#ClassVarDec_E")
+        self.debug.append("ClassVarDec_E")
 
     def compileSubroutine(self) -> None:
-        # self.code.append("#Subroutine_S")
-        # print("Subroutine_S")
+        self.code.append("#Subroutine_S")
+        self.debug.append("Subroutine_S")
+        self.varCount = {"static": 0, "this": 0, "argument": 0, "local": 0}
         subroutine_type = self.now.content
         if subroutine_type == "constructor":
             self.code.append(f"push constant {self.varCount["this"]}")
@@ -112,14 +126,13 @@ class CompilationEngine:
         self.compileStatements()
         if self.now != Token("}", "symbol"):
             self.error("Brackets { are not closed")
-        # self.code.append("#Subroutine_E")
-        # print("Subroutine_E")
+        self.code.append("#Subroutine_E")
+        self.debug.append("Subroutine_E")
 
     def compileArgumentList(self) -> None:
-        # self.code.append("#ArgumentList_S")
-        # print("ArgumentList_S")
-        self.next()
-        while self.now != Token(")", "symbol"):
+        self.code.append("#ArgumentList_S")
+        self.debug.append("ArgumentList_S")
+        while self.next() != Token(")", "symbol"):
             if self.now.type != "identifier" and self.now != Tokens(["int", "boolean", "char"], "keyword"):
                 self.error("argument type must be int, boolean, char or identifier")
             var_type = self.now.content
@@ -127,14 +140,16 @@ class CompilationEngine:
                 self.error("argument name must be identifier")
             self.lv[self.now.content] = ("argument", self.varCount["argument"], var_type)
             self.varCount["argument"] += 1
-            if self.next() != Tokens([",", ")"], "symbol"):
+            if self.next() == Token(")", "symbol"):
+                break
+            if self.now != Token(",", "symbol"):
                 self.error("must be symbol ',' or ')'")
-        # self.code.append("#ArgumentList_E")
-        # print("ArgumentList_E")
+        self.code.append("#ArgumentList_E")
+        self.debug.append("ArgumentList_E")
 
     def compileVarDec(self) -> None:
-        # self.code.append("#VarDec_S")
-        # print("VarDec_S")
+        self.code.append("#VarDec_S")
+        self.debug.append("VarDec_S")
         if self.next().type != "identifier" and self.now != Tokens(["int", "boolean", "char"], "keyword"):
             self.error("variable type must be int, boolean, char or identifier")
         var_type = self.now.content
@@ -149,12 +164,12 @@ class CompilationEngine:
             self.varCount["local"] += 1
         if self.now != Token(";", "symbol"):
             self.error("missing symbol ';'")
-        # print("VarDec_E")
-        # self.code.append("#VarDec_E")
+        self.debug.append("VarDec_E")
+        self.code.append("#VarDec_E")
 
     def compileStatements(self) -> None:
-        # self.code.append("#Statements_S")
-        # print("Statements_S")
+        self.code.append("#Statements_S")
+        self.debug.append("Statements_S")
         while self.now != Token("}", "symbol"):
             if self.now == Token("do", "keyword"):
                 self.compileDo()
@@ -169,12 +184,12 @@ class CompilationEngine:
             else:
                 self.error("statement must start with keyword 'do', 'let', 'while', 'return' or 'if'")
             self.next()
-        # print("Statements_E")
-        # self.code.append("#Statements_E")
+        self.debug.append("Statements_E")
+        self.code.append("#Statements_E")
 
     def compileDo(self) -> None:
-        # self.code.append("#Do_S")
-        # print("Do_S")
+        self.code.append("#Do_S")
+        self.debug.append("Do_S")
         if self.next().type != "identifier":
             self.error("keyword 'do' must be followed by identifier")
         if self.now.content in self.lv:
@@ -211,12 +226,12 @@ class CompilationEngine:
         if self.next() != Token(";", "symbol"):
             self.error("missing symbol ';'")
         self.code.append("pop temp 0")
-        # print("Do_E")
-        # self.code.append("#Do_E")
+        self.debug.append("Do_E")
+        self.code.append("#Do_E")
 
     def compileLet(self) -> None:
-        # self.code.append("#Let_S")
-        # print("Let_S")
+        self.code.append("#Let_S")
+        self.debug.append("Let_S")
         if self.next().type != "identifier":
             self.error("keyword 'let' must be followed by identifier")
         if self.now.content in self.lv:
@@ -245,12 +260,12 @@ class CompilationEngine:
             self.error("missing symbol '='")
         if self.now != Token(";", "symbol"):
             self.error("missing symbol ';'")
-        # print("Let_E")
-        # self.code.append("#Let_E")
+        self.debug.append("Let_E")
+        self.code.append("#Let_E")
 
     def compileWhile(self) -> None:
-        # self.code.append("#While_S")
-        # print("While_S")
+        self.code.append("#While_S")
+        self.debug.append("While_S")
         nowCount = self.whileCount
         self.whileCount += 1
         if self.next() != Token("(", "symbol"):
@@ -269,12 +284,12 @@ class CompilationEngine:
         self.code.append(f"label while-{nowCount}-2")
         if self.now != Token("}", "symbol"):
             self.error("missing symbol '}'")
-        # print("While_E")
-        # self.code.append("#While_E")
+        self.debug.append("While_E")
+        self.code.append("#While_E")
 
     def compileReturn(self) -> None:
-        # self.code.append("#Return_S")
-        # print("Return_S")
+        self.code.append("#Return_S")
+        self.debug.append("Return_S")
         if self.tokens[self.point] == Token(";", "symbol"):
             self.code.append("push constant 0")
             self.next()
@@ -283,12 +298,12 @@ class CompilationEngine:
             if self.now != Token(";", "symbol"):
                 self.error("missing symbol ';'")
         self.code.append("return")
-        # print("Return_E")
-        # self.code.append("#Return_E")
+        self.debug.append("Return_E")
+        self.code.append("#Return_E")
 
     def compileIf(self) -> None:
-        # self.code.append("#If_S")
-        # print("If_S")
+        self.code.append("#If_S")
+        self.debug.append("If_S")
         nowCount = self.ifCount
         self.ifCount += 1
         if self.next() != Token("(", "symbol"):
@@ -317,15 +332,15 @@ class CompilationEngine:
                 self.error("missing symbol '}'")
         else:
             self.code.append(f"label if-{nowCount}-1")
-        # print("If_E")
-        # self.code.append("#If_E")
+        self.debug.append("If_E")
+        self.code.append("#If_E")
 
     def compileExpression(self) -> None:
-        # self.code.append("#Expression_S")
-        # print("Expression_S")
+        self.code.append("#Expression_S")
+        self.debug.append("Expression_S")
         if self.tokens[self.point] == Tokens(["}", "]", ")", ";", ","], "symbol"):
-            # print("Expression_E")
-            # self.code.append("#Expression_E")
+            self.debug.append("Expression_E")
+            self.code.append("#Expression_E")
             self.next()
             return
         self.compileTerm()
@@ -350,12 +365,12 @@ class CompilationEngine:
                 t = "eq"
             self.compileTerm()
             self.code.append(t)
-        # print("Expression_E")
-        # self.code.append("#Expression_E")
+        self.debug.append("Expression_E")
+        self.code.append("#Expression_E")
 
     def compileTerm(self) -> None:
-        # self.code.append("#Term_S")
-        # print("Term_S")
+        self.code.append("#Term_S")
+        self.debug.append("Term_S")
         m = True
         if self.next().type == "integer":
             self.code.append(f"push constant {self.now.content}")
@@ -429,18 +444,21 @@ class CompilationEngine:
                 self.code.append(f"push {t[0]} {t[1]}")
         if m:
             self.next()
-        # print("Term_E")
-        # self.code.append("#Term_E")
+        self.debug.append("Term_E")
+        self.code.append("#Term_E")
 
     def compileExpressionList(self) -> int:
-        # self.code.append("#ExpressionList_S")
-        # print("ExpressionList_S")
+        self.code.append("#ExpressionList_S")
+        self.debug.append("ExpressionList_S")
+        if self.tokens[self.point] == Token(")", "symbol"):
+            self.next()
+            return 0
         n = 0
         while self.now != Token(")", "symbol"):
             self.compileExpression()
             n += 1
             if self.now != Tokens([",", ")"], "symbol"):
-                self.error("missing symbol ','")
-        # print("ExpressionList_E")
-        # self.code.append("#ExpressionList_E")
+                self.error("missing symbol ',' or ')'")
+        self.debug.append("ExpressionList_E")
+        self.code.append("#ExpressionList_E")
         return n

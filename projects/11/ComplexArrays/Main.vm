@@ -202,7 +202,7 @@ pop pointer 1
 push that 0
 call Output.printInt 1
 pop temp 0
-call Output.println 1
+call Output.println 0
 pop temp 0
 push constant 44
 call String.new 1
@@ -303,7 +303,7 @@ pop pointer 1
 push that 0
 call Output.printInt 1
 pop temp 0
-call Output.println 1
+call Output.println 0
 pop temp 0
 push constant 43
 call String.new 1
@@ -398,7 +398,7 @@ pop temp 0
 push local 2
 call Output.printInt 1
 pop temp 0
-call Output.println 1
+call Output.println 0
 pop temp 0
 push pointer 0
 pop local 2
@@ -563,7 +563,7 @@ pop pointer 1
 push that 0
 call Output.printInt 1
 pop temp 0
-call Output.println 1
+call Output.println 0
 pop temp 0
 push constant 45
 call String.new 1
@@ -666,7 +666,36 @@ pop pointer 1
 push that 0
 call Output.printInt 1
 pop temp 0
-call Output.println 1
+call Output.println 0
 pop temp 0
+push constant 0
+return
+function Main.double 0
+push argument 0
+push constant 2
+call Math.multiply 2
+return
+function Main.fill 0
+label while-0-1
+push argument 1
+push constant 0
+gt
+not
+if-goto while-0-2
+push argument 1
+push constant 1
+sub
+pop argument 1
+push argument 1
+push argument 0
+add
+pop temp 0
+push constant 3
+call Array.new 1
+push temp 0
+pop pointer 1
+pop that 0
+goto while-0-1
+label while-0-2
 push constant 0
 return

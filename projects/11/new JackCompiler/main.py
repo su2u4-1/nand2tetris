@@ -1,12 +1,14 @@
 import os.path, sys
 from JackTokenizer import tokenizer, Token
-from CompilationEngine import CompilationEngine
+from CompilationEngine import CompilationEngine, CompileError
 
 
-def show(tokens: list[Token]) -> None:
+def show(tokens: list[Token]) -> list[str]:
     n = tokens[0].line
     l = 0
     c = ""
+    b: list[str] = []
+    t = ""
     for i in tokens:
         if i.type == "symbol":
             if i.content == "{":
@@ -15,28 +17,30 @@ def show(tokens: list[Token]) -> None:
                 l -= 1
         if i.line > n:
             n += 1
-            print("\n" + "    " * l, end="")
+            b.append(t)
+            t = "    " * l
         if i.line > n:
             n += 1
-            print("\n" + "    " * l, end="")
+            b.append(t)
+            t = "    " * l
         while i.line > n:
             n += 1
         if i.line == n:
             if i.type in ["keyword", "identifier"] and c in ["keyword", "identifier", "string"]:
-                print(f" {i.content}", end="")
+                t += f" {i.content}"
             elif i.type == "string":
                 if c in ["keyword", "identifier"]:
-                    print(f' "{i.content}"', end="")
+                    t += f' "{i.content}"'
                 else:
-                    print(f'"{i.content}"', end="")
+                    t += f'"{i.content}"'
             elif i.type == "symbol" and i.content in "+-*/><=&|":
-                print(f" {i.content} ", end="")
+                t += f" {i.content} "
             elif i.type == "symbol" and i.content == ",":
-                print(", ", end="")
+                t += ", "
             else:
-                print(i.content, end="")
+                t += i.content
             c = i.type
-    print()
+    return b + ["\n"]
 
 
 if __name__ == "__main__":
@@ -60,9 +64,17 @@ if __name__ == "__main__":
             with open(i, "r") as f:
                 source = f.readlines()
             tokens = tokenizer(source)
-            # show(tokens)
+            debug = show(tokens)
             compiler = CompilationEngine(tokens)
-            code = compiler.main()
+            try:
+                code = compiler.main()
+            except CompileError as e:
+                print(i, "line", e.token.line)
+                print(e)
+                debug += compiler.debug
+                with open(i.split(".")[0] + "_error_log.txt", "w") as f:
+                    f.write("\n".join(debug) + "\n")
+                exit()
             with open(i.split(".")[0] + ".vm", "w") as f:
                 f.write("\n".join(code) + "\n")
             print(f"Compile {filename} successfully")
