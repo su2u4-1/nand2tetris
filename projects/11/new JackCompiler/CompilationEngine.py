@@ -304,7 +304,8 @@ class CompilationEngine:
         self.compileStatements()
         if self.now != Token("}", "symbol"):
             self.error("missing symbol '}'")
-        if self.next() == Token("else", "keyword"):
+        if self.tokens[self.point] == Token("else", "keyword"):
+            self.next()
             if self.next() != Token("{", "symbol"):
                 self.error("missing symbol '{'")
             self.code.append(f"goto if-{nowCount}-2")
@@ -322,9 +323,10 @@ class CompilationEngine:
     def compileExpression(self) -> None:
         # self.code.append("#Expression_S")
         # print("Expression_S")
-        if self.now == Tokens(["}", "]", ")", ";", ","], "symbol"):
+        if self.tokens[self.point] == Tokens(["}", "]", ")", ";", ","], "symbol"):
             # print("Expression_E")
             # self.code.append("#Expression_E")
+            self.next()
             return
         self.compileTerm()
         while self.now == Tokens(["+", "-", "*", "/", "<", ">", "=", "&", "|"], "symbol"):
