@@ -35,16 +35,7 @@ def compile(path: str) -> list[str]:
         print(f"{path} is not a file")
 
 
-def read_input() -> int:
-    # TODO
-    keyboard = pygame.key.get_pressed()
-    keymod = pygame.key.get_mods()
-    if keymod & pygame.KMOD_SHIFT or keymod & pygame.KMOD_CAPS:
-        pass
-
-
 def main(binary: list[str]) -> int:
-    global memory
     pygame.init()
     W, H = 512, 256
     pygame.display.set_caption("Hack Computer Emulator")
@@ -61,18 +52,22 @@ def main(binary: list[str]) -> int:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return 1
-            elif event.type == pygame.KEYUP or event.type == pygame.KEYDOWN:
-                memory[24576] = read_input()
+            elif event.type == pygame.KEYDOWN:
+                c = event.unicode
+                if len(c) == 1:
+                    memory[24576] = ord(c)
 
         if index >= len(binary):
             pygame.quit()
             return 0
+        tl = [index, binary[index]]
         instruction = binary[index]
         if instruction[0] == "0":
             A_register = int("0b" + instruction, base=2)
             if A_register > 32767 or A_register < -32768:
                 pygame.quit()
                 return 2
+            index += 1
         else:
             comp = instruction[3:10]
             dest = instruction[10:13]
@@ -102,18 +97,18 @@ def main(binary: list[str]) -> int:
                 return 3
             if dest[2] == "1":
                 memory[A_register] = result
-                print(result)
             if dest[0] == "1":
                 A_register = result
             if dest[1] == "1":
                 D_register = result
             if (jump[0] == "1" and result < 0) or (jump[1] == "1" and result == 0) or (jump[2] == "1" and result > 0):
-                index = result
+                index = A_register
                 if index > 24576 or index < 0:
                     return 4
             else:
                 index += 1
 
+        # TODO
         for i in range(256):
             for j in range(32):
                 t = memory[16384 + j]
@@ -125,7 +120,9 @@ def main(binary: list[str]) -> int:
                         screen.set_at((i, j * 32 + k), (255, 255, 255))
 
         pygame.display.update()
-        clock.tick(20)
+        clock.tick(60)
+
+        log.append(str([memory[:10], memory[16384:16394], memory[24576], A_register, D_register] + tl))
 
 
 if __name__ == "__main__":
@@ -136,10 +133,13 @@ if __name__ == "__main__":
     path = os.path.abspath(path)
 
     binary = compile(path)
-    print(binary)
+    for i in binary:
+        print(i)
+    log: list[str] = []
     n = main(binary)
     with open("log", "w+") as f:
-        f.write("\n".join(str(i) for i in memory))
+        for i in log:
+            f.write(i + "\n")
     print("end code:", n)
     """
     error code:
