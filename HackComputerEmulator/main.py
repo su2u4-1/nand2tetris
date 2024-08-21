@@ -115,9 +115,9 @@ def main(binary: list[str]) -> int:
                 t = format(t, "016b")
                 for k in range(16):
                     if t[k] == "1":
-                        screen.set_at((i, j * 32 + k), (0, 0, 0))
+                        screen.set_at((i, j * 16 + k), (0, 0, 0))
                     else:
-                        screen.set_at((i, j * 32 + k), (255, 255, 255))
+                        screen.set_at((i, j * 16 + k), (255, 255, 255))
 
         pygame.display.update()
         clock.tick(60)
