@@ -108,16 +108,15 @@ def main(binary: list[str]) -> int:
             else:
                 index += 1
 
-        # TODO
         for i in range(256):
             for j in range(32):
                 t = memory[16384 + j]
                 t = format(t, "016b")
                 for k in range(16):
                     if t[k] == "1":
-                        screen.set_at((i, j * 16 + k), (0, 0, 0))
+                        screen.set_at((j * 16 + k, i), (0, 0, 0))
                     else:
-                        screen.set_at((i, j * 16 + k), (255, 255, 255))
+                        screen.set_at((j * 16 + k, i), (255, 255, 255))
 
         pygame.display.update()
         clock.tick(60)
