@@ -16,10 +16,10 @@ if __name__ == "__main__":
     if path.endswith(".jack"):
         result = [path]
     else:
-        if "C:\\Users\\joey2\\code\\nand2tetris\\" in path:
+        if "D:\\nand2tetris\\" in path:
             result = listAllFiles(path)
         else:
-            result = listAllFiles("C:\\Users\\joey2\\code\\nand2tetris\\" + path)
+            result = listAllFiles("D:\\nand2tetris\\" + path)
     for i in result:
         if i.endswith(".jack"):
             f = open(i, "r")
