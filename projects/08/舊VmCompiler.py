@@ -36,11 +36,17 @@ def translator(text):
         elif text[i][0] == "neg":
             command.append(f"@SP\nA=M-1\nD=M\nD=D-M\nM=D-M")
         elif text[i][0] == "eq":
-            command.append(f"@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@TRUE{i}\nD;JEQ\n@SP\nM=M-1\nA=M-1\nM=0\n@END{i}\n0;JMP\n(TRUE{i})\n@SP\nM=M-1\nA=M-1\nM=-1\n(END{i})")
+            command.append(
+                f"@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@TRUE{i}\nD;JEQ\n@SP\nM=M-1\nA=M-1\nM=0\n@END{i}\n0;JMP\n(TRUE{i})\n@SP\nM=M-1\nA=M-1\nM=-1\n(END{i})"
+            )
         elif text[i][0] == "gt":
-            command.append(f"@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@TRUE{i}\nD;JLT\n@SP\nM=M-1\nA=M-1\nM=0\n@END{i}\n0;JMP\n(TRUE{i})\n@SP\nM=M-1\nA=M-1\nM=-1\n(END{i})")
+            command.append(
+                f"@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@TRUE{i}\nD;JLT\n@SP\nM=M-1\nA=M-1\nM=0\n@END{i}\n0;JMP\n(TRUE{i})\n@SP\nM=M-1\nA=M-1\nM=-1\n(END{i})"
+            )
         elif text[i][0] == "lt":
-            command.append(f"@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@TRUE{i}\nD;JGT\n@SP\nM=M-1\nA=M-1\nM=0\n@END{i}\n0;JMP\n(TRUE{i})\n@SP\nM=M-1\nA=M-1\nM=-1\n(END{i})")
+            command.append(
+                f"@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@TRUE{i}\nD;JGT\n@SP\nM=M-1\nA=M-1\nM=0\n@END{i}\n0;JMP\n(TRUE{i})\n@SP\nM=M-1\nA=M-1\nM=-1\n(END{i})"
+            )
         elif text[i][0] == "and":
             command.append(f"@SP\nA=M-1\nD=M\nA=A-1\nD=D&M\n@SP\nM=M-1\nA=M-1\nM=D")
         elif text[i][0] == "or":
@@ -101,12 +107,18 @@ def translator(text):
         elif text[i][0] == "if-goto":
             command.append(f"@SP\nM=M-1\nA=M\nD=M\n@{name}${text[i][1]}\nD;JNE")
         elif text[i][0] == "call":
-            command.append(f"@return{i}\nD=A\n@SP\nM=M+1\nA=M-1\nM=D\n@LCL\nD=M\n@SP\nM=M+1\nA=M-1\nM=D\n@ARG\nD=M\n@SP\nM=M+1\nA=M-1\nM=D\n@THIS\nD=M\n@SP\nM=M+1\nA=M-1\nM=D\n@THAT\nD=M\n@SP\nM=M+1\nA=M-1\nM=D\n@SP\nD=M\n@{text[i][2]}\nD=D-A\n@5\nD=D-A\n@ARG\nM=D\n@SP\nD=M\n@LCL\nM=D\n@{text[i][1]}\n0;JMP\n(return{i})")
+            command.append(
+                f"@return{i}\nD=A\n@SP\nM=M+1\nA=M-1\nM=D\n@LCL\nD=M\n@SP\nM=M+1\nA=M-1\nM=D\n@ARG\nD=M\n@SP\nM=M+1\nA=M-1\nM=D\n@THIS\nD=M\n@SP\nM=M+1\nA=M-1\nM=D\n@THAT\nD=M\n@SP\nM=M+1\nA=M-1\nM=D\n@SP\nD=M\n@{text[i][2]}\nD=D-A\n@5\nD=D-A\n@ARG\nM=D\n@SP\nD=M\n@LCL\nM=D\n@{text[i][1]}\n0;JMP\n(return{i})"
+            )
         elif text[i][0] == "function":
             functionname = text[i][1]
-            command.append(f"({text[i][1]})\n@SP\nD=M\n@R13\nM=D\n@{text[i][2]}\nD=A\n@loop-{i}\nD;JEQ\n(loop{i})\n@SP\nM=M+1\nD=M\nA=M-1\nM=0\n@{text[i][2]}\nD=D-A\n@R13\nD=D-M\n@loop{i}\nD;JLT\n(loop-{i})")
+            command.append(
+                f"({text[i][1]})\n@SP\nD=M\n@R13\nM=D\n@{text[i][2]}\nD=A\n@loop-{i}\nD;JEQ\n(loop{i})\n@SP\nM=M+1\nD=M\nA=M-1\nM=0\n@{text[i][2]}\nD=D-A\n@R13\nD=D-M\n@loop{i}\nD;JLT\n(loop-{i})"
+            )
         elif text[i][0] == "return":
-            command.append(f"@LCL\nD=M\n@FRAME{i}\nM=D\n@5\nA=D-A\nD=M\n@RET\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@ARG\nA=M\nM=D\n@ARG\nD=M\n@SP\nM=D+1\n@FRAME{i}\nD=M\n@1\nA=D-A\nD=M\n@THAT\nM=D\n@FRAME{i}\nD=M\n@2\nA=D-A\nD=M\n@THIS\nM=D\n@FRAME{i}\nD=M\n@3\nA=D-A\nD=M\n@ARG\nM=D\n@FRAME{i}\nD=M\n@4\nA=D-A\nD=M\n@LCL\nM=D\n@RET\nA=M\n0;JMP")
+            command.append(
+                f"@LCL\nD=M\n@FRAME{i}\nM=D\n@5\nA=D-A\nD=M\n@RET\nM=D\n@SP\nM=M-1\nA=M\nD=M\n@ARG\nA=M\nM=D\n@ARG\nD=M\n@SP\nM=D+1\n@FRAME{i}\nD=M\n@1\nA=D-A\nD=M\n@THAT\nM=D\n@FRAME{i}\nD=M\n@2\nA=D-A\nD=M\n@THIS\nM=D\n@FRAME{i}\nD=M\n@3\nA=D-A\nD=M\n@ARG\nM=D\n@FRAME{i}\nD=M\n@4\nA=D-A\nD=M\n@LCL\nM=D\n@RET\nA=M\n0;JMP"
+            )
         else:
             error += 1
             print("line", i, text[i], "\n------\n", command[-1], "\n------")

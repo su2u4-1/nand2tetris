@@ -57,7 +57,9 @@ def translator(path):
                     command.append(tac0[text[i][0]].format(t0[text[i][1]], text[i][2]))
                 elif text[i][1] in t1:
                     try:
-                        command.append(tac1[text[i][0]].format(t1[text[i][1]].format(name, text[i][2], t2[text[i][2]], 5 + int(text[i][2]))))
+                        command.append(
+                            tac1[text[i][0]].format(t1[text[i][1]].format(name, text[i][2], t2[text[i][2]], 5 + int(text[i][2])))
+                        )
                     except:
                         command.append(tac1[text[i][0]].format(t1[text[i][1]].format(name, text[i][2], 0, 5 + int(text[i][2]))))
                 elif text[i][1] == "constant":
