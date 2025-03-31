@@ -28,17 +28,11 @@ def translator(text):
         elif text[i][0] == "neg":
             command.append(f"@SP\nA=M-1\nD=M\nD=D-M\nM=D-M")
         elif text[i][0] == "eq":
-            command.append(
-                f"@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@TRUE{i}\nD;JEQ\n@SP\nM=M-1\nA=M-1\nM=0\n@END{i}\n0;JMP\n(TRUE{i})\n@SP\nM=M-1\nA=M-1\nM=-1\n(END{i})"
-            )
+            command.append(f"@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@TRUE{i}\nD;JEQ\n@SP\nM=M-1\nA=M-1\nM=0\n@END{i}\n0;JMP\n(TRUE{i})\n@SP\nM=M-1\nA=M-1\nM=-1\n(END{i})")
         elif text[i][0] == "gt":
-            command.append(
-                f"@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@TRUE{i}\nD;JLT\n@SP\nM=M-1\nA=M-1\nM=0\n@END{i}\n0;JMP\n(TRUE{i})\n@SP\nM=M-1\nA=M-1\nM=-1\n(END{i})"
-            )
+            command.append(f"@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@TRUE{i}\nD;JLT\n@SP\nM=M-1\nA=M-1\nM=0\n@END{i}\n0;JMP\n(TRUE{i})\n@SP\nM=M-1\nA=M-1\nM=-1\n(END{i})")
         elif text[i][0] == "lt":
-            command.append(
-                f"@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@TRUE{i}\nD;JGT\n@SP\nM=M-1\nA=M-1\nM=0\n@END{i}\n0;JMP\n(TRUE{i})\n@SP\nM=M-1\nA=M-1\nM=-1\n(END{i})"
-            )
+            command.append(f"@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@TRUE{i}\nD;JGT\n@SP\nM=M-1\nA=M-1\nM=0\n@END{i}\n0;JMP\n(TRUE{i})\n@SP\nM=M-1\nA=M-1\nM=-1\n(END{i})")
         elif text[i][0] == "and":
             command.append(f"@SP\nA=M-1\nD=M\nA=A-1\nD=D&M\n@SP\nM=M-1\nA=M-1\nM=D")
         elif text[i][0] == "or":
